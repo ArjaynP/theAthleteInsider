@@ -37,6 +37,16 @@ const navItems = [
       { label: "Standings", href: "/nfl/standings" },
     ],
   },
+  {
+    label: "MLB",
+    href: "/mlb",
+    icon: Trophy,
+    children: [
+      { label: "News & Analysis", href: "/mlb" },
+      { label: "Scores", href: "/mlb/scores" },
+      { label: "Standings", href: "/mlb/standings" },
+    ],
+  },
   { label: "Scores", href: "/scores", icon: BarChart3 },
   { label: "Community", href: "/community", icon: Users },
   { label: "Betting", href: "/betting", icon: TrendingUp },

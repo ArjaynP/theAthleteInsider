@@ -6,7 +6,7 @@ export interface Article {
   content: string;
   author: string;
   date: string;
-  league: "NBA" | "NFL";
+  league: "NBA" | "NFL" | "MLB";
   featured: boolean;
   imageUrl: string;
   category: string;
@@ -126,6 +126,20 @@ export const articles: Article[] = [
     category: "Coaches",
     readTime: "9 min read",
   },
+  {
+    id: "9",
+    title: "Opening Day Preview: Yankees vs Red Sox",
+    excerpt:
+      "Baseball is back! A comprehensive look at the biggest rivalry in sports as they kick off the 2026 season.",
+    content: `The 2026 MLB season begins with a bang as the Yankees host the Red Sox in the Bronx. Both teams have retooled significantly in the offseason.\n\nThe Yankees added a big bat to protect their captain in the lineup, while the Red Sox focused on shoreing up their rotation.\n\n"It's always special," said the Yankees ace. "Opening Day, Red Sox, it doesn't get better than this."`,
+    author: "David Ortiz",
+    date: "Feb 9, 2026",
+    league: "MLB",
+    featured: true,
+    imageUrl: "/placeholder.svg",
+    category: "Preview",
+    readTime: "5 min read",
+  },
 ];
 
 // ============ GAMES & SCORES ============
@@ -139,7 +153,7 @@ export interface Game {
   quarter?: string;
   time?: string;
   startTime?: string;
-  league: "NBA" | "NFL";
+  league: "NBA" | "NFL" | "MLB";
   homeRecord: string;
   awayRecord: string;
 }
@@ -239,6 +253,41 @@ export const games: Game[] = [
     homeRecord: "13-6",
     awayRecord: "12-7",
   },
+  {
+    id: "g9",
+    homeTeam: "NYY",
+    awayTeam: "BOS",
+    homeScore: 5,
+    awayScore: 3,
+    status: "LIVE",
+    quarter: "Bot 7",
+    league: "MLB",
+    homeRecord: "10-5",
+    awayRecord: "8-7",
+  },
+  {
+    id: "g10",
+    homeTeam: "LAD",
+    awayTeam: "SF",
+    homeScore: 2,
+    awayScore: 1,
+    status: "FINAL",
+    league: "MLB",
+    homeRecord: "12-3",
+    awayRecord: "7-8",
+  },
+  {
+    id: "g11",
+    homeTeam: "CHC",
+    awayTeam: "STL",
+    homeScore: 0,
+    awayScore: 0,
+    status: "UPCOMING",
+    startTime: "2:20 PM ET",
+    league: "MLB",
+    homeRecord: "9-6",
+    awayRecord: "8-7",
+  },
 ];
 
 // ============ STANDINGS ============
@@ -252,7 +301,7 @@ export interface TeamStanding {
   gb: string;
   streak: string;
   conference: string;
-  league: "NBA" | "NFL";
+  league: "NBA" | "NFL" | "MLB";
 }
 
 export const nbaStandings: TeamStanding[] = [
@@ -281,13 +330,26 @@ export const nflStandings: TeamStanding[] = [
   { rank: 10, team: "Green Bay Packers", abbreviation: "GB", wins: 11, losses: 8, pct: ".579", gb: "4", streak: "W3", conference: "NFC", league: "NFL" },
 ];
 
+export const mlbStandings: TeamStanding[] = [
+  { rank: 1, team: "New York Yankees", abbreviation: "NYY", wins: 10, losses: 5, pct: ".667", gb: "-", streak: "W2", conference: "AL", league: "MLB" },
+  { rank: 2, team: "Baltimore Orioles", abbreviation: "BAL", wins: 9, losses: 6, pct: ".600", gb: "1", streak: "L1", conference: "AL", league: "MLB" },
+  { rank: 3, team: "Boston Red Sox", abbreviation: "BOS", wins: 8, losses: 7, pct: ".533", gb: "2", streak: "L2", conference: "AL", league: "MLB" },
+  { rank: 4, team: "Tampa Bay Rays", abbreviation: "TB", wins: 7, losses: 8, pct: ".467", gb: "3", streak: "W1", conference: "AL", league: "MLB" },
+  { rank: 5, team: "Toronto Blue Jays", abbreviation: "TOR", wins: 6, losses: 9, pct: ".400", gb: "4", streak: "L3", conference: "AL", league: "MLB" },
+  { rank: 6, team: "Los Angeles Dodgers", abbreviation: "LAD", wins: 12, losses: 3, pct: ".800", gb: "-", streak: "W4", conference: "NL", league: "MLB" },
+  { rank: 7, team: "Arizona Diamondbacks", abbreviation: "ARI", wins: 9, losses: 6, pct: ".600", gb: "3", streak: "W1", conference: "NL", league: "MLB" },
+  { rank: 8, team: "San Francisco Giants", abbreviation: "SF", wins: 7, losses: 8, pct: ".467", gb: "5", streak: "L1", conference: "NL", league: "MLB" },
+  { rank: 9, team: "San Diego Padres", abbreviation: "SD", wins: 7, losses: 8, pct: ".467", gb: "5", streak: "W2", conference: "NL", league: "MLB" },
+  { rank: 10, team: "Colorado Rockies", abbreviation: "COL", wins: 4, losses: 11, pct: ".267", gb: "8", streak: "L4", conference: "NL", league: "MLB" },
+];
+
 // ============ POLLS ============
 export interface Poll {
   id: string;
   question: string;
   options: { label: string; votes: number }[];
   totalVotes: number;
-  league: "NBA" | "NFL";
+  league: "NBA" | "NFL" | "MLB";
 }
 
 export const polls: Poll[] = [
@@ -401,7 +463,7 @@ export interface OddsData {
   game: string;
   homeTeam: string;
   awayTeam: string;
-  league: "NBA" | "NFL";
+  league: "NBA" | "NFL" | "MLB";
   fanduel: { spread: string; moneyline: string; total: string };
   draftkings: { spread: string; moneyline: string; total: string };
   betmgm: { spread: string; moneyline: string; total: string };
@@ -482,7 +544,7 @@ export interface PowerRanking {
   previousRank: number;
   record: string;
   blurb: string;
-  league: "NBA" | "NFL";
+  league: "NBA" | "NFL" | "MLB";
 }
 
 export const nbaPowerRankings: PowerRanking[] = [
@@ -501,12 +563,20 @@ export const nflPowerRankings: PowerRanking[] = [
   { rank: 5, team: "Baltimore Ravens", abbreviation: "BAL", previousRank: 4, record: "13-6", blurb: "Lamar is unstoppable when he's on.", league: "NFL" },
 ];
 
+export const mlbPowerRankings: PowerRanking[] = [
+  { rank: 1, team: "Los Angeles Dodgers", abbreviation: "LAD", previousRank: 1, record: "12-3", blurb: "Super team living up to the hype.", league: "MLB" },
+  { rank: 2, team: "New York Yankees", abbreviation: "NYY", previousRank: 3, record: "10-5", blurb: "Hitting everything in sight.", league: "MLB" },
+  { rank: 3, team: "Baltimore Orioles", abbreviation: "BAL", previousRank: 2, record: "9-6", blurb: "Young core keeps getting better.", league: "MLB" },
+  { rank: 4, team: "Boston Red Sox", abbreviation: "BOS", previousRank: 5, record: "8-7", blurb: "Surprising everyone early on.", league: "MLB" },
+  { rank: 5, team: "Atlanta Braves", abbreviation: "ATL", previousRank: 4, record: "8-7", blurb: "Looking to bounce back after a slow start.", league: "MLB" },
+];
+
 // ============ TRENDING TOPICS ============
 export interface TrendingTopic {
   id: string;
   title: string;
   count: string;
-  league: "NBA" | "NFL";
+  league: "NBA" | "NFL" | "MLB";
   hot: boolean;
 }
 

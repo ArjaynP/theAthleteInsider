@@ -3,8 +3,10 @@ import {
   games,
   nbaStandings,
   nflStandings,
+  mlbStandings,
   nbaPowerRankings,
   nflPowerRankings,
+  mlbPowerRankings,
   polls,
   type TeamStanding,
   type PowerRanking,
@@ -17,7 +19,7 @@ import { ArrowUp, ArrowDown, Minus, Trophy, Calendar, Star } from "lucide-react"
 import { cn } from "@/lib/utils";
 
 interface LeaguePageContentProps {
-  league: "NBA" | "NFL";
+  league: "NBA" | "NFL" | "MLB";
 }
 
 function PowerRankingsCard({ rankings }: { rankings: PowerRanking[] }) {
@@ -166,12 +168,22 @@ function UpcomingGamesWidget({ leagueGames }: { leagueGames: typeof games }) {
 export function LeaguePageContent({ league }: LeaguePageContentProps) {
   const leagueArticles = articles.filter((a) => a.league === league);
   const leagueGames = games.filter((g) => g.league === league);
-  const standings = league === "NBA" ? nbaStandings : nflStandings;
-  const rankings = league === "NBA" ? nbaPowerRankings : nflPowerRankings;
-  const leaguePolls = polls.filter((p) => p.league === league);
+  
+  let standings = nbaStandings;
+  let rankings = nbaPowerRankings;
+  let conferences: string[] = ["East", "West"];
 
-  const conferences =
-    league === "NBA" ? ["East", "West"] : ["AFC", "NFC"];
+  if (league === "NFL") {
+    standings = nflStandings;
+    rankings = nflPowerRankings;
+    conferences = ["AFC", "NFC"];
+  } else if (league === "MLB") {
+    standings = mlbStandings;
+    rankings = mlbPowerRankings;
+    conferences = ["AL", "NL"];
+  }
+
+  const leaguePolls = polls.filter((p) => p.league === league);
 
   // Pick a "Game of the Week"
   const gameOfWeek = leagueGames[0];
