@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Inter", "Inter Fallback";
+  --font-mono: "JetBrains Mono", "JetBrains Mono Fallback";
+
+  --color-background: #0F172A;
+  --color-foreground: #F1F5F9;
+  --color-card: #1E293B;
+  --color-card-foreground: #F1F5F9;
+  --color-popover: #1E293B;
+  --color-popover-foreground: #F1F5F9;
+  --color-primary: #3B82F6;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #334155;
+  --color-secondary-foreground: #F1F5F9;
+  --color-muted: #1E293B;
+  --color-muted-foreground: #94A3B8;
+  --color-accent: #10B981;
+  --color-accent-foreground: #FFFFFF;
+  --color-destructive: #EF4444;
+  --color-destructive-foreground: #FFFFFF;
+  --color-border: #334155;
+  --color-input: #334155;
+  --color-ring: #3B82F6;
+
+  --radius: 0.625rem;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+/* Custom scrollbar for the dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted-foreground);
+}
