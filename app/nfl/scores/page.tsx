@@ -1,25 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { LiveScoreCard } from "@/components/live-score-card";
 import { games } from "@/lib/mock-data";
-import { cn } from "@/lib/utils";
 
-export default function ScoresPage() {
-  const [activeLeague, setActiveLeague] = useState<"ALL" | "NBA" | "NFL">(
-    "ALL"
-  );
-
-  const filteredGames =
-    activeLeague === "ALL"
-      ? games
-      : games.filter((g) => g.league === activeLeague);
-
-  const liveGames = filteredGames.filter((g) => g.status === "LIVE");
-  const finalGames = filteredGames.filter((g) => g.status === "FINAL");
-  const upcomingGames = filteredGames.filter((g) => g.status === "UPCOMING");
+export default function NFLScoresPage() {
+  const nflGames = games.filter((g) => g.league === "NFL");
+  const liveGames = nflGames.filter((g) => g.status === "LIVE");
+  const finalGames = nflGames.filter((g) => g.status === "FINAL");
+  const upcomingGames = nflGames.filter((g) => g.status === "UPCOMING");
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -27,36 +17,15 @@ export default function ScoresPage() {
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-8">
           {/* Header */}
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-1.5 rounded-full bg-primary" />
-              <div>
-                <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
-                  Scores
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Live scores and results for all games
-                </p>
-              </div>
-            </div>
-
-            {/* League Filter */}
-            <div className="flex rounded-lg border border-border bg-card p-1">
-              {(["ALL", "NBA", "NFL"] as const).map((league) => (
-                <button
-                  key={league}
-                  type="button"
-                  onClick={() => setActiveLeague(league)}
-                  className={cn(
-                    "rounded-md px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all",
-                    activeLeague === league
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {league}
-                </button>
-              ))}
+          <div className="mb-8 flex items-center gap-3">
+            <div className="h-10 w-1.5 rounded-full bg-primary" />
+            <div>
+              <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
+                NFL Scores
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Live scores and results for all NFL games
+              </p>
             </div>
           </div>
 

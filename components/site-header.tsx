@@ -23,8 +23,8 @@ const navItems = [
     icon: Trophy,
     children: [
       { label: "News & Analysis", href: "/nba" },
-      { label: "Scores", href: "/scores?league=nba" },
-      { label: "Standings", href: "/scores?league=nba#standings" },
+      { label: "Scores", href: "/nba/scores" },
+      { label: "Standings", href: "/nba/standings" },
     ],
   },
   {
@@ -33,8 +33,8 @@ const navItems = [
     icon: Trophy,
     children: [
       { label: "News & Analysis", href: "/nfl" },
-      { label: "Scores", href: "/scores?league=nfl" },
-      { label: "Standings", href: "/scores?league=nfl#standings" },
+      { label: "Scores", href: "/nfl/scores" },
+      { label: "Standings", href: "/nfl/standings" },
     ],
   },
   { label: "Scores", href: "/scores", icon: BarChart3 },

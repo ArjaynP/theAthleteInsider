@@ -4,40 +4,40 @@
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 96.1%;
-    --card: 217 33% 17%;
-    --card-foreground: 210 40% 96.1%;
-    --popover: 217 33% 17%;
-    --popover-foreground: 210 40% 96.1%;
-    --primary: 217 91% 60%;
+    --background: 210 21% 5%;
+    --foreground: 216 17% 95%;
+    --card: 213 14% 12%;
+    --card-foreground: 216 17% 95%;
+    --popover: 213 14% 12%;
+    --popover-foreground: 216 17% 95%;
+    --primary: 217 100% 59%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 25% 27%;
-    --secondary-foreground: 210 40% 96.1%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 160 84% 39%;
+    --secondary: 190 100% 50%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 213 14% 12%;
+    --muted-foreground: 215 10% 60%;
+    --accent: 0 100% 62%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --destructive: 0 100% 62%;
     --destructive-foreground: 0 0% 100%;
-    --border: 215 25% 27%;
-    --input: 215 25% 27%;
-    --ring: 217 91% 60%;
-    --chart-1: 217 91% 60%;
-    --chart-2: 160 84% 39%;
+    --border: 213 14% 18%;
+    --input: 213 14% 18%;
+    --ring: 217 100% 59%;
+    --chart-1: 217 100% 59%;
+    --chart-2: 190 100% 50%;
     --chart-3: 43 96% 56%;
-    --chart-4: 0 84% 60%;
-    --chart-5: 215 20% 65%;
+    --chart-4: 0 100% 62%;
+    --chart-5: 215 10% 60%;
     --radius: 0.5rem;
     --amber: 43 96% 56%;
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 96.1%;
-    --sidebar-primary: 217 91% 60%;
+    --sidebar-background: 210 21% 5%;
+    --sidebar-foreground: 216 17% 95%;
+    --sidebar-primary: 217 100% 59%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 96.1%;
-    --sidebar-border: 215 25% 27%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 213 14% 12%;
+    --sidebar-accent-foreground: 216 17% 95%;
+    --sidebar-border: 213 14% 18%;
+    --sidebar-ring: 217 100% 59%;
   }
 }
 
@@ -62,21 +62,21 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(222 47% 11%);
+  background: hsl(210 21% 5%);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(215 25% 27%);
+  background: hsl(213 14% 18%);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(217 91% 60%);
+  background: hsl(217 100% 59%);
 }
 
 /* Glassmorphism utility */
 .glass {
-  background: rgba(30, 41, 59, 0.7);
+  background: rgba(27, 31, 36, 0.8);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(46, 125, 255, 0.2);
 }
