@@ -1,0 +1,180 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import {
+  Menu,
+  X,
+  ChevronDown,
+  Zap,
+  Trophy,
+  BarChart3,
+  Users,
+  TrendingUp,
+  BookOpen,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const navItems = [
+  {
+    label: "NBA",
+    href: "/nba",
+    icon: Trophy,
+    children: [
+      { label: "News & Analysis", href: "/nba" },
+      { label: "Scores", href: "/scores?league=nba" },
+      { label: "Standings", href: "/scores?league=nba#standings" },
+    ],
+  },
+  {
+    label: "NFL",
+    href: "/nfl",
+    icon: Trophy,
+    children: [
+      { label: "News & Analysis", href: "/nfl" },
+      { label: "Scores", href: "/scores?league=nfl" },
+      { label: "Standings", href: "/scores?league=nfl#standings" },
+    ],
+  },
+  { label: "Scores", href: "/scores", icon: BarChart3 },
+  { label: "Community", href: "/community", icon: Users },
+  { label: "Betting", href: "/betting", icon: TrendingUp },
+  { label: "Fantasy", href: "/fantasy", icon: BookOpen },
+];
+
+export function SiteHeader() {
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  return (
+    <header className="sticky top-0 z-50 glass">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+            <Zap className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-black uppercase leading-none tracking-wider text-foreground">
+              The Athlete
+            </span>
+            <span className="text-xs font-bold uppercase leading-none tracking-widest text-primary">
+              Insider
+            </span>
+          </div>
+        </Link>
+
+        {/* Desktop Nav */}
+        <nav className="hidden items-center gap-1 lg:flex">
+          {navItems.map((item) => (
+            <div
+              key={item.label}
+              className="relative"
+              onMouseEnter={() =>
+                item.children && setOpenDropdown(item.label)
+              }
+              onMouseLeave={() => setOpenDropdown(null)}
+            >
+              <Link
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-1 rounded-md px-3 py-2 text-sm font-bold uppercase tracking-wide transition-colors",
+                  pathname === item.href || pathname.startsWith(item.href + "/")
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {item.label}
+                {item.children && <ChevronDown className="h-3 w-3" />}
+              </Link>
+
+              {item.children && openDropdown === item.label && (
+                <div className="absolute left-0 top-full z-50 min-w-48 rounded-lg border border-border bg-card p-2 shadow-2xl">
+                  {item.children.map((child) => (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      className="block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                    >
+                      {child.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </nav>
+
+        {/* Desktop CTA */}
+        <div className="hidden items-center gap-3 lg:flex">
+          <Link
+            href="/newsletter"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Subscribe
+          </Link>
+        </div>
+
+        {/* Mobile menu toggle */}
+        <button
+          type="button"
+          className="rounded-md p-2 text-foreground lg:hidden"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+        >
+          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
+      </div>
+
+      {/* Mobile Nav */}
+      {mobileOpen && (
+        <div className="border-t border-border bg-card lg:hidden">
+          <nav className="mx-auto max-w-7xl px-4 py-4">
+            {navItems.map((item) => (
+              <div key={item.label}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md px-3 py-3 text-sm font-bold uppercase tracking-wide",
+                    pathname === item.href
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  )}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+                {item.children && (
+                  <div className="ml-10 flex flex-col gap-1">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        className="px-3 py-2 text-sm text-muted-foreground"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+            <div className="mt-4 border-t border-border pt-4">
+              <Link
+                href="/newsletter"
+                className="block rounded-lg bg-primary px-4 py-3 text-center text-sm font-bold uppercase tracking-wide text-primary-foreground"
+                onClick={() => setMobileOpen(false)}
+              >
+                Subscribe to Newsletter
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+}
