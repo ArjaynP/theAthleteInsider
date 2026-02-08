@@ -7,7 +7,6 @@ import {
   Menu,
   X,
   ChevronDown,
-  Zap,
   Trophy,
   BarChart3,
   Users,
@@ -15,6 +14,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand-logo";
 
 const navItems = [
   {
@@ -52,15 +52,13 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 glass">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <Zap className="h-5 w-5 text-primary-foreground" />
-          </div>
+        <Link href="/" className="flex items-center gap-3 group">
+          <BrandLogo className="h-10 w-10 shadow-lg shadow-primary/20 transition-transform group-hover:scale-105" />
           <div className="flex flex-col">
             <span className="text-sm font-black uppercase leading-none tracking-wider text-foreground">
               The Athlete
             </span>
-            <span className="text-xs font-bold uppercase leading-none tracking-widest text-primary">
+            <span className="text-[10px] font-bold uppercase leading-none tracking-[0.2em] text-primary mt-0.5">
               Insider
             </span>
           </div>
