@@ -84,23 +84,26 @@ function StatCard({ category }: { category: StatCategory }) {
 export default function NFLStatsPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <SiteHeader />
-      <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-1.5 rounded-full bg-primary" />
-              <div>
-                <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
-                  NFL Player Stats
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Current season league leaders
-                </p>
-              </div>
+        <SiteHeader />
+        <main className="flex-1">
+            <div className="mx-auto max-w-7xl px-4 py-8">
+            {/* Header */}
+            <div className="mb-8">
+                <div className="flex items-center gap-3">
+                <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-sm font-black text-primary-foreground shadow-md">
+                    <img src="/nfl-logo-2.png" alt="NFL Logo" />
+                </div>
+                <div className="h-10 w-1.5 rounded-full bg-primary" />
+                <div>
+                    <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
+                    NFL Player Stats
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
+                    Current season league leaders
+                    </p>
+                </div>
+                </div>
             </div>
-          </div>
 
           {/* Stats Sections */}
           <div className="space-y-16">

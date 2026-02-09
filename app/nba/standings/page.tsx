@@ -211,6 +211,9 @@ export default function NBAStandingsPage() {
         <div className="mx-auto max-w-7xl px-4 py-8">
           {/* Header */}
           <div className="mb-8 flex items-center gap-3">
+            <div className="flex h-14 w-14 items-center justify-center text-sm font-black text-primary-foreground shadow-md">
+                <img src="/nba-logo-1.png" alt="NBA Logo" />
+            </div>
             <div className="h-10 w-1.5 rounded-full bg-primary" />
             <div>
               <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">

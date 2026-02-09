@@ -155,38 +155,41 @@ function StandingsTable({
 }
 
 export default function MLBStandingsPage() {
-  return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader />
-      <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-8">
-          {/* Header */}
-          <div className="mb-8 flex items-center gap-3">
-            <div className="h-10 w-1.5 rounded-full bg-primary" />
-            <div>
-              <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
-                MLB Standings
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Current MLB standings
-              </p>
+    return (
+        <div className="flex min-h-screen flex-col">
+        <SiteHeader />
+        <main className="flex-1">
+            <div className="mx-auto max-w-7xl px-4 py-8">
+            {/* Header */}
+            <div className="mb-8 flex items-center gap-3">
+                <div className="flex h-14 w-14 items-center bg-primary text-sm font-black text-primary-foreground shadow-md">
+                    <img src="/mlb-logo.png" alt="MLB Logo" />
+                </div>
+                <div className="h-10 w-1.5 rounded-full bg-primary" />
+                <div>
+                <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
+                    MLB Standings
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                    Current MLB standings
+                </p>
+                </div>
             </div>
-          </div>
 
-          {/* Standings */}
-          <div className="flex flex-col gap-6">
-            <StandingsTable
-              standings={mlbStandings.filter((s) => s.conference === "AL")}
-              title="American League"
-            />
-            <StandingsTable
-              standings={mlbStandings.filter((s) => s.conference === "NL")}
-              title="National League"
-            />
-          </div>
+            {/* Standings */}
+            <div className="flex flex-col gap-6">
+                <StandingsTable
+                standings={mlbStandings.filter((s) => s.conference === "AL")}
+                title="American League"
+                />
+                <StandingsTable
+                standings={mlbStandings.filter((s) => s.conference === "NL")}
+                title="National League"
+                />
+            </div>
+            </div>
+        </main>
+        <SiteFooter />
         </div>
-      </main>
-      <SiteFooter />
-    </div>
-  );
+    );
 }

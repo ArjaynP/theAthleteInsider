@@ -83,103 +83,106 @@ function StatCard({ category }: { category: StatCategory }) {
 }
 
 export default function MLBStatsPage() {
-  const [activeTab, setActiveTab] = useState<"hitting" | "pitching">("hitting");
+    const [activeTab, setActiveTab] = useState<"hitting" | "pitching">("hitting");
 
-  const hittingStats = ["runs", "hits", "home_runs", "rbi", "stolen_bases", "batting_avg"];
-  
-  const pitchingSections = [
-    { title: "Record & Run Prevention", ids: ["wins", "losses", "era"] },
-    { title: "Usage / Workload", ids: ["games", "games_started", "complete_games", "shutouts", "saves", "save_opportunities", "innings_pitched"] },
-    { title: "Hits & Runs Allowed", ids: ["hits_allowed", "runs_allowed", "earned_runs", "home_runs_allowed"] },
-    { title: "Baserunners & Command", ids: ["hit_by_pitch", "walks", "strikeouts", "whip", "opp_batting_avg"] },
-  ];
+    const hittingStats = ["runs", "hits", "home_runs", "rbi", "stolen_bases", "batting_avg"];
+    
+    const pitchingSections = [
+        { title: "Record & Run Prevention", ids: ["wins", "losses", "era"] },
+        { title: "Usage / Workload", ids: ["games", "games_started", "complete_games", "shutouts", "saves", "save_opportunities", "innings_pitched"] },
+        { title: "Hits & Runs Allowed", ids: ["hits_allowed", "runs_allowed", "earned_runs", "home_runs_allowed"] },
+        { title: "Baserunners & Command", ids: ["hit_by_pitch", "walks", "strikeouts", "whip", "opp_batting_avg"] },
+    ];
 
-  return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader />
-      <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-1.5 rounded-full bg-primary" />
-              <div>
-                <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
-                  MLB Player Stats
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Current season league leaders
-                </p>
-              </div>
+    return (
+        <div className="flex min-h-screen flex-col">
+        <SiteHeader />
+        <main className="flex-1">
+            <div className="mx-auto max-w-7xl px-4 py-8">
+            {/* Header */}
+            <div className="mb-8">
+                <div className="flex items-center gap-3">
+                <div className="flex h-14 w-14 items-center bg-primary text-sm font-black text-primary-foreground shadow-md">
+                    <img src="/mlb-logo.png" alt="MLB Logo" />
+                </div>
+                <div className="h-10 w-1.5 rounded-full bg-primary" />
+                <div>
+                    <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
+                    MLB Player Stats
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
+                    Current season league leaders
+                    </p>
+                </div>
+                </div>
             </div>
-          </div>
 
-          {/* Segmented Control */}
-          <div className="mb-8 flex justify-center">
-            <div className="inline-flex rounded-lg border border-border bg-card p-1">
-              <button
-                onClick={() => setActiveTab("hitting")}
-                className={cn(
-                  "rounded-md px-6 py-2 text-sm font-bold uppercase tracking-wide transition-all",
-                  activeTab === "hitting"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Hitting
-              </button>
-              <button
-                onClick={() => setActiveTab("pitching")}
-                className={cn(
-                  "rounded-md px-6 py-2 text-sm font-bold uppercase tracking-wide transition-all",
-                  activeTab === "pitching"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Pitching
-              </button>
+            {/* Segmented Control */}
+            <div className="mb-8 flex justify-center">
+                <div className="inline-flex rounded-lg border border-border bg-card p-1">
+                <button
+                    onClick={() => setActiveTab("hitting")}
+                    className={cn(
+                    "rounded-md px-6 py-2 text-sm font-bold uppercase tracking-wide transition-all",
+                    activeTab === "hitting"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                >
+                    Hitting
+                </button>
+                <button
+                    onClick={() => setActiveTab("pitching")}
+                    className={cn(
+                    "rounded-md px-6 py-2 text-sm font-bold uppercase tracking-wide transition-all",
+                    activeTab === "pitching"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                >
+                    Pitching
+                </button>
+                </div>
             </div>
-          </div>
 
-          {/* Stats Grid */}
-          {activeTab === "hitting" ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {hittingStats.map((id) => {
-                const category = mlbPlayerStats.find((s) => s.id === id);
-                if (!category) return null;
-                return <StatCard key={category.id} category={category} />;
-              })}
+            {/* Stats Grid */}
+            {activeTab === "hitting" ? (
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {hittingStats.map((id) => {
+                    const category = mlbPlayerStats.find((s) => s.id === id);
+                    if (!category) return null;
+                    return <StatCard key={category.id} category={category} />;
+                })}
+                </div>
+            ) : (
+                <div className="space-y-16">
+                {pitchingSections.map((section) => (
+                    <section key={section.title}>
+                    <div className="mb-6 flex items-center gap-2 border-b border-border pb-2">
+                        <h2 className="text-xl font-black uppercase tracking-tight text-foreground">
+                        {section.title}
+                        </h2>
+                    </div>
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {section.ids.map((id) => {
+                        const category = mlbPlayerStats.find((s) => s.id === id);
+                        if (!category) return null;
+                        return <StatCard key={category.id} category={category} />;
+                        })}
+                    </div>
+                    </section>
+                ))}
+                </div>
+            )}
+            
+            <div className="mt-12 rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
+                <TrendingUp className="mx-auto mb-4 h-8 w-8 text-primary opacity-50" />
+                <h3 className="mb-2 text-lg font-bold text-foreground">More Stats Coming Soon</h3>
+                <p>Advanced metrics, team stats, and historical data are currently being integrated.</p>
             </div>
-          ) : (
-            <div className="space-y-16">
-              {pitchingSections.map((section) => (
-                <section key={section.title}>
-                  <div className="mb-6 flex items-center gap-2 border-b border-border pb-2">
-                    <h2 className="text-xl font-black uppercase tracking-tight text-foreground">
-                      {section.title}
-                    </h2>
-                  </div>
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {section.ids.map((id) => {
-                      const category = mlbPlayerStats.find((s) => s.id === id);
-                      if (!category) return null;
-                      return <StatCard key={category.id} category={category} />;
-                    })}
-                  </div>
-                </section>
-              ))}
             </div>
-          )}
-          
-          <div className="mt-12 rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
-            <TrendingUp className="mx-auto mb-4 h-8 w-8 text-primary opacity-50" />
-            <h3 className="mb-2 text-lg font-bold text-foreground">More Stats Coming Soon</h3>
-            <p>Advanced metrics, team stats, and historical data are currently being integrated.</p>
-          </div>
+        </main>
+        <SiteFooter />
         </div>
-      </main>
-      <SiteFooter />
-    </div>
-  );
+    );
 }

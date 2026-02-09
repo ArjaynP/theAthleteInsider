@@ -32,7 +32,7 @@ function PowerRankingsCard({ rankings }: { rankings: PowerRanking[] }) {
       </div>
       <div className="flex flex-col gap-3">
         {rankings.map((team) => {
-          const diff = team.previousRank - team.rank;
+          const diff = team.lastWeek - team.rank;
           return (
             <div
               key={team.abbreviation}
@@ -191,6 +191,9 @@ export function LeaguePageContent({ league }: LeaguePageContentProps) {
       {/* League Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3">
+          <div className="flex h-14 w-14 items-center justify-center text-sm font-black text-primary-foreground shadow-md">
+            {league === "NBA" ? <img src="/nba-logo-1.png" alt="NBA Logo" /> : league === "NFL" ? <img src="/nfl-logo-2.png" alt="NFL Logo" /> : <img src="/mlb-logo.png" alt="MLB Logo" />}
+          </div>
           <div className="h-10 w-1.5 rounded-full bg-primary" />
           <div>
             <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
