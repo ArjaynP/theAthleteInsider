@@ -177,7 +177,7 @@ export default function MLBStandingsPage() {
             </div>
 
             {/* Standings */}
-            <div className="flex flex-col gap-6">
+            <div className="mb-12 flex flex-col gap-6">
                 <StandingsTable
                 standings={mlbStandings.filter((s) => s.conference === "AL")}
                 title="American League"
@@ -186,6 +186,41 @@ export default function MLBStandingsPage() {
                 standings={mlbStandings.filter((s) => s.conference === "NL")}
                 title="National League"
                 />
+            </div>
+
+            {/* Divisional Standings */}
+            <div className="mb-8">
+                <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
+                Divisional Standings
+                </h2>
+                <div className="grid gap-6 lg:grid-cols-2">
+                {/* AL Divisions */}
+                <StandingsTable
+                    standings={mlbStandings.filter((s) => s.division === "East" && s.conference === "AL")}
+                    title="AL East"
+                />
+                <StandingsTable
+                    standings={mlbStandings.filter((s) => s.division === "Central" && s.conference === "AL")}
+                    title="AL Central"
+                />
+                <StandingsTable
+                    standings={mlbStandings.filter((s) => s.division === "West" && s.conference === "AL")}
+                    title="AL West"
+                />
+                {/* NL Divisions */}
+                <StandingsTable
+                    standings={mlbStandings.filter((s) => s.division === "East" && s.conference === "NL")}
+                    title="NL East"
+                />
+                <StandingsTable
+                    standings={mlbStandings.filter((s) => s.division === "Central" && s.conference === "NL")}
+                    title="NL Central"
+                />
+                <StandingsTable
+                    standings={mlbStandings.filter((s) => s.division === "West" && s.conference === "NL")}
+                    title="NL West"
+                />
+                </div>
             </div>
             </div>
         </main>

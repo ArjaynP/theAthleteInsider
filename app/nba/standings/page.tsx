@@ -231,7 +231,7 @@ export default function NBAStandingsPage() {
           </div>
 
           {/* Standings */}
-          <div className="flex flex-col gap-6">
+          <div className="mb-12 flex flex-col gap-6">
             <StandingsTable
               standings={nbaStandings.filter((s) => s.conference === "East")}
               title="Eastern Conference"
@@ -240,6 +240,41 @@ export default function NBAStandingsPage() {
               standings={nbaStandings.filter((s) => s.conference === "West")}
               title="Western Conference"
             />
+          </div>
+
+          {/* Divisional Standings */}
+          <div className="mb-8">
+            <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
+              Divisional Standings
+            </h2>
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* East Divisions */}
+              <StandingsTable
+                standings={nbaStandings.filter((s) => s.division === "Atlantic")}
+                title="Atlantic Division"
+              />
+              <StandingsTable
+                standings={nbaStandings.filter((s) => s.division === "Central")}
+                title="Central Division"
+              />
+              <StandingsTable
+                standings={nbaStandings.filter((s) => s.division === "Southeast")}
+                title="Southeast Division"
+              />
+              {/* West Divisions */}
+              <StandingsTable
+                standings={nbaStandings.filter((s) => s.division === "Pacific")}
+                title="Pacific Division"
+              />
+              <StandingsTable
+                standings={nbaStandings.filter((s) => s.division === "Northwest")}
+                title="Northwest Division"
+              />
+              <StandingsTable
+                standings={nbaStandings.filter((s) => s.division === "Southwest")}
+                title="Southwest Division"
+              />
+            </div>
           </div>
         </div>
       </main>

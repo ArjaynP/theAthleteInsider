@@ -231,7 +231,7 @@ export default function NFLStandingsPage() {
           </div>
 
           {/* Standings */}
-          <div className="flex flex-col gap-6">
+          <div className="mb-12 flex flex-col gap-6">
             <StandingsTable
               standings={nflStandings.filter((s) => s.conference === "AFC")}
               title="AFC"
@@ -240,6 +240,49 @@ export default function NFLStandingsPage() {
               standings={nflStandings.filter((s) => s.conference === "NFC")}
               title="NFC"
             />
+          </div>
+
+          {/* Divisional Standings */}
+          <div className="mb-8">
+            <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
+              Divisional Standings
+            </h2>
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* AFC Divisions */}
+              <StandingsTable
+                standings={nflStandings.filter((s) => s.division === "East" && s.conference === "AFC")}
+                title="AFC East"
+              />
+              <StandingsTable
+                standings={nflStandings.filter((s) => s.division === "North" && s.conference === "AFC")}
+                title="AFC North"
+              />
+              <StandingsTable
+                standings={nflStandings.filter((s) => s.division === "South" && s.conference === "AFC")}
+                title="AFC South"
+              />
+              <StandingsTable
+                standings={nflStandings.filter((s) => s.division === "West" && s.conference === "AFC")}
+                title="AFC West"
+              />
+              {/* NFC Divisions */}
+              <StandingsTable
+                standings={nflStandings.filter((s) => s.division === "East" && s.conference === "NFC")}
+                title="NFC East"
+              />
+              <StandingsTable
+                standings={nflStandings.filter((s) => s.division === "North" && s.conference === "NFC")}
+                title="NFC North"
+              />
+              <StandingsTable
+                standings={nflStandings.filter((s) => s.division === "South" && s.conference === "NFC")}
+                title="NFC South"
+              />
+              <StandingsTable
+                standings={nflStandings.filter((s) => s.division === "West" && s.conference === "NFC")}
+                title="NFC West"
+              />
+            </div>
           </div>
         </div>
       </main>
