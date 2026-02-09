@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { nflStandings, type TeamStanding } from "@/lib/mock-data";
+import { nflStandings, nflPowerRankings, type TeamStanding, type PowerRanking } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { ArrowUpDown, Trophy } from "lucide-react";
+import { ArrowUpDown, Trophy, TrendingUp, TrendingDown, Minus, Award } from "lucide-react";
 
 type SortKey = "wins" | "losses" | "pct" | "team";
 
@@ -65,7 +65,7 @@ function StandingsTable({
                 <button
                   type="button"
                   onClick={() => handleSort("wins")}
-                  className="flex items-center gap-1"
+                  className="flex items-center justify-center gap-1 w-full"
                 >
                   W
                   <ArrowUpDown className="h-3 w-3" />
@@ -75,7 +75,7 @@ function StandingsTable({
                 <button
                   type="button"
                   onClick={() => handleSort("losses")}
-                  className="flex items-center gap-1"
+                  className="flex items-center justify-center gap-1 w-full"
                 >
                   L
                   <ArrowUpDown className="h-3 w-3" />
@@ -85,7 +85,7 @@ function StandingsTable({
                 <button
                   type="button"
                   onClick={() => handleSort("pct")}
-                  className="flex items-center gap-1"
+                  className="flex items-center justify-center gap-1 w-full"
                 >
                   PCT
                   <ArrowUpDown className="h-3 w-3" />
@@ -154,6 +154,55 @@ function StandingsTable({
   );
 }
 
+function PowerRankings({ rankings }: { rankings: PowerRanking[] }) {
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="flex items-center gap-2 border-b border-border px-5 py-4">
+        <Award className="h-5 w-5 text-primary" />
+        <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
+          Power Rankings
+        </h3>
+      </div>
+      <div className="divide-y divide-border">
+        {rankings.map((team) => (
+          <div
+            key={team.abbreviation}
+            className="flex items-center gap-4 p-5 transition-colors hover:bg-secondary/30"
+          >
+            <div className="flex w-12 flex-col items-center">
+              <span className="text-2xl font-black text-foreground">{team.rank}</span>
+              <div className="flex items-center gap-1">
+                {team.trend === "up" && (
+                  <TrendingUp className="h-3 w-3 text-accent" />
+                )}
+                {team.trend === "down" && (
+                  <TrendingDown className="h-3 w-3 text-destructive" />
+                )}
+                {team.trend === "same" && (
+                  <Minus className="h-3 w-3 text-muted-foreground" />
+                )}
+                <span className="text-xs text-muted-foreground">{team.lastWeek}</span>
+              </div>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary text-sm font-black text-foreground">
+              {team.abbreviation}
+            </div>
+            <div className="flex-1">
+              <div className="flex items-baseline justify-between">
+                <h4 className="font-bold text-foreground">{team.team}</h4>
+                <span className="text-sm font-bold tabular-nums text-muted-foreground">
+                  {team.record}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">{team.summary}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function NFLStandingsPage() {
   return (
     <div className="flex min-h-screen flex-col">
@@ -171,6 +220,11 @@ export default function NFLStandingsPage() {
                 Current NFL conference standings
               </p>
             </div>
+          </div>
+
+          {/* Power Rankings */}
+          <div className="mb-8">
+            <PowerRankings rankings={nflPowerRankings} />
           </div>
 
           {/* Standings */}

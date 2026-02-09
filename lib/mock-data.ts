@@ -343,6 +343,44 @@ export const mlbStandings: TeamStanding[] = [
   { rank: 10, team: "Colorado Rockies", abbreviation: "COL", wins: 4, losses: 11, pct: ".267", gb: "8", streak: "L4", conference: "NL", league: "MLB" },
 ];
 
+// ============ POWER RANKINGS ============
+export interface PowerRanking {
+  rank: number;
+  team: string;
+  abbreviation: string;
+  record: string;
+  lastWeek: number;
+  trend: "up" | "down" | "same";
+  summary: string;
+  league: "NBA" | "NFL" | "MLB";
+}
+
+export const nbaPowerRankings: PowerRanking[] = [
+  { rank: 1, team: "Boston Celtics", abbreviation: "BOS", record: "40-13", lastWeek: 1, trend: "same", summary: "Dominant on both ends with league-best defense.", league: "NBA" },
+  { rank: 2, team: "Los Angeles Lakers", abbreviation: "LAL", record: "38-15", lastWeek: 3, trend: "up", summary: "LeBron and AD firing on all cylinders during 7-game win streak.", league: "NBA" },
+  { rank: 3, team: "New York Knicks", abbreviation: "NYK", record: "36-17", lastWeek: 2, trend: "down", summary: "Still elite but showing signs of fatigue in recent games.", league: "NBA" },
+  { rank: 4, team: "Denver Nuggets", abbreviation: "DEN", record: "35-18", lastWeek: 5, trend: "up", summary: "Jokic remains unstoppable as the reigning MVP.", league: "NBA" },
+  { rank: 5, team: "Milwaukee Bucks", abbreviation: "MIL", record: "34-19", lastWeek: 4, trend: "down", summary: "Giannis doing Giannis things but role players inconsistent.", league: "NBA" },
+  { rank: 6, team: "Cleveland Cavaliers", abbreviation: "CLE", record: "34-20", lastWeek: 6, trend: "same", summary: "Balanced attack keeps them in contention.", league: "NBA" },
+  { rank: 7, team: "Dallas Mavericks", abbreviation: "DAL", record: "33-20", lastWeek: 9, trend: "up", summary: "Luka's scoring tear has them surging in the West.", league: "NBA" },
+  { rank: 8, team: "Golden State Warriors", abbreviation: "GSW", record: "32-20", lastWeek: 7, trend: "down", summary: "Curry still cooking but defense needs work.", league: "NBA" },
+  { rank: 9, team: "Phoenix Suns", abbreviation: "PHX", record: "30-22", lastWeek: 8, trend: "down", summary: "Three-game skid raises questions about depth.", league: "NBA" },
+  { rank: 10, team: "Miami Heat", abbreviation: "MIA", record: "28-24", lastWeek: 10, trend: "same", summary: "Butler and Bam keep them competitive in the East.", league: "NBA" },
+];
+
+export const nflPowerRankings: PowerRanking[] = [
+  { rank: 1, team: "Kansas City Chiefs", abbreviation: "KC", record: "16-3", lastWeek: 1, trend: "same", summary: "Mahomes and Reid dynasty continues with 8 straight wins.", league: "NFL" },
+  { rank: 2, team: "Detroit Lions", abbreviation: "DET", record: "15-4", lastWeek: 2, trend: "same", summary: "Most complete team in the NFC with elite offense and defense.", league: "NFL" },
+  { rank: 3, team: "Buffalo Bills", abbreviation: "BUF", record: "14-5", lastWeek: 4, trend: "up", summary: "Josh Allen playing MVP-caliber football down the stretch.", league: "NFL" },
+  { rank: 4, team: "San Francisco 49ers", abbreviation: "SF", record: "13-6", lastWeek: 3, trend: "down", summary: "Injuries piling up but still dangerous playoff contender.", league: "NFL" },
+  { rank: 5, team: "Baltimore Ravens", abbreviation: "BAL", record: "13-6", lastWeek: 6, trend: "up", summary: "Lamar Jackson finding his groove at the perfect time.", league: "NFL" },
+  { rank: 6, team: "Dallas Cowboys", abbreviation: "DAL", record: "12-7", lastWeek: 5, trend: "down", summary: "Defense regressing; playoff concerns mounting.", league: "NFL" },
+  { rank: 7, team: "Philadelphia Eagles", abbreviation: "PHI", record: "12-7", lastWeek: 8, trend: "up", summary: "Jalen Hurts' return has reinvigorated the offense.", league: "NFL" },
+  { rank: 8, team: "Houston Texans", abbreviation: "HOU", record: "12-7", lastWeek: 7, trend: "down", summary: "CJ Stroud impressive but lack playoff experience.", league: "NFL" },
+  { rank: 9, team: "Green Bay Packers", abbreviation: "GB", record: "11-8", lastWeek: 10, trend: "up", summary: "Young team peaking at the right time.", league: "NFL" },
+  { rank: 10, team: "Miami Dolphins", abbreviation: "MIA", record: "11-8", lastWeek: 9, trend: "down", summary: "Cold weather struggles persist heading into playoffs.", league: "NFL" },
+];
+
 // ============ POLLS ============
 export interface Poll {
   id: string;
@@ -534,41 +572,6 @@ export const fantasyPicks: FantasyPick[] = [
   { player: "Tyrese Haliburton", team: "IND", position: "PG", recommendation: "BUY LOW", reason: "Slow start to season but historically heats up post All-Star break", opponent: "vs CHA", projectedPoints: 38.5 },
   { player: "Devin Booker", team: "PHX", position: "SG", recommendation: "SELL HIGH", reason: "Unsustainable shooting splits, regression incoming", opponent: "@ DEN", projectedPoints: 34.2 },
   { player: "Cade Cunningham", team: "DET", position: "PG", recommendation: "STREAM", reason: "Hot streak with 3 straight triple-doubles, great short-term add", opponent: "vs ORL", projectedPoints: 41.8 },
-];
-
-// ============ POWER RANKINGS ============
-export interface PowerRanking {
-  rank: number;
-  team: string;
-  abbreviation: string;
-  previousRank: number;
-  record: string;
-  blurb: string;
-  league: "NBA" | "NFL" | "MLB";
-}
-
-export const nbaPowerRankings: PowerRanking[] = [
-  { rank: 1, team: "Boston Celtics", abbreviation: "BOS", previousRank: 1, record: "40-13", blurb: "Dominant on both ends. The team to beat.", league: "NBA" },
-  { rank: 2, team: "Los Angeles Lakers", abbreviation: "LAL", previousRank: 4, record: "38-15", blurb: "7-game win streak. Chemistry is clicking.", league: "NBA" },
-  { rank: 3, team: "Denver Nuggets", abbreviation: "DEN", previousRank: 2, record: "35-18", blurb: "Jokic doing Jokic things. Bench depth a concern.", league: "NBA" },
-  { rank: 4, team: "New York Knicks", abbreviation: "NYK", previousRank: 3, record: "36-17", blurb: "Physical brand of basketball winning games.", league: "NBA" },
-  { rank: 5, team: "Dallas Mavericks", abbreviation: "DAL", previousRank: 6, record: "33-20", blurb: "Luka in MVP form. Supporting cast stepping up.", league: "NBA" },
-];
-
-export const nflPowerRankings: PowerRanking[] = [
-  { rank: 1, team: "Kansas City Chiefs", abbreviation: "KC", previousRank: 1, record: "16-3", blurb: "Three-peat within reach. Mahomes in GOAT mode.", league: "NFL" },
-  { rank: 2, team: "Detroit Lions", abbreviation: "DET", previousRank: 2, record: "15-4", blurb: "Historic season. Defense carrying the load.", league: "NFL" },
-  { rank: 3, team: "Buffalo Bills", abbreviation: "BUF", previousRank: 3, record: "14-5", blurb: "Josh Allen was robbed of MVP. Elite team.", league: "NFL" },
-  { rank: 4, team: "San Francisco 49ers", abbreviation: "SF", previousRank: 5, record: "13-6", blurb: "Getting healthy at the right time.", league: "NFL" },
-  { rank: 5, team: "Baltimore Ravens", abbreviation: "BAL", previousRank: 4, record: "13-6", blurb: "Lamar is unstoppable when he's on.", league: "NFL" },
-];
-
-export const mlbPowerRankings: PowerRanking[] = [
-  { rank: 1, team: "Los Angeles Dodgers", abbreviation: "LAD", previousRank: 1, record: "12-3", blurb: "Super team living up to the hype.", league: "MLB" },
-  { rank: 2, team: "New York Yankees", abbreviation: "NYY", previousRank: 3, record: "10-5", blurb: "Hitting everything in sight.", league: "MLB" },
-  { rank: 3, team: "Baltimore Orioles", abbreviation: "BAL", previousRank: 2, record: "9-6", blurb: "Young core keeps getting better.", league: "MLB" },
-  { rank: 4, team: "Boston Red Sox", abbreviation: "BOS", previousRank: 5, record: "8-7", blurb: "Surprising everyone early on.", league: "MLB" },
-  { rank: 5, team: "Atlanta Braves", abbreviation: "ATL", previousRank: 4, record: "8-7", blurb: "Looking to bounce back after a slow start.", league: "MLB" },
 ];
 
 // ============ TRENDING TOPICS ============

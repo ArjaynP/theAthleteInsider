@@ -6,7 +6,6 @@ import {
   mlbStandings,
   nbaPowerRankings,
   nflPowerRankings,
-  mlbPowerRankings,
   polls,
   type TeamStanding,
   type PowerRanking,
@@ -179,7 +178,6 @@ export function LeaguePageContent({ league }: LeaguePageContentProps) {
     conferences = ["AFC", "NFC"];
   } else if (league === "MLB") {
     standings = mlbStandings;
-    rankings = mlbPowerRankings;
     conferences = ["AL", "NL"];
   }
 
