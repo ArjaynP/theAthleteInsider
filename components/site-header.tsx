@@ -25,6 +25,7 @@ const navItems = [
       { label: "News & Analysis", href: "/nba" },
       { label: "Scores", href: "/nba/scores" },
       { label: "Standings", href: "/nba/standings" },
+      { label: "Player Stats", href: "/nba/stats" },
     ],
   },
   {

@@ -588,3 +588,93 @@ export const trendingTopics: TrendingTopic[] = [
   { id: "t5", title: "Rookie of the Year", count: "7.1K posts", league: "NBA", hot: false },
   { id: "t6", title: "NFL Draft 2026", count: "6.3K posts", league: "NFL", hot: false },
 ];
+
+// ============ PLAYER STATS ============
+export interface PlayerStatEntry {
+  rank: number;
+  player: string;
+  team: string;
+  value: number;
+}
+
+export interface StatCategory {
+  id: string;
+  label: string;
+  abbreviation: string;
+  leaders: PlayerStatEntry[];
+}
+
+export const nbaPlayerStats: StatCategory[] = [
+  {
+    id: "ppg",
+    label: "Points Per Game",
+    abbreviation: "PPG",
+    leaders: [
+      { rank: 1, player: "Luka Doncic", team: "DAL", value: 34.5 },
+      { rank: 2, player: "Shai Gilgeous-Alexander", team: "OKC", value: 31.2 },
+      { rank: 3, player: "Giannis Antetokounmpo", team: "MIL", value: 30.8 },
+      { rank: 4, player: "Joel Embiid", team: "PHI", value: 30.1 },
+      { rank: 5, player: "Jayson Tatum", team: "BOS", value: 28.5 },
+    ],
+  },
+  {
+    id: "rpg",
+    label: "Rebounds Per Game",
+    abbreviation: "RPG",
+    leaders: [
+      { rank: 1, player: "Domantas Sabonis", team: "SAC", value: 13.8 },
+      { rank: 2, player: "Rudy Gobert", team: "MIN", value: 12.9 },
+      { rank: 3, player: "Nikola Jokic", team: "DEN", value: 12.4 },
+      { rank: 4, player: "Anthony Davis", team: "LAL", value: 12.2 },
+      { rank: 5, player: "Jalen Duren", team: "DET", value: 11.8 },
+    ],
+  },
+  {
+    id: "apg",
+    label: "Assists Per Game",
+    abbreviation: "APG",
+    leaders: [
+      { rank: 1, player: "Tyrese Haliburton", team: "IND", value: 11.2 },
+      { rank: 2, player: "Trae Young", team: "ATL", value: 10.9 },
+      { rank: 3, player: "Luka Doncic", team: "DAL", value: 9.8 },
+      { rank: 4, player: "Nikola Jokic", team: "DEN", value: 9.2 },
+      { rank: 5, player: "James Harden", team: "LAC", value: 8.5 },
+    ],
+  },
+  {
+    id: "3pm",
+    label: "3-Pointers Made",
+    abbreviation: "3PM",
+    leaders: [
+      { rank: 1, player: "Stephen Curry", team: "GSW", value: 4.8 },
+      { rank: 2, player: "Luka Doncic", team: "DAL", value: 4.1 },
+      { rank: 3, player: "Trae Young", team: "ATL", value: 3.5 },
+      { rank: 4, player: "Klay Thompson", team: "DAL", value: 3.4 },
+      { rank: 5, player: "Donovan Mitchell", team: "CLE", value: 3.3 },
+    ],
+  },
+  {
+    id: "bpg",
+    label: "Blocks Per Game",
+    abbreviation: "BPG",
+    leaders: [
+      { rank: 1, player: "Victor Wembanyama", team: "SAS", value: 3.4 },
+      { rank: 2, player: "Walker Kessler", team: "UTA", value: 2.8 },
+      { rank: 3, player: "Chet Holmgren", team: "OKC", value: 2.6 },
+      { rank: 4, player: "Brook Lopez", team: "MIL", value: 2.5 },
+      { rank: 5, player: "Anthony Davis", team: "LAL", value: 2.4 },
+    ],
+  },
+  {
+    id: "spg",
+    label: "Steals Per Game",
+    abbreviation: "SPG",
+    leaders: [
+      { rank: 1, player: "Shai Gilgeous-Alexander", team: "OKC", value: 2.1 },
+      { rank: 2, player: "De'Aaron Fox", team: "SAC", value: 1.9 },
+      { rank: 3, player: "Alex Caruso", team: "CHI", value: 1.8 },
+      { rank: 4, player: "Donovan Mitchell", team: "CLE", value: 1.8 },
+      { rank: 5, player: "Kawhi Leonard", team: "LAC", value: 1.7 },
+    ],
+  },
+];
