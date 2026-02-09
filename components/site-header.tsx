@@ -36,6 +36,7 @@ const navItems = [
       { label: "News & Analysis", href: "/nfl" },
       { label: "Scores", href: "/nfl/scores" },
       { label: "Standings", href: "/nfl/standings" },
+      { label: "Player Stats", href: "/nfl/stats" },
     ],
   },
   {

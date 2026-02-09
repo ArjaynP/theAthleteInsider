@@ -801,3 +801,78 @@ export const nbaPlayerStats: StatCategory[] = [
     ],
   },
 ];
+
+export const nflPlayerStats: StatCategory[] = [
+  {
+    id: "pass_yds",
+    label: "Passing Yards",
+    abbreviation: "PASS YDS",
+    leaders: [
+      { rank: 1, player: "Tua Tagovailoa", team: "MIA", value: 4624 },
+      { rank: 2, player: "Dak Prescott", team: "DAL", value: 4516 },
+      { rank: 3, player: "Jordan Love", team: "GB", value: 4159 },
+      { rank: 4, player: "Baker Mayfield", team: "TB", value: 4044 },
+      { rank: 5, player: "Jared Goff", team: "DET", value: 3934 },
+    ],
+  },
+  {
+    id: "qbr",
+    label: "Quarterback Rating",
+    abbreviation: "QBR",
+    leaders: [
+      { rank: 1, player: "Brock Purdy", team: "SF", value: 113.0 },
+      { rank: 2, player: "Dak Prescott", team: "DAL", value: 105.9 },
+      { rank: 3, player: "Lamar Jackson", team: "BAL", value: 102.7 },
+      { rank: 4, player: "Jared Goff", team: "DET", value: 97.1 },
+      { rank: 5, player: "Tua Tagovailoa", team: "MIA", value: 101.5 },
+    ],
+  },
+  {
+    id: "rush_yds",
+    label: "Rushing Yards",
+    abbreviation: "RUSH YDS",
+    leaders: [
+      { rank: 1, player: "Christian McCaffrey", team: "SF", value: 1459 },
+      { rank: 2, player: "Kyren Williams", team: "LAR", value: 1144 },
+      { rank: 3, player: "Raheem Mostert", team: "MIA", value: 1012 },
+      { rank: 4, player: "Derrick Henry", team: "BAL", value: 1325 },
+      { rank: 5, player: "De'Von Achane", team: "MIA", value: 800 },
+    ],
+  },
+  {
+    id: "tackles",
+    label: "Total Tackles",
+    abbreviation: "TACKLES",
+    leaders: [
+      { rank: 1, player: "Bobby Okereke", team: "NYG", value: 149 },
+      { rank: 2, player: "Zaire Franklin", team: "IND", value: 145 },
+      { rank: 3, player: "Foyesade Oluokun", team: "JAX", value: 144 },
+      { rank: 4, player: "Roquan Smith", team: "BAL", value: 158 },
+      { rank: 5, player: "Fred Warner", team: "SF", value: 132 },
+    ],
+  },
+  {
+    id: "sacks",
+    label: "Sacks",
+    abbreviation: "SACKS",
+    leaders: [
+      { rank: 1, player: "T.J. Watt", team: "PIT", value: 19.0 },
+      { rank: 2, player: "Myles Garrett", team: "CLE", value: 14.0 },
+      { rank: 3, player: "Danielle Hunter", team: "HOU", value: 12.5 },
+      { rank: 4, player: "Maxx Crosby", team: "LV", value: 14.5 },
+      { rank: 5, player: "Micah Parsons", team: "DAL", value: 14.0 },
+    ],
+  },
+  {
+    id: "interceptions",
+    label: "Interceptions",
+    abbreviation: "INT",
+    leaders: [
+      { rank: 1, player: "DaRon Bland", team: "DAL", value: 9 },
+      { rank: 2, player: "Brian Branch", team: "DET", value: 6 },
+      { rank: 3, player: "Kyle Hamilton", team: "BAL", value: 4 },
+      { rank: 4, player: "C.J. Gardner-Johnson", team: "DET", value: 6 },
+      { rank: 5, player: "Xavier McKinney", team: "GB", value: 8 },
+    ],
+  },
+];
