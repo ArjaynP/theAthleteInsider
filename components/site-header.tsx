@@ -47,6 +47,7 @@ const navItems = [
       { label: "News & Analysis", href: "/mlb" },
       { label: "Scores", href: "/mlb/scores" },
       { label: "Standings", href: "/mlb/standings" },
+      { label: "Player Stats", href: "/mlb/stats" },
     ],
   },
   { label: "Scores", href: "/scores", icon: BarChart3 },
