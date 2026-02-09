@@ -102,10 +102,29 @@ export default function NBAStatsPage() {
             </div>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {nbaPlayerStats.map((category) => (
-              <StatCard key={category.id} category={category} />
+          {/* Stats Sections */}
+          <div className="space-y-16">
+            {[
+              { title: "Scoring", ids: ["ppg", "3pm", "fg_pct", "3p_pct", "ft_pct"] },
+              { title: "Playmaking", ids: ["apg", "tov", "ast_to"] },
+              { title: "Defense", ids: ["bpg", "spg", "pf"] },
+              { title: "Rebounding", ids: ["rpg", "oreb", "dreb"] },
+              { title: "Playing Time", ids: ["mpg", "gp"] },
+            ].map((section) => (
+              <section key={section.title}>
+                <div className="mb-6 flex items-center gap-2 border-b border-border pb-2">
+                  <h2 className="text-xl font-black uppercase tracking-tight text-foreground">
+                    {section.title}
+                  </h2>
+                </div>
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {section.ids.map((id) => {
+                    const category = nbaPlayerStats.find((s) => s.id === id);
+                    if (!category) return null;
+                    return <StatCard key={category.id} category={category} />;
+                  })}
+                </div>
+              </section>
             ))}
           </div>
           
