@@ -10,13 +10,13 @@ import { FanPulse } from "@/components/community/fan-pulse";
 import { PollWidget } from "@/components/poll-widget";
 import { polls } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { Users, Brain, Trophy, MessageSquare, Activity } from "lucide-react";
+import { Users } from "lucide-react";
 
 const tabs = [
-  { id: "trivia", label: "Daily Trivia", icon: Brain },
-  { id: "leaderboard", label: "Leaderboard", icon: Trophy },
-  { id: "debates", label: "Fan Debates", icon: MessageSquare },
-  { id: "pulse", label: "Fan Pulse", icon: Activity },
+  { id: "trivia", label: "Daily Trivia" },
+  { id: "leaderboard", label: "Leaderboard" },
+  { id: "debates", label: "Fan Debates" },
+  { id: "pulse", label: "Fan Pulse" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
@@ -56,8 +56,7 @@ export default function CommunityPage() {
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <tab.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>

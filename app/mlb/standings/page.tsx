@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { mlbStandings, type TeamStanding } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { ArrowUpDown, Trophy } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 
 type SortKey = "wins" | "losses" | "pct" | "team";
 
@@ -39,7 +39,6 @@ function StandingsTable({
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="flex items-center gap-2 border-b border-border px-5 py-4">
-        <Trophy className="h-5 w-5 text-amber" />
         <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
           {title}
         </h3>

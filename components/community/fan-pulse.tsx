@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Activity, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface TeamSentiment {
   team: string;
@@ -57,7 +56,6 @@ export function FanPulse() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-3">
-        <Activity className="h-5 w-5 text-primary" />
         <h2 className="text-lg font-black uppercase text-foreground">
           Fan Pulse - Live Sentiment Tracker
         </h2>
@@ -92,7 +90,6 @@ export function FanPulse() {
       {/* Sentiment bars */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="flex items-center gap-2 border-b border-border px-5 py-4">
-          <Activity className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
             All Teams
           </h3>
@@ -119,13 +116,6 @@ export function FanPulse() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    {team.trend === "up" ? (
-                      <TrendingUp className="h-3 w-3 text-accent" />
-                    ) : team.trend === "down" ? (
-                      <TrendingDown className="h-3 w-3 text-destructive" />
-                    ) : (
-                      <Minus className="h-3 w-3 text-muted-foreground" />
-                    )}
                     <span
                       className={cn(
                         "text-sm font-black tabular-nums",

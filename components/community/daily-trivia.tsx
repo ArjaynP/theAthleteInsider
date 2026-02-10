@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { quizQuestions } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { Brain, CheckCircle2, XCircle, Zap, RotateCcw } from "lucide-react";
 
 export function DailyTrivia() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -57,7 +56,6 @@ export function DailyTrivia() {
     return (
       <div className="rounded-xl border border-border bg-card p-8 text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-          <Brain className="h-8 w-8 text-primary" />
         </div>
         <h2 className="mb-2 text-3xl font-black uppercase text-foreground">
           Quiz Complete!
@@ -82,11 +80,7 @@ export function DailyTrivia() {
                   : "bg-destructive/20 text-destructive"
               )}
             >
-              {correct ? (
-                <CheckCircle2 className="h-5 w-5" />
-              ) : (
-                <XCircle className="h-5 w-5" />
-              )}
+              {correct ? "✓" : "✗"}
             </div>
           ))}
         </div>
@@ -96,7 +90,6 @@ export function DailyTrivia() {
           onClick={handleRestart}
           className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-bold uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90"
         >
-          <RotateCcw className="h-4 w-4" />
           Play Again
         </button>
       </div>
@@ -109,7 +102,6 @@ export function DailyTrivia() {
       <div className="flex items-center justify-between border-b border-border px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
-            <Brain className="h-5 w-5 text-primary" />
           </div>
           <div>
             <h2 className="text-lg font-black uppercase text-foreground">
@@ -123,7 +115,6 @@ export function DailyTrivia() {
         <div className="flex items-center gap-4">
           {streak > 1 && (
             <div className="flex items-center gap-1 rounded-lg bg-amber/20 px-3 py-1">
-              <Zap className="h-4 w-4 text-amber" />
               <span className="text-sm font-black text-amber">
                 {streak} streak
               </span>
@@ -198,12 +189,12 @@ export function DailyTrivia() {
                 {option}
               </span>
               {hasAnswered && i === question.correctAnswer && (
-                <CheckCircle2 className="ml-auto h-5 w-5 text-green-600" />
+                <span className="ml-auto text-lg text-green-600">✓</span>
               )}
               {hasAnswered &&
                 i === selected &&
                 i !== question.correctAnswer && (
-                  <XCircle className="ml-auto h-5 w-5 text-destructive" />
+                  <span className="ml-auto text-lg text-destructive">✗</span>
                 )}
             </button>
           ))}

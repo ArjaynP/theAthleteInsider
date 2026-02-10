@@ -2,7 +2,6 @@
 
 import { leaderboard } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { Trophy, Flame, Target, Medal } from "lucide-react";
 
 export function PredictionLeaderboard() {
   const top3 = leaderboard.slice(0, 3);
@@ -15,7 +14,6 @@ export function PredictionLeaderboard() {
         {/* 2nd Place */}
         <div className="flex flex-col items-center rounded-xl border border-border bg-card p-5 pt-8">
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-            <Medal className="h-6 w-6 text-muted-foreground" />
           </div>
           <span className="text-2xl font-black text-muted-foreground">2</span>
           <p className="mt-1 text-center text-sm font-bold text-foreground">
@@ -25,7 +23,6 @@ export function PredictionLeaderboard() {
             {top3[1].score.toLocaleString()} pts
           </p>
           <div className="mt-2 flex items-center gap-1">
-            <Flame className="h-3 w-3 text-amber" />
             <span className="text-xs font-bold text-amber">
               {top3[1].streak} streak
             </span>
@@ -35,7 +32,6 @@ export function PredictionLeaderboard() {
         {/* 1st Place */}
         <div className="flex flex-col items-center rounded-xl border border-amber/30 bg-amber/5 p-5 pt-4">
           <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-amber/20">
-            <Trophy className="h-7 w-7 text-amber" />
           </div>
           <span className="text-3xl font-black text-amber">1</span>
           <p className="mt-1 text-center text-sm font-bold text-foreground">
@@ -45,13 +41,11 @@ export function PredictionLeaderboard() {
             {top3[0].score.toLocaleString()} pts
           </p>
           <div className="mt-2 flex items-center gap-1">
-            <Flame className="h-3 w-3 text-amber" />
             <span className="text-xs font-bold text-amber">
               {top3[0].streak} streak
             </span>
           </div>
           <div className="mt-2 flex items-center gap-1">
-            <Target className="h-3 w-3 text-accent" />
             <span className="text-xs font-bold text-accent">
               {Math.round(
                 (top3[0].correctPicks / top3[0].totalPicks) * 100
@@ -64,7 +58,6 @@ export function PredictionLeaderboard() {
         {/* 3rd Place */}
         <div className="flex flex-col items-center rounded-xl border border-border bg-card p-5 pt-8">
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-            <Medal className="h-6 w-6 text-muted-foreground" />
           </div>
           <span className="text-2xl font-black text-muted-foreground">3</span>
           <p className="mt-1 text-center text-sm font-bold text-foreground">
@@ -74,7 +67,6 @@ export function PredictionLeaderboard() {
             {top3[2].score.toLocaleString()} pts
           </p>
           <div className="mt-2 flex items-center gap-1">
-            <Flame className="h-3 w-3 text-amber" />
             <span className="text-xs font-bold text-amber">
               {top3[2].streak} streak
             </span>
@@ -85,7 +77,6 @@ export function PredictionLeaderboard() {
       {/* Full Leaderboard Table */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="flex items-center gap-2 border-b border-border px-5 py-4">
-          <Trophy className="h-5 w-5 text-amber" />
           <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
             Global Leaderboard
           </h3>
@@ -148,9 +139,6 @@ export function PredictionLeaderboard() {
                     </td>
                     <td className="px-5 py-3 text-center">
                       <div className="inline-flex items-center gap-1">
-                        {entry.streak > 0 && (
-                          <Flame className="h-3 w-3 text-amber" />
-                        )}
                         <span className="text-sm font-bold text-foreground">
                           {entry.streak}
                         </span>

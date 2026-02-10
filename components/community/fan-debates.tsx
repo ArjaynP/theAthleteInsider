@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ThumbsUp, ThumbsDown, MessageSquare, Flame } from "lucide-react";
 
 interface Debate {
   id: string;
@@ -151,7 +150,7 @@ export function FanDebates() {
                 )}
                 aria-label="Upvote"
               >
-                <ThumbsUp className="h-4 w-4" />
+                ▲
               </button>
               <span
                 className={cn(
@@ -176,7 +175,7 @@ export function FanDebates() {
                 )}
                 aria-label="Downvote"
               >
-                <ThumbsDown className="h-4 w-4" />
+                ▼
               </button>
             </div>
 
@@ -188,7 +187,6 @@ export function FanDebates() {
                 </span>
                 {debate.hot && (
                   <span className="flex items-center gap-1 rounded bg-amber/20 px-2 py-0.5">
-                    <Flame className="h-3 w-3 text-amber" />
                     <span className="text-[10px] font-bold uppercase tracking-widest text-amber">
                       Hot
                     </span>
@@ -206,7 +204,6 @@ export function FanDebates() {
                   {debate.author}
                 </span>
                 <span className="flex items-center gap-1">
-                  <MessageSquare className="h-3 w-3" />
                   {debate.comments} comments
                 </span>
               </div>

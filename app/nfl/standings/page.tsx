@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { nflStandings, nflPowerRankings, type TeamStanding, type PowerRanking } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { ArrowUpDown, Trophy, TrendingUp, TrendingDown, Minus, Award } from "lucide-react";
+import { ArrowUpDown, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 type SortKey = "wins" | "losses" | "pct" | "team";
 
@@ -44,9 +44,7 @@ function StandingsTable({
       <div className="flex items-center gap-2 border-b border-border px-5 py-4">
         {logoSrc ? (
           <img src={logoSrc} alt={title} width={30} height={30} className="object-contain" />
-        ) : (
-          <Trophy className="h-5 w-5 text-amber" />
-        )}
+        ) : null}
         <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
           {title}
         </h3>
@@ -165,7 +163,6 @@ function PowerRankings({ rankings }: { rankings: PowerRanking[] }) {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="flex items-center gap-2 border-b border-border px-5 py-4">
-        <Award className="h-5 w-5 text-primary" />
         <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
           Power Rankings
         </h3>
@@ -259,51 +256,42 @@ export default function NFLStandingsPage() {
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "East" && s.conference === "AFC")}
                 title="AFC East"
-                logoSrc="/afc-conference.png"
               />
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "North" && s.conference === "AFC")}
                 title="AFC North"
-                logoSrc="/afc-conference.png"
               />
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "South" && s.conference === "AFC")}
                 title="AFC South"
-                logoSrc="/afc-conference.png"
               />
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "West" && s.conference === "AFC")}
                 title="AFC West"
-                logoSrc="/afc-conference.png"
               />
               {/* NFC Divisions */}
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "East" && s.conference === "NFC")}
                 title="NFC East"
-                logoSrc="/nfc-conference.png"
               />
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "North" && s.conference === "NFC")}
                 title="NFC North"
-                logoSrc="/nfc-conference.png"
               />
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "South" && s.conference === "NFC")}
                 title="NFC South"
-                logoSrc="/nfc-conference.png"
               />
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "West" && s.conference === "NFC")}
                 title="NFC West"
-                logoSrc="/nfc-conference.png"
               />
             </div>
           </div>
 
           {/* Power Rankings */}
           <div className="mb-8">
-            <PowerRankings rankings={nflPowerRankings} logoSrc="/nfl-logo-2.png" />
-              
+            <PowerRankings rankings={nflPowerRankings} />
           </div>
         </div>
       </main>

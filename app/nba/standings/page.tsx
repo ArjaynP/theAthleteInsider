@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { nbaStandings, nbaPowerRankings, type TeamStanding, type PowerRanking } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { ArrowUpDown, Trophy, TrendingUp, TrendingDown, Minus, Award } from "lucide-react";
+import { ArrowUpDown, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 type SortKey = "wins" | "losses" | "pct" | "team";
 
@@ -39,7 +39,6 @@ function StandingsTable({
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="flex items-center gap-2 border-b border-border px-5 py-4">
-        <Trophy className="h-5 w-5 text-amber" />
         <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
           {title}
         </h3>
@@ -158,7 +157,6 @@ function PowerRankings({ rankings }: { rankings: PowerRanking[] }) {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="flex items-center gap-2 border-b border-border px-5 py-4">
-        <Award className="h-5 w-5 text-primary" />
         <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
           Power Rankings
         </h3>
@@ -239,7 +237,6 @@ function PlayoffBracket() {
   return (
     <div className="rounded-xl border border-border bg-card p-8">
       <div className="text-center">
-        <Trophy className="mx-auto h-12 w-12 text-amber mb-4" />
         <h3 className="text-xl font-black uppercase tracking-tight text-foreground mb-2">
           2025-26 NBA Playoffs
         </h3>
@@ -255,7 +252,6 @@ function NBACupStandings() {
   return (
     <div className="rounded-xl border border-border bg-card p-8">
       <div className="text-center">
-        <Award className="mx-auto h-12 w-12 text-primary mb-4" />
         <h3 className="text-xl font-black uppercase tracking-tight text-foreground mb-2">
           NBA Cup Standings
         </h3>
