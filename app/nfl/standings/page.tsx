@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { nflStandings, nflPowerRankings, type TeamStanding, type PowerRanking } from "@/lib/mock-data";
@@ -12,9 +13,11 @@ type SortKey = "wins" | "losses" | "pct" | "team";
 function StandingsTable({
   standings,
   title,
+  logoSrc,
 }: {
   standings: TeamStanding[];
   title: string;
+  logoSrc?: string;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("wins");
   const [sortAsc, setSortAsc] = useState(false);
@@ -39,7 +42,11 @@ function StandingsTable({
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="flex items-center gap-2 border-b border-border px-5 py-4">
-        <Trophy className="h-5 w-5 text-amber" />
+        {logoSrc ? (
+          <img src={logoSrc} alt={title} width={30} height={30} className="object-contain" />
+        ) : (
+          <Trophy className="h-5 w-5 text-amber" />
+        )}
         <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
           {title}
         </h3>
@@ -220,20 +227,25 @@ export default function NFLStandingsPage() {
                 NFL Standings
               </h1>
               <p className="text-sm text-muted-foreground">
-                Current NFL conference standings
+                Current NFL Standings, from Conference, Divisional, and Power Rankings of the 2025-26 Regular Season
               </p>
             </div>
           </div>
 
           {/* Standings */}
+          <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
+            Conference Standings
+          </h2>
           <div className="mb-12 grid gap-6 lg:grid-cols-2">
             <StandingsTable
               standings={nflStandings.filter((s) => s.conference === "AFC")}
               title="AFC"
+              logoSrc="/afc-conference.png"
             />
             <StandingsTable
               standings={nflStandings.filter((s) => s.conference === "NFC")}
               title="NFC"
+              logoSrc="/nfc-conference.png"
             />
           </div>
 
@@ -247,42 +259,51 @@ export default function NFLStandingsPage() {
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "East" && s.conference === "AFC")}
                 title="AFC East"
+                logoSrc="/afc-conference.png"
               />
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "North" && s.conference === "AFC")}
                 title="AFC North"
+                logoSrc="/afc-conference.png"
               />
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "South" && s.conference === "AFC")}
                 title="AFC South"
+                logoSrc="/afc-conference.png"
               />
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "West" && s.conference === "AFC")}
                 title="AFC West"
+                logoSrc="/afc-conference.png"
               />
               {/* NFC Divisions */}
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "East" && s.conference === "NFC")}
                 title="NFC East"
+                logoSrc="/nfc-conference.png"
               />
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "North" && s.conference === "NFC")}
                 title="NFC North"
+                logoSrc="/nfc-conference.png"
               />
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "South" && s.conference === "NFC")}
                 title="NFC South"
+                logoSrc="/nfc-conference.png"
               />
               <StandingsTable
                 standings={nflStandings.filter((s) => s.division === "West" && s.conference === "NFC")}
                 title="NFC West"
+                logoSrc="/nfc-conference.png"
               />
             </div>
           </div>
 
           {/* Power Rankings */}
           <div className="mb-8">
-            <PowerRankings rankings={nflPowerRankings} />
+            <PowerRankings rankings={nflPowerRankings} logoSrc="/nfl-logo-2.png" />
+              
           </div>
         </div>
       </main>

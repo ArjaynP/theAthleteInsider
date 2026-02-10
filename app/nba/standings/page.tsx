@@ -203,7 +203,73 @@ function PowerRankings({ rankings }: { rankings: PowerRanking[] }) {
   );
 }
 
+type ViewType = "regular" | "nbacup" | "playoffs";
+
+function SegmentedControl({ value, onChange }: { value: ViewType; onChange: (value: ViewType) => void }) {
+  const options = [
+    { value: "regular" as ViewType, label: "Regular Season" },
+    { value: "nbacup" as ViewType, label: "NBA Cup" },
+    { value: "playoffs" as ViewType, label: "Playoff Tree" },
+  ];
+
+  return (
+    <div className="mb-8 flex justify-center">
+      <div className="inline-flex rounded-lg border border-border bg-card p-1">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onChange(option.value)}
+            className={cn(
+              "rounded-md px-6 py-2 text-sm font-bold uppercase tracking-wide transition-all",
+              value === option.value
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PlayoffBracket() {
+  return (
+    <div className="rounded-xl border border-border bg-card p-8">
+      <div className="text-center">
+        <Trophy className="mx-auto h-12 w-12 text-amber mb-4" />
+        <h3 className="text-xl font-black uppercase tracking-tight text-foreground mb-2">
+          2025-26 NBA Playoffs
+        </h3>
+        <p className="text-muted-foreground">
+          Playoff bracket will be available when postseason begins
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function NBACupStandings() {
+  return (
+    <div className="rounded-xl border border-border bg-card p-8">
+      <div className="text-center">
+        <Award className="mx-auto h-12 w-12 text-primary mb-4" />
+        <h3 className="text-xl font-black uppercase tracking-tight text-foreground mb-2">
+          NBA Cup Standings
+        </h3>
+        <p className="text-muted-foreground">
+          In-Season Tournament standings coming soon
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function NBAStandingsPage() {
+  const [view, setView] = useState<ViewType>("regular");
+
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
@@ -225,8 +291,14 @@ export default function NBAStandingsPage() {
             </div>
           </div>
 
-          {/* Standings */}
-          <div className="mb-12 grid gap-6 lg:grid-cols-2">
+          {/* Segmented Control */}
+          <SegmentedControl value={view} onChange={setView} />
+
+          {/* Regular Season Standings */}
+          {view === "regular" && (
+            <>
+              {/* Standings */}
+              <div className="mb-12 grid gap-6 lg:grid-cols-2">
             <StandingsTable
               standings={nbaStandings.filter((s) => s.conference === "East")}
               title="Eastern Conference"
@@ -276,6 +348,14 @@ export default function NBAStandingsPage() {
           <div className="mb-8">
             <PowerRankings rankings={nbaPowerRankings} />
           </div>
+            </>
+          )}
+
+          {/* NBA Cup Standings */}
+          {view === "nbacup" && <NBACupStandings />}
+
+          {/* Playoff Tree */}
+          {view === "playoffs" && <PlayoffBracket />}
         </div>
       </main>
       <SiteFooter />
