@@ -177,7 +177,7 @@ export default function MLBStandingsPage() {
             </div>
 
             {/* Standings */}
-            <div className="mb-12 flex flex-col gap-6">
+            <div className="mb-12 grid gap-6 lg:grid-cols-2">
                 <StandingsTable
                 standings={mlbStandings.filter((s) => s.conference === "AL")}
                 title="American League"

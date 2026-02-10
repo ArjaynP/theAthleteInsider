@@ -225,13 +225,8 @@ export default function NBAStandingsPage() {
             </div>
           </div>
 
-          {/* Power Rankings */}
-          <div className="mb-8">
-            <PowerRankings rankings={nbaPowerRankings} />
-          </div>
-
           {/* Standings */}
-          <div className="mb-12 flex flex-col gap-6">
+          <div className="mb-12 grid gap-6 lg:grid-cols-2">
             <StandingsTable
               standings={nbaStandings.filter((s) => s.conference === "East")}
               title="Eastern Conference"
@@ -275,6 +270,11 @@ export default function NBAStandingsPage() {
                 title="Southwest Division"
               />
             </div>
+          </div>
+
+          {/* Power Rankings */}
+          <div className="mb-8">
+            <PowerRankings rankings={nbaPowerRankings} />
           </div>
         </div>
       </main>

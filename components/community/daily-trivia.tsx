@@ -78,7 +78,7 @@ export function DailyTrivia() {
               className={cn(
                 "flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold",
                 correct
-                  ? "bg-accent/20 text-accent"
+                  ? "bg-green-500/20 text-green-600"
                   : "bg-destructive/20 text-destructive"
               )}
             >
@@ -162,7 +162,7 @@ export function DailyTrivia() {
                 "flex items-center gap-3 rounded-xl border p-4 text-left transition-all",
                 hasAnswered
                   ? i === question.correctAnswer
-                    ? "border-accent bg-accent/10"
+                    ? "border-green-500 bg-green-500/10"
                     : i === selected
                       ? "border-destructive bg-destructive/10"
                       : "border-border opacity-50"
@@ -174,7 +174,7 @@ export function DailyTrivia() {
                   "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm font-black",
                   hasAnswered
                     ? i === question.correctAnswer
-                      ? "bg-accent text-accent-foreground"
+                      ? "bg-green-600 text-white"
                       : i === selected
                         ? "bg-destructive text-destructive-foreground"
                         : "bg-secondary text-muted-foreground"
@@ -188,7 +188,7 @@ export function DailyTrivia() {
                   "text-sm font-bold",
                   hasAnswered
                     ? i === question.correctAnswer
-                      ? "text-accent"
+                      ? "text-green-600"
                       : i === selected
                         ? "text-destructive"
                         : "text-muted-foreground"
@@ -198,7 +198,7 @@ export function DailyTrivia() {
                 {option}
               </span>
               {hasAnswered && i === question.correctAnswer && (
-                <CheckCircle2 className="ml-auto h-5 w-5 text-accent" />
+                <CheckCircle2 className="ml-auto h-5 w-5 text-green-600" />
               )}
               {hasAnswered &&
                 i === selected &&
@@ -215,7 +215,7 @@ export function DailyTrivia() {
             <p
               className={cn(
                 "text-sm font-bold",
-                isCorrect ? "text-accent" : "text-destructive"
+                isCorrect ? "text-green-600" : "text-destructive"
               )}
             >
               {isCorrect ? "Correct! Nice work." : "Incorrect. Better luck next time."}
