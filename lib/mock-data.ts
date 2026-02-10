@@ -416,6 +416,112 @@ export const nflPowerRankings: PowerRanking[] = [
   { rank: 10, team: "Miami Dolphins", abbreviation: "MIA", record: "11-8", lastWeek: 9, trend: "down", summary: "Cold weather struggles persist heading into playoffs.", league: "NFL" },
 ];
 
+// ============ NBA CUP ============
+export interface NBACupTeam {
+  team: string;
+  abbreviation: string;
+  wins: number;
+  losses: number;
+  pct: string;
+  pointDiff: number;
+  group: string;
+  conference: "East" | "West";
+  qualified: boolean;
+}
+
+export const nbaCupGroups: NBACupTeam[] = [
+  // East Group A
+  { team: "Boston Celtics", abbreviation: "BOS", wins: 4, losses: 0, pct: "1.000", pointDiff: 48, group: "East A", conference: "East", qualified: true },
+  { team: "Orlando Magic", abbreviation: "ORL", wins: 2, losses: 2, pct: ".500", pointDiff: 12, group: "East A", conference: "East", qualified: false },
+  { team: "Brooklyn Nets", abbreviation: "BKN", wins: 2, losses: 2, pct: ".500", pointDiff: -5, group: "East A", conference: "East", qualified: false },
+  { team: "Toronto Raptors", abbreviation: "TOR", wins: 0, losses: 4, pct: ".000", pointDiff: -55, group: "East A", conference: "East", qualified: false },
+  
+  // East Group B
+  { team: "Milwaukee Bucks", abbreviation: "MIL", wins: 4, losses: 0, pct: "1.000", pointDiff: 45, group: "East B", conference: "East", qualified: true },
+  { team: "Indiana Pacers", abbreviation: "IND", wins: 2, losses: 2, pct: ".500", pointDiff: 8, group: "East B", conference: "East", qualified: false },
+  { team: "Detroit Pistons", abbreviation: "DET", wins: 1, losses: 3, pct: ".250", pointDiff: -18, group: "East B", conference: "East", qualified: false },
+  { team: "Charlotte Hornets", abbreviation: "CHA", wins: 1, losses: 3, pct: ".250", pointDiff: -35, group: "East B", conference: "East", qualified: false },
+  
+  // East Group C
+  { team: "New York Knicks", abbreviation: "NYK", wins: 3, losses: 1, pct: ".750", pointDiff: 32, group: "East C", conference: "East", qualified: true },
+  { team: "Philadelphia 76ers", abbreviation: "PHI", wins: 3, losses: 1, pct: ".750", pointDiff: 18, group: "East C", conference: "East", qualified: false },
+  { team: "Atlanta Hawks", abbreviation: "ATL", wins: 2, losses: 2, pct: ".500", pointDiff: -10, group: "East C", conference: "East", qualified: false },
+  { team: "Cleveland Cavaliers", abbreviation: "CLE", wins: 0, losses: 4, pct: ".000", pointDiff: -40, group: "East C", conference: "East", qualified: false },
+  
+  // West Group A
+  { team: "Los Angeles Lakers", abbreviation: "LAL", wins: 4, losses: 0, pct: "1.000", pointDiff: 52, group: "West A", conference: "West", qualified: true },
+  { team: "Phoenix Suns", abbreviation: "PHX", wins: 2, losses: 2, pct: ".500", pointDiff: 15, group: "West A", conference: "West", qualified: false },
+  { team: "Utah Jazz", abbreviation: "UTA", wins: 2, losses: 2, pct: ".500", pointDiff: -8, group: "West A", conference: "West", qualified: false },
+  { team: "Portland Trail Blazers", abbreviation: "POR", wins: 0, losses: 4, pct: ".000", pointDiff: -59, group: "West A", conference: "West", qualified: false },
+  
+  // West Group B
+  { team: "Oklahoma City Thunder", abbreviation: "OKC", wins: 4, losses: 0, pct: "1.000", pointDiff: 41, group: "West B", conference: "West", qualified: true },
+  { team: "Sacramento Kings", abbreviation: "SAC", wins: 2, losses: 2, pct: ".500", pointDiff: 5, group: "West B", conference: "West", qualified: false },
+  { team: "Minnesota Timberwolves", abbreviation: "MIN", wins: 1, losses: 3, pct: ".250", pointDiff: -12, group: "West B", conference: "West", qualified: false },
+  { team: "San Antonio Spurs", abbreviation: "SAS", wins: 1, losses: 3, pct: ".250", pointDiff: -34, group: "West B", conference: "West", qualified: false },
+  
+  // West Group C
+  { team: "Dallas Mavericks", abbreviation: "DAL", wins: 3, losses: 1, pct: ".750", pointDiff: 28, group: "West C", conference: "West", qualified: true },
+  { team: "Denver Nuggets", abbreviation: "DEN", wins: 3, losses: 1, pct: ".750", pointDiff: 22, group: "West C", conference: "West", qualified: false },
+  { team: "Houston Rockets", abbreviation: "HOU", wins: 2, losses: 2, pct: ".500", pointDiff: -5, group: "West C", conference: "West", qualified: false },
+  { team: "Memphis Grizzlies", abbreviation: "MEM", wins: 0, losses: 4, pct: ".000", pointDiff: -45, group: "West C", conference: "West", qualified: false },
+];
+
+export interface NBACupWildcard {
+  team: string;
+  abbreviation: string;
+  wins: number;
+  losses: number;
+  pct: string;
+  pointDiff: number;
+  conference: "East" | "West";
+}
+
+export const nbaCupWildcards: NBACupWildcard[] = [
+  // East Wildcard
+  { team: "Philadelphia 76ers", abbreviation: "PHI", wins: 3, losses: 1, pct: ".750", pointDiff: 18, conference: "East" },
+  // West Wildcard
+  { team: "Denver Nuggets", abbreviation: "DEN", wins: 3, losses: 1, pct: ".750", pointDiff: 22, conference: "West" },
+];
+
+export interface NBACupBracket {
+  round: "Quarterfinals" | "Semifinals" | "Final";
+  matchups: {
+    home: string;
+    away: string;
+    homeScore?: number;
+    awayScore?: number;
+    winner?: string;
+    status: "scheduled" | "complete";
+    date: string;
+  }[];
+}
+
+export const nbaCupBracket: NBACupBracket[] = [
+  {
+    round: "Quarterfinals",
+    matchups: [
+      { home: "BOS", away: "PHI", status: "scheduled", date: "Dec 10" },
+      { home: "MIL", away: "NYK", status: "scheduled", date: "Dec 10" },
+      { home: "LAL", away: "DEN", status: "scheduled", date: "Dec 11" },
+      { home: "OKC", away: "DAL", status: "scheduled", date: "Dec 11" },
+    ],
+  },
+  {
+    round: "Semifinals",
+    matchups: [
+      { home: "TBD", away: "TBD", status: "scheduled", date: "Dec 14" },
+      { home: "TBD", away: "TBD", status: "scheduled", date: "Dec 14" },
+    ],
+  },
+  {
+    round: "Final",
+    matchups: [
+      { home: "TBD", away: "TBD", status: "scheduled", date: "Dec 17" },
+    ],
+  },
+];
+
 // ============ POLLS ============
 export interface Poll {
   id: string;
