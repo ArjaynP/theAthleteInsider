@@ -225,11 +225,6 @@ export default function NFLStandingsPage() {
             </div>
           </div>
 
-          {/* Power Rankings */}
-          <div className="mb-8">
-            <PowerRankings rankings={nflPowerRankings} />
-          </div>
-
           {/* Standings */}
           <div className="mb-12 grid gap-6 lg:grid-cols-2">
             <StandingsTable
@@ -283,6 +278,11 @@ export default function NFLStandingsPage() {
                 title="NFC West"
               />
             </div>
+          </div>
+
+          {/* Power Rankings */}
+          <div className="mb-8">
+            <PowerRankings rankings={nflPowerRankings} />
           </div>
         </div>
       </main>
