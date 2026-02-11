@@ -604,6 +604,14 @@ function NBACupStandings() {
 
   return (
     <div className="space-y-8">
+      {/* Bracket */}
+      <div>
+        <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
+          Emirates NBA Cup Bracket
+        </h2>
+        <NBACupBracketView />
+      </div>
+
       {/* Group Stages */}
       <div>
         <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
@@ -637,14 +645,6 @@ function NBACupStandings() {
           Qualified Teams
         </h2>
         <WildcardStandings />
-      </div>
-
-      {/* Bracket */}
-      <div>
-        <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
-          Emirates NBA Cup Bracket
-        </h2>
-        <NBACupBracketView />
       </div>
     </div>
   );
