@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { nbaStandings, nbaPowerRankings, nbaCupGroups, nbaCupWildcards, nbaCupBracket, type TeamStanding, type PowerRanking } from "@/lib/mock-data";
+import { nbaStandings, nbaPowerRankings, nbaCupGroups, nbaCupWildcards, nbaCupBracket, type TeamStanding, type PowerRanking, type NBACupBracketRound } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { ArrowUpDown, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
@@ -417,60 +417,206 @@ function NBACupStandings() {
   }
 
   function NBACupBracketView() {
-    return (
-      <div className="space-y-8">
-        {nbaCupBracket.map((round) => (
-          <div key={round.round} className="rounded-xl border border-border bg-card overflow-hidden">
-            <div className="border-b border-border px-5 py-4">
-              <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
-                {round.round}
-              </h3>
-            </div>
-            <div className="p-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                {round.matchups.map((matchup, i) => (
-                  <div key={i} className="rounded-lg border border-border bg-secondary/20 p-4">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                        {matchup.date}
-                      </span>
-                      <span className={cn(
-                        "rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest",
-                        matchup.status === "complete" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"
-                      )}>
-                        {matchup.status === "complete" ? "Final" : "Scheduled"}
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between rounded bg-card px-3 py-2">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded bg-secondary text-xs font-black text-foreground">
-                            {matchup.home.charAt(0)}
-                          </div>
-                          <span className="font-bold text-foreground">{matchup.home}</span>
-                        </div>
-                        {matchup.homeScore !== undefined && (
-                          <span className="text-xl font-black text-foreground">{matchup.homeScore}</span>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between rounded bg-card px-3 py-2">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded bg-secondary text-xs font-black text-foreground">
-                            {matchup.away.charAt(0)}
-                          </div>
-                          <span className="font-bold text-foreground">{matchup.away}</span>
-                        </div>
-                        {matchup.awayScore !== undefined && (
-                          <span className="text-xl font-black text-foreground">{matchup.awayScore}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+    const eastQuarterfinals = nbaCupBracket.find(r => r.round === "Quarterfinals" && r.conference === "East");
+    const westQuarterfinals = nbaCupBracket.find(r => r.round === "Quarterfinals" && r.conference === "West");
+    const eastSemifinals = nbaCupBracket.find(r => r.round === "Semifinals" && r.conference === "East");
+    const westSemifinals = nbaCupBracket.find(r => r.round === "Semifinals" && r.conference === "West");
+    const final = nbaCupBracket.find(r => r.round === "Final");
+
+    const MatchupCard = ({ matchup, showSeeds = true }: { matchup: any; showSeeds?: boolean }) => (
+      <div className="rounded-lg border-2 border-border bg-card p-3">
+        <div className="mb-2 text-center">
+          <span className="text-xs font-bold uppercase tracking-widest text-primary">
+            Final
+          </span>
+        </div>
+        <div className="space-y-1">
+          <div className={cn(
+            "flex items-center justify-between rounded px-3 py-2",
+            matchup.team1.winner ? "bg-primary/10" : "bg-secondary/50"
+          )}>
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded bg-secondary text-xs font-black">
+                {matchup.team1.team.substring(0, 2).toUpperCase()}
               </div>
+              {showSeeds && (
+                <span className="text-xs font-bold text-muted-foreground">{matchup.team1.seed}</span>
+              )}
+              <span className="text-sm font-bold">{matchup.team1.team}</span>
+            </div>
+            <span className="text-lg font-black">{matchup.team1.score}</span>
+            {matchup.team1.winner && (
+              <span className="ml-2 text-primary">◀</span>
+            )}
+          </div>
+          <div className={cn(
+            "flex items-center justify-between rounded px-3 py-2",
+            matchup.team2.winner ? "bg-primary/10" : "bg-secondary/50"
+          )}>
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded bg-secondary text-xs font-black">
+                {matchup.team2.team.substring(0, 2).toUpperCase()}
+              </div>
+              {showSeeds && (
+                <span className="text-xs font-bold text-muted-foreground">{matchup.team2.seed}</span>
+              )}
+              <span className="text-sm font-bold">{matchup.team2.team}</span>
+            </div>
+            <span className="text-lg font-black">{matchup.team2.score}</span>
+            {matchup.team2.winner && (
+              <span className="ml-2 text-primary">◀</span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+
+    const ChampionBanner = () => {
+      const winner = final?.matchups[0].team1.winner ? final.matchups[0].team1 : final?.matchups[0].team2;
+      
+      return (
+        <div className="relative mx-auto w-full max-w-xs">
+          <div className="rounded-t-2xl bg-gradient-to-br from-blue-600 to-blue-800 px-8 pb-16 pt-8 shadow-2xl">
+            <div className="text-center">
+              <h3 className="mb-6 text-2xl font-black uppercase tracking-tight text-white">
+                2025-26
+              </h3>
+              <div className="mb-6 flex justify-center">
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-orange-500 text-3xl font-black text-white shadow-xl">
+                    {winner?.team.substring(0, 2).toUpperCase()}
+                  </div>
+                </div>
+              </div>
+              <h2 className="text-xl font-black uppercase tracking-wide text-white">
+                NBA Cup
+              </h2>
+              <h2 className="text-xl font-black uppercase tracking-wide text-white">
+                Champions
+              </h2>
             </div>
           </div>
-        ))}
+          <div className="h-12 w-full bg-gradient-to-b from-blue-800 to-blue-900" style={{
+            clipPath: "polygon(0 0, 100% 0, 90% 100%, 10% 100%)"
+          }}></div>
+        </div>
+      );
+    };
+
+    return (
+      <div className="rounded-xl border border-border bg-gradient-to-br from-secondary/30 to-secondary/10 p-8">
+        <div className="grid gap-8 lg:grid-cols-[1fr_auto_1fr]">
+          {/* EAST SIDE */}
+          <div className="space-y-6">
+            <div className="mb-4">
+              <h3 className="text-2xl font-black uppercase tracking-tight">EAST</h3>
+            </div>
+            
+            {/* East Finals */}
+            {eastSemifinals && (
+              <div>
+                <h4 className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                  Final
+                </h4>
+                <MatchupCard matchup={eastSemifinals.matchups[0]} showSeeds={true} />
+              </div>
+            )}
+
+            {/* East Quarterfinals */}
+            {eastQuarterfinals && (
+              <div className="space-y-3">
+                <h4 className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                  Final
+                </h4>
+                {eastQuarterfinals.matchups.map((matchup, i) => (
+                  <MatchupCard key={i} matchup={matchup} showSeeds={true} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* CENTER - CHAMPIONSHIP */}
+          <div className="flex items-center justify-center">
+            <div className="space-y-6">
+              {/* Championship Game */}
+              {final && (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                      Championship
+                    </h3>
+                    <p className="text-xs text-muted-foreground">Las Vegas, NV</p>
+                  </div>
+                  
+                  <div className="flex items-center justify-center gap-4">
+                    {/* Team 1 Score Box */}
+                    <div className="rounded-lg border-2 border-border bg-card p-4 text-center min-w-[100px]">
+                      <div className="mb-2 flex justify-center">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-black">
+                          {final.matchups[0].team1.team}
+                        </div>
+                      </div>
+                      <div className="text-2xl font-black">{final.matchups[0].team1.score}</div>
+                      {final.matchups[0].team1.winner && (
+                        <div className="mt-1 text-xs font-bold text-primary">◀</div>
+                      )}
+                    </div>
+
+                    {/* VS */}
+                    <div className="text-2xl font-black text-muted-foreground">-</div>
+
+                    {/* Team 2 Score Box */}
+                    <div className="rounded-lg border-2 border-border bg-card p-4 text-center min-w-[100px]">
+                      <div className="mb-2 flex justify-center">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-black">
+                          {final.matchups[0].team2.team}
+                        </div>
+                      </div>
+                      <div className="text-2xl font-black">{final.matchups[0].team2.score}</div>
+                      {final.matchups[0].team2.winner && (
+                        <div className="mt-1 text-xs font-bold text-primary">◀</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Champion Banner */}
+                  <div className="mt-8">
+                    <ChampionBanner />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* WEST SIDE */}
+          <div className="space-y-6">
+            <div className="mb-4 text-right">
+              <h3 className="text-2xl font-black uppercase tracking-tight">WEST</h3>
+            </div>
+            
+            {/* West Finals */}
+            {westSemifinals && (
+              <div>
+                <h4 className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                  Final
+                </h4>
+                <MatchupCard matchup={westSemifinals.matchups[0]} showSeeds={true} />
+              </div>
+            )}
+
+            {/* West Quarterfinals */}
+            {westQuarterfinals && (
+              <div className="space-y-3">
+                <h4 className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                  Final
+                </h4>
+                {westQuarterfinals.matchups.map((matchup, i) => (
+                  <MatchupCard key={i} matchup={matchup} showSeeds={true} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     );
   }

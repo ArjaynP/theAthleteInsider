@@ -484,40 +484,92 @@ export const nbaCupWildcards: NBACupWildcard[] = [
   { team: "Denver Nuggets", abbreviation: "DEN", wins: 3, losses: 1, pct: ".750", pointDiff: 22, conference: "West" },
 ];
 
-export interface NBACupBracket {
+export interface NBACupBracketMatchup {
+  seed: number;
+  team: string;
+  teamFull: string;
+  score?: number;
+  winner?: boolean;
+}
+
+export interface NBACupBracketRound {
   round: "Quarterfinals" | "Semifinals" | "Final";
+  conference?: "East" | "West";
   matchups: {
-    home: string;
-    away: string;
-    homeScore?: number;
-    awayScore?: number;
-    winner?: string;
+    team1: NBACupBracketMatchup;
+    team2: NBACupBracketMatchup;
     status: "scheduled" | "complete";
-    date: string;
   }[];
 }
 
-export const nbaCupBracket: NBACupBracket[] = [
+export const nbaCupBracket: NBACupBracketRound[] = [
+  // East Quarterfinals
   {
     round: "Quarterfinals",
+    conference: "East",
     matchups: [
-      { home: "BOS", away: "PHI", status: "scheduled", date: "Dec 10" },
-      { home: "MIL", away: "NYK", status: "scheduled", date: "Dec 10" },
-      { home: "LAL", away: "DEN", status: "scheduled", date: "Dec 11" },
-      { home: "OKC", away: "DAL", status: "scheduled", date: "Dec 11" },
+      {
+        team1: { seed: 1, team: "Magic", teamFull: "Orlando Magic", score: 117, winner: true },
+        team2: { seed: 4, team: "Heat", teamFull: "Miami Heat", score: 108 },
+        status: "complete",
+      },
+      {
+        team1: { seed: 2, team: "Raptors", teamFull: "Toronto Raptors", score: 101 },
+        team2: { seed: 3, team: "Knicks", teamFull: "New York Knicks", score: 117, winner: true },
+        status: "complete",
+      },
     ],
   },
+  // West Quarterfinals
+  {
+    round: "Quarterfinals",
+    conference: "West",
+    matchups: [
+      {
+        team1: { seed: 1, team: "Thunder", teamFull: "Oklahoma City Thunder", score: 138, winner: true },
+        team2: { seed: 4, team: "Suns", teamFull: "Phoenix Suns", score: 89 },
+        status: "complete",
+      },
+      {
+        team1: { seed: 2, team: "Lakers", teamFull: "Los Angeles Lakers", score: 119 },
+        team2: { seed: 3, team: "Spurs", teamFull: "San Antonio Spurs", score: 132, winner: true },
+        status: "complete",
+      },
+    ],
+  },
+  // East Semifinals
   {
     round: "Semifinals",
+    conference: "East",
     matchups: [
-      { home: "TBD", away: "TBD", status: "scheduled", date: "Dec 14" },
-      { home: "TBD", away: "TBD", status: "scheduled", date: "Dec 14" },
+      {
+        team1: { seed: 1, team: "Magic", teamFull: "Orlando Magic", score: 120 },
+        team2: { seed: 3, team: "Knicks", teamFull: "New York Knicks", score: 132, winner: true },
+        status: "complete",
+      },
     ],
   },
+  // West Semifinals
+  {
+    round: "Semifinals",
+    conference: "West",
+    matchups: [
+      {
+        team1: { seed: 1, team: "Thunder", teamFull: "Oklahoma City Thunder", score: 109 },
+        team2: { seed: 3, team: "Spurs", teamFull: "San Antonio Spurs", score: 111, winner: true },
+        status: "complete",
+      },
+    ],
+  },
+  // Final
   {
     round: "Final",
     matchups: [
-      { home: "TBD", away: "TBD", status: "scheduled", date: "Dec 17" },
+      {
+        team1: { seed: 3, team: "NY", teamFull: "New York Knicks", score: 124, winner: true },
+        team2: { seed: 3, team: "SA", teamFull: "San Antonio Spurs", score: 113 },
+        status: "complete",
+      },
     ],
   },
 ];
