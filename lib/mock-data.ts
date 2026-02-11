@@ -499,6 +499,8 @@ export interface NBACupBracketRound {
     team1: NBACupBracketMatchup;
     team2: NBACupBracketMatchup;
     status: "scheduled" | "complete";
+    date: string;
+    time: string;
   }[];
 }
 
@@ -512,11 +514,15 @@ export const nbaCupBracket: NBACupBracketRound[] = [
         team1: { seed: 1, team: "Magic", teamFull: "Orlando Magic", score: 117, winner: true },
         team2: { seed: 4, team: "Heat", teamFull: "Miami Heat", score: 108 },
         status: "complete",
+        date: "Dec 10",
+        time: "7:00 PM",
       },
       {
         team1: { seed: 2, team: "Raptors", teamFull: "Toronto Raptors", score: 101 },
         team2: { seed: 3, team: "Knicks", teamFull: "New York Knicks", score: 117, winner: true },
         status: "complete",
+        date: "Dec 10",
+        time: "7:30 PM",
       },
     ],
   },
@@ -529,11 +535,15 @@ export const nbaCupBracket: NBACupBracketRound[] = [
         team1: { seed: 1, team: "Thunder", teamFull: "Oklahoma City Thunder", score: 138, winner: true },
         team2: { seed: 4, team: "Suns", teamFull: "Phoenix Suns", score: 89 },
         status: "complete",
+        date: "Dec 10",
+        time: "9:00 PM",
       },
       {
         team1: { seed: 2, team: "Lakers", teamFull: "Los Angeles Lakers", score: 119 },
         team2: { seed: 3, team: "Spurs", teamFull: "San Antonio Spurs", score: 132, winner: true },
         status: "complete",
+        date: "Dec 11",
+        time: "10:00 PM",
       },
     ],
   },
@@ -546,6 +556,8 @@ export const nbaCupBracket: NBACupBracketRound[] = [
         team1: { seed: 1, team: "Magic", teamFull: "Orlando Magic", score: 120 },
         team2: { seed: 3, team: "Knicks", teamFull: "New York Knicks", score: 132, winner: true },
         status: "complete",
+        date: "Dec 14",
+        time: "5:00 PM",
       },
     ],
   },
@@ -558,6 +570,8 @@ export const nbaCupBracket: NBACupBracketRound[] = [
         team1: { seed: 1, team: "Thunder", teamFull: "Oklahoma City Thunder", score: 109 },
         team2: { seed: 3, team: "Spurs", teamFull: "San Antonio Spurs", score: 111, winner: true },
         status: "complete",
+        date: "Dec 14",
+        time: "8:00 PM",
       },
     ],
   },
@@ -569,6 +583,8 @@ export const nbaCupBracket: NBACupBracketRound[] = [
         team1: { seed: 3, team: "NY", teamFull: "New York Knicks", score: 124, winner: true },
         team2: { seed: 3, team: "SA", teamFull: "San Antonio Spurs", score: 113 },
         status: "complete",
+        date: "Dec 17",
+        time: "8:30 PM",
       },
     ],
   },
