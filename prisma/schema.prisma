@@ -11,4 +11,18 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // url      = env("DATABASE_URL")
+}
+
+model NBAConferenceStandings {
+  TEAM String
+  WIN Int
+  LOSS Int
+  percentage Double
+  GAMES_BACK Int
+  STREAK String?
+}
+
+model nbaPowerRankings {
+  
 }
