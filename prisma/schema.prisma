@@ -11,18 +11,51 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // url      = env("DATABASE_URL")
 }
 
 model NBAConferenceStandings {
-  TEAM String
-  WIN Int
-  LOSS Int
-  percentage Double
-  GAMES_BACK Int
-  STREAK String?
+  id           Int      @id @default(autoincrement())
+  team         String
+  abbreviation String   @unique
+  conference   String   // East or West
+  division     String   // Atlantic, Pacific, etc.
+  wins         Int
+  losses       Int
+  pct          String   // Win percentage as string (e.g., ".750")
+  gb           String   // Games back (can be "-", "0.5", etc.)
+  streak       String?  // e.g., "W3", "L2"
+
+  @@index([conference])
+  @@index([division])
 }
 
-model nbaPowerRankings {
-  
+model NBAPowerRankings {
+  id          Int      @id @default(autoincrement())
+  rank        Int
+  team        String
+  abbreviation String  @unique
+  record      String   // e.g., "45-12"
+  lastWeek    Int      // Previous week's rank
+  trend       String   // "up", "down", "same"
+  summary     String   @db.Text
+
+  @@index([rank])
+}
+
+model NBATeam {
+  id           Int      @id @default(autoincrement())
+  name         String   // Full team name (e.g., "Boston Celtics")
+  city         String   // City name (e.g., "Boston")
+  abbreviation String   @unique // Three-letter code (e.g., "BOS")
+  conference   String   // "Eastern" or "Western"
+  division     String   // Division name
+  primaryColor String?  // Hex color code
+  secondaryColor String? // Hex color code
+  logoUrl      String?  // URL to team logo
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([conference])
+  @@index([division])
+  @@index([abbreviation])
 }
