@@ -1,6 +1,11 @@
-import { PrismaClient } from '@prisma/client';
+import 'dotenv/config';
+import { PrismaClient } from '../lib/generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 
-const prisma = new PrismaClient();
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 const nbaTeams = [
   // Eastern Conference - Atlantic Division
@@ -296,8 +301,40 @@ async function main() {
       create: team,
     });
   }
-  
-  console.log('Seeding finished. All 30 NBA teams have been added.');
+
+  // Create conference standings for all teams
+  console.log('Seeding NBA Conference Standings...');
+  await prisma.nBAConferenceStandings.createMany({
+    data: nbaTeams.map((team, index) => ({
+      team: team.name,
+      abbreviation: team.abbreviation,
+      conference: team.conference,
+      division: team.division,
+      wins: Math.floor(Math.random() * 50) + 10, // Random wins between 10-60
+      losses: Math.floor(Math.random() * 50) + 10, // Random losses between 10-60
+      pct: '.500', // Will be calculated in real app
+      gb: index === 0 ? '-' : `${Math.random() * 10}`, // Games back
+      streak: Math.random() > 0.5 ? `W${Math.floor(Math.random() * 5) + 1}` : `L${Math.floor(Math.random() * 5) + 1}`,
+    })),
+    skipDuplicates: true,
+  });
+
+  // Create power rankings for all teams
+  console.log('Seeding NBA Power Rankings...');
+  await prisma.nBAPowerRankings.createMany({
+    data: nbaTeams.map((team, index) => ({
+      rank: index + 1,
+      team: team.name,
+      abbreviation: team.abbreviation,
+      record: `${Math.floor(Math.random() * 30) + 20}-${Math.floor(Math.random() * 30) + 10}`,
+      lastWeek: Math.max(1, index + Math.floor(Math.random() * 5) - 2),
+      trend: index % 3 === 0 ? 'up' : index % 3 === 1 ? 'down' : 'same',
+      summary: `${team.name} continue to show strong performance this season with key players stepping up.`,
+    })),
+    skipDuplicates: true,
+  });
+
+  console.log('Seeding completed successfully!');
 }
 
 main()
