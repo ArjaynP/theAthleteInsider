@@ -355,55 +355,85 @@ export const nbaStandings: TeamStanding[] = [
 ];
 
 export const nflStandings: TeamStanding[] = [
+  // AFC East
   { rank: 1, team: "Buffalo Bills", abbreviation: "BUF", wins: 14, losses: 5, pct: ".737", gb: "-", streak: "W3", conference: "AFC", division: "East", league: "NFL" },
   { rank: 2, team: "Miami Dolphins", abbreviation: "MIA", wins: 11, losses: 8, pct: ".579", gb: "3", streak: "L2", conference: "AFC", division: "East", league: "NFL" },
-  { rank: 3, team: "New York Jets", abbreviation: "NYJ", wins: 7, losses: 12, pct: ".368", gb: "7", streak: "L1", conference: "AFC", division: "East", league: "NFL" },
-  { rank: 4, team: "Baltimore Ravens", abbreviation: "BAL", wins: 13, losses: 6, pct: ".684", gb: "-", streak: "L1", conference: "AFC", division: "North", league: "NFL" },
-  { rank: 5, team: "Pittsburgh Steelers", abbreviation: "PIT", wins: 10, losses: 9, pct: ".526", gb: "3", streak: "W1", conference: "AFC", division: "North", league: "NFL" },
-  { rank: 6, team: "Cleveland Browns", abbreviation: "CLE", wins: 9, losses: 10, pct: ".474", gb: "4", streak: "L2", conference: "AFC", division: "North", league: "NFL" },
-  { rank: 7, team: "Houston Texans", abbreviation: "HOU", wins: 12, losses: 7, pct: ".632", gb: "-", streak: "W1", conference: "AFC", division: "South", league: "NFL" },
-  { rank: 8, team: "Jacksonville Jaguars", abbreviation: "JAX", wins: 8, losses: 11, pct: ".421", gb: "4", streak: "L1", conference: "AFC", division: "South", league: "NFL" },
-  { rank: 9, team: "Indianapolis Colts", abbreviation: "IND", wins: 7, losses: 12, pct: ".368", gb: "5", streak: "W1", conference: "AFC", division: "South", league: "NFL" },
-  { rank: 10, team: "Kansas City Chiefs", abbreviation: "KC", wins: 16, losses: 3, pct: ".842", gb: "-", streak: "W8", conference: "AFC", division: "West", league: "NFL" },
-  { rank: 11, team: "Las Vegas Raiders", abbreviation: "LV", wins: 8, losses: 11, pct: ".421", gb: "8", streak: "L3", conference: "AFC", division: "West", league: "NFL" },
-  { rank: 12, team: "Los Angeles Chargers", abbreviation: "LAC", wins: 8, losses: 11, pct: ".421", gb: "8", streak: "W1", conference: "AFC", division: "West", league: "NFL" },
-  { rank: 13, team: "Philadelphia Eagles", abbreviation: "PHI", wins: 12, losses: 7, pct: ".632", gb: "-", streak: "W1", conference: "NFC", division: "East", league: "NFL" },
-  { rank: 14, team: "Dallas Cowboys", abbreviation: "DAL", wins: 12, losses: 7, pct: ".632", gb: "-", streak: "L1", conference: "NFC", division: "East", league: "NFL" },
-  { rank: 15, team: "New York Giants", abbreviation: "NYG", wins: 6, losses: 13, pct: ".316", gb: "6", streak: "L2", conference: "NFC", division: "East", league: "NFL" },
-  { rank: 16, team: "Detroit Lions", abbreviation: "DET", wins: 15, losses: 4, pct: ".789", gb: "-", streak: "W5", conference: "NFC", division: "North", league: "NFL" },
-  { rank: 17, team: "Green Bay Packers", abbreviation: "GB", wins: 11, losses: 8, pct: ".579", gb: "4", streak: "W3", conference: "NFC", division: "North", league: "NFL" },
-  { rank: 18, team: "Minnesota Vikings", abbreviation: "MIN", wins: 9, losses: 10, pct: ".474", gb: "6", streak: "L1", conference: "NFC", division: "North", league: "NFL" },
-  { rank: 19, team: "Tampa Bay Buccaneers", abbreviation: "TB", wins: 10, losses: 9, pct: ".526", gb: "-", streak: "W2", conference: "NFC", division: "South", league: "NFL" },
-  { rank: 20, team: "Atlanta Falcons", abbreviation: "ATL", wins: 8, losses: 11, pct: ".421", gb: "2", streak: "L1", conference: "NFC", division: "South", league: "NFL" },
-  { rank: 21, team: "New Orleans Saints", abbreviation: "NO", wins: 7, losses: 12, pct: ".368", gb: "3", streak: "W1", conference: "NFC", division: "South", league: "NFL" },
-  { rank: 22, team: "San Francisco 49ers", abbreviation: "SF", wins: 13, losses: 6, pct: ".684", gb: "-", streak: "W2", conference: "NFC", division: "West", league: "NFL" },
-  { rank: 23, team: "Los Angeles Rams", abbreviation: "LAR", wins: 10, losses: 9, pct: ".526", gb: "3", streak: "W1", conference: "NFC", division: "West", league: "NFL" },
-  { rank: 24, team: "Seattle Seahawks", abbreviation: "SEA", wins: 9, losses: 10, pct: ".474", gb: "4", streak: "L2", conference: "NFC", division: "West", league: "NFL" },
+  { rank: 3, team: "New England Patriots", abbreviation: "NE", wins: 5, losses: 14, pct: ".263", gb: "9", streak: "L3", conference: "AFC", division: "East", league: "NFL" },
+  { rank: 4, team: "New York Jets", abbreviation: "NYJ", wins: 7, losses: 12, pct: ".368", gb: "7", streak: "L1", conference: "AFC", division: "East", league: "NFL" },
+  // AFC North
+  { rank: 5, team: "Baltimore Ravens", abbreviation: "BAL", wins: 13, losses: 6, pct: ".684", gb: "-", streak: "L1", conference: "AFC", division: "North", league: "NFL" },
+  { rank: 6, team: "Pittsburgh Steelers", abbreviation: "PIT", wins: 10, losses: 9, pct: ".526", gb: "3", streak: "W1", conference: "AFC", division: "North", league: "NFL" },
+  { rank: 7, team: "Cincinnati Bengals", abbreviation: "CIN", wins: 9, losses: 10, pct: ".474", gb: "4", streak: "W2", conference: "AFC", division: "North", league: "NFL" },
+  { rank: 8, team: "Cleveland Browns", abbreviation: "CLE", wins: 9, losses: 10, pct: ".474", gb: "4", streak: "L2", conference: "AFC", division: "North", league: "NFL" },
+  // AFC South
+  { rank: 9, team: "Houston Texans", abbreviation: "HOU", wins: 12, losses: 7, pct: ".632", gb: "-", streak: "W1", conference: "AFC", division: "South", league: "NFL" },
+  { rank: 10, team: "Jacksonville Jaguars", abbreviation: "JAX", wins: 8, losses: 11, pct: ".421", gb: "4", streak: "L1", conference: "AFC", division: "South", league: "NFL" },
+  { rank: 11, team: "Indianapolis Colts", abbreviation: "IND", wins: 7, losses: 12, pct: ".368", gb: "5", streak: "W1", conference: "AFC", division: "South", league: "NFL" },
+  { rank: 12, team: "Tennessee Titans", abbreviation: "TEN", wins: 4, losses: 15, pct: ".211", gb: "8", streak: "L5", conference: "AFC", division: "South", league: "NFL" },
+  // AFC West
+  { rank: 13, team: "Kansas City Chiefs", abbreviation: "KC", wins: 16, losses: 3, pct: ".842", gb: "-", streak: "W8", conference: "AFC", division: "West", league: "NFL" },
+  { rank: 14, team: "Las Vegas Raiders", abbreviation: "LV", wins: 8, losses: 11, pct: ".421", gb: "8", streak: "L3", conference: "AFC", division: "West", league: "NFL" },
+  { rank: 15, team: "Los Angeles Chargers", abbreviation: "LAC", wins: 8, losses: 11, pct: ".421", gb: "8", streak: "W1", conference: "AFC", division: "West", league: "NFL" },
+  { rank: 16, team: "Denver Broncos", abbreviation: "DEN", wins: 7, losses: 12, pct: ".368", gb: "9", streak: "L1", conference: "AFC", division: "West", league: "NFL" },
+  // NFC East
+  { rank: 17, team: "Philadelphia Eagles", abbreviation: "PHI", wins: 12, losses: 7, pct: ".632", gb: "-", streak: "W1", conference: "NFC", division: "East", league: "NFL" },
+  { rank: 18, team: "Dallas Cowboys", abbreviation: "DAL", wins: 12, losses: 7, pct: ".632", gb: "-", streak: "L1", conference: "NFC", division: "East", league: "NFL" },
+  { rank: 19, team: "Washington Commanders", abbreviation: "WAS", wins: 8, losses: 11, pct: ".421", gb: "4", streak: "W2", conference: "NFC", division: "East", league: "NFL" },
+  { rank: 20, team: "New York Giants", abbreviation: "NYG", wins: 6, losses: 13, pct: ".316", gb: "6", streak: "L2", conference: "NFC", division: "East", league: "NFL" },
+  // NFC North
+  { rank: 21, team: "Detroit Lions", abbreviation: "DET", wins: 15, losses: 4, pct: ".789", gb: "-", streak: "W5", conference: "NFC", division: "North", league: "NFL" },
+  { rank: 22, team: "Green Bay Packers", abbreviation: "GB", wins: 11, losses: 8, pct: ".579", gb: "4", streak: "W3", conference: "NFC", division: "North", league: "NFL" },
+  { rank: 23, team: "Minnesota Vikings", abbreviation: "MIN", wins: 9, losses: 10, pct: ".474", gb: "6", streak: "L1", conference: "NFC", division: "North", league: "NFL" },
+  { rank: 24, team: "Chicago Bears", abbreviation: "CHI", wins: 6, losses: 13, pct: ".316", gb: "9", streak: "L4", conference: "NFC", division: "North", league: "NFL" },
+  // NFC South
+  { rank: 25, team: "Tampa Bay Buccaneers", abbreviation: "TB", wins: 10, losses: 9, pct: ".526", gb: "-", streak: "W2", conference: "NFC", division: "South", league: "NFL" },
+  { rank: 26, team: "Atlanta Falcons", abbreviation: "ATL", wins: 8, losses: 11, pct: ".421", gb: "2", streak: "L1", conference: "NFC", division: "South", league: "NFL" },
+  { rank: 27, team: "New Orleans Saints", abbreviation: "NO", wins: 7, losses: 12, pct: ".368", gb: "3", streak: "W1", conference: "NFC", division: "South", league: "NFL" },
+  { rank: 28, team: "Carolina Panthers", abbreviation: "CAR", wins: 4, losses: 15, pct: ".211", gb: "6", streak: "L6", conference: "NFC", division: "South", league: "NFL" },
+  // NFC West
+  { rank: 29, team: "San Francisco 49ers", abbreviation: "SF", wins: 13, losses: 6, pct: ".684", gb: "-", streak: "W2", conference: "NFC", division: "West", league: "NFL" },
+  { rank: 30, team: "Los Angeles Rams", abbreviation: "LAR", wins: 10, losses: 9, pct: ".526", gb: "3", streak: "W1", conference: "NFC", division: "West", league: "NFL" },
+  { rank: 31, team: "Seattle Seahawks", abbreviation: "SEA", wins: 9, losses: 10, pct: ".474", gb: "4", streak: "L2", conference: "NFC", division: "West", league: "NFL" },
+  { rank: 32, team: "Arizona Cardinals", abbreviation: "ARI", wins: 5, losses: 14, pct: ".263", gb: "8", streak: "L3", conference: "NFC", division: "West", league: "NFL" },
 ];
 
 export const mlbStandings: TeamStanding[] = [
+  // AL East
   { rank: 1, team: "New York Yankees", abbreviation: "NYY", wins: 10, losses: 5, pct: ".667", gb: "-", streak: "W2", conference: "AL", division: "East", league: "MLB" },
   { rank: 2, team: "Baltimore Orioles", abbreviation: "BAL", wins: 9, losses: 6, pct: ".600", gb: "1", streak: "L1", conference: "AL", division: "East", league: "MLB" },
   { rank: 3, team: "Boston Red Sox", abbreviation: "BOS", wins: 8, losses: 7, pct: ".533", gb: "2", streak: "L2", conference: "AL", division: "East", league: "MLB" },
   { rank: 4, team: "Tampa Bay Rays", abbreviation: "TB", wins: 7, losses: 8, pct: ".467", gb: "3", streak: "W1", conference: "AL", division: "East", league: "MLB" },
   { rank: 5, team: "Toronto Blue Jays", abbreviation: "TOR", wins: 6, losses: 9, pct: ".400", gb: "4", streak: "L3", conference: "AL", division: "East", league: "MLB" },
+  // AL Central
   { rank: 6, team: "Minnesota Twins", abbreviation: "MIN", wins: 11, losses: 4, pct: ".733", gb: "-", streak: "W3", conference: "AL", division: "Central", league: "MLB" },
   { rank: 7, team: "Cleveland Guardians", abbreviation: "CLE", wins: 9, losses: 6, pct: ".600", gb: "2", streak: "W1", conference: "AL", division: "Central", league: "MLB" },
-  { rank: 8, team: "Chicago White Sox", abbreviation: "CHW", wins: 6, losses: 9, pct: ".400", gb: "5", streak: "L2", conference: "AL", division: "Central", league: "MLB" },
-  { rank: 9, team: "Houston Astros", abbreviation: "HOU", wins: 10, losses: 5, pct: ".667", gb: "-", streak: "W2", conference: "AL", division: "West", league: "MLB" },
-  { rank: 10, team: "Texas Rangers", abbreviation: "TEX", wins: 9, losses: 6, pct: ".600", gb: "1", streak: "W1", conference: "AL", division: "West", league: "MLB" },
-  { rank: 11, team: "Seattle Mariners", abbreviation: "SEA", wins: 7, losses: 8, pct: ".467", gb: "3", streak: "L1", conference: "AL", division: "West", league: "MLB" },
-  { rank: 12, team: "Los Angeles Dodgers", abbreviation: "LAD", wins: 12, losses: 3, pct: ".800", gb: "-", streak: "W4", conference: "NL", division: "West", league: "MLB" },
-  { rank: 13, team: "Arizona Diamondbacks", abbreviation: "ARI", wins: 9, losses: 6, pct: ".600", gb: "3", streak: "W1", conference: "NL", division: "West", league: "MLB" },
-  { rank: 14, team: "San Francisco Giants", abbreviation: "SF", wins: 7, losses: 8, pct: ".467", gb: "5", streak: "L1", conference: "NL", division: "West", league: "MLB" },
-  { rank: 15, team: "San Diego Padres", abbreviation: "SD", wins: 7, losses: 8, pct: ".467", gb: "5", streak: "W2", conference: "NL", division: "West", league: "MLB" },
-  { rank: 16, team: "Colorado Rockies", abbreviation: "COL", wins: 4, losses: 11, pct: ".267", gb: "8", streak: "L4", conference: "NL", division: "West", league: "MLB" },
-  { rank: 17, team: "Atlanta Braves", abbreviation: "ATL", wins: 11, losses: 4, pct: ".733", gb: "-", streak: "W3", conference: "NL", division: "East", league: "MLB" },
-  { rank: 18, team: "Philadelphia Phillies", abbreviation: "PHI", wins: 9, losses: 6, pct: ".600", gb: "2", streak: "W1", conference: "NL", division: "East", league: "MLB" },
-  { rank: 19, team: "New York Mets", abbreviation: "NYM", wins: 7, losses: 8, pct: ".467", gb: "4", streak: "L2", conference: "NL", division: "East", league: "MLB" },
-  { rank: 20, team: "Milwaukee Brewers", abbreviation: "MIL", wins: 10, losses: 5, pct: ".667", gb: "-", streak: "W2", conference: "NL", division: "Central", league: "MLB" },
-  { rank: 21, team: "Chicago Cubs", abbreviation: "CHC", wins: 8, losses: 7, pct: ".533", gb: "2", streak: "L1", conference: "NL", division: "Central", league: "MLB" },
-  { rank: 22, team: "Cincinnati Reds", abbreviation: "CIN", wins: 6, losses: 9, pct: ".400", gb: "4", streak: "W1", conference: "NL", division: "Central", league: "MLB" },
+  { rank: 8, team: "Detroit Tigers", abbreviation: "DET", wins: 7, losses: 8, pct: ".467", gb: "4", streak: "W1", conference: "AL", division: "Central", league: "MLB" },
+  { rank: 9, team: "Kansas City Royals", abbreviation: "KC", wins: 7, losses: 8, pct: ".467", gb: "4", streak: "L1", conference: "AL", division: "Central", league: "MLB" },
+  { rank: 10, team: "Chicago White Sox", abbreviation: "CWS", wins: 6, losses: 9, pct: ".400", gb: "5", streak: "L2", conference: "AL", division: "Central", league: "MLB" },
+  // AL West
+  { rank: 11, team: "Houston Astros", abbreviation: "HOU", wins: 10, losses: 5, pct: ".667", gb: "-", streak: "W2", conference: "AL", division: "West", league: "MLB" },
+  { rank: 12, team: "Texas Rangers", abbreviation: "TEX", wins: 9, losses: 6, pct: ".600", gb: "1", streak: "W1", conference: "AL", division: "West", league: "MLB" },
+  { rank: 13, team: "Seattle Mariners", abbreviation: "SEA", wins: 7, losses: 8, pct: ".467", gb: "3", streak: "L1", conference: "AL", division: "West", league: "MLB" },
+  { rank: 14, team: "Los Angeles Angels", abbreviation: "LAA", wins: 6, losses: 9, pct: ".400", gb: "4", streak: "L2", conference: "AL", division: "West", league: "MLB" },
+  { rank: 15, team: "Athletics", abbreviation: "ATH", wins: 5, losses: 10, pct: ".333", gb: "5", streak: "L3", conference: "AL", division: "West", league: "MLB" },
+  // NL East
+  { rank: 16, team: "Atlanta Braves", abbreviation: "ATL", wins: 11, losses: 4, pct: ".733", gb: "-", streak: "W3", conference: "NL", division: "East", league: "MLB" },
+  { rank: 17, team: "Philadelphia Phillies", abbreviation: "PHI", wins: 9, losses: 6, pct: ".600", gb: "2", streak: "W1", conference: "NL", division: "East", league: "MLB" },
+  { rank: 18, team: "New York Mets", abbreviation: "NYM", wins: 7, losses: 8, pct: ".467", gb: "4", streak: "L2", conference: "NL", division: "East", league: "MLB" },
+  { rank: 19, team: "Miami Marlins", abbreviation: "MIA", wins: 6, losses: 9, pct: ".400", gb: "5", streak: "L1", conference: "NL", division: "East", league: "MLB" },
+  { rank: 20, team: "Washington Nationals", abbreviation: "WSH", wins: 5, losses: 10, pct: ".333", gb: "6", streak: "L4", conference: "NL", division: "East", league: "MLB" },
+  // NL Central
+  { rank: 21, team: "Milwaukee Brewers", abbreviation: "MIL", wins: 10, losses: 5, pct: ".667", gb: "-", streak: "W2", conference: "NL", division: "Central", league: "MLB" },
+  { rank: 22, team: "Chicago Cubs", abbreviation: "CHC", wins: 8, losses: 7, pct: ".533", gb: "2", streak: "L1", conference: "NL", division: "Central", league: "MLB" },
+  { rank: 23, team: "St. Louis Cardinals", abbreviation: "STL", wins: 7, losses: 8, pct: ".467", gb: "3", streak: "W2", conference: "NL", division: "Central", league: "MLB" },
+  { rank: 24, team: "Cincinnati Reds", abbreviation: "CIN", wins: 6, losses: 9, pct: ".400", gb: "4", streak: "W1", conference: "NL", division: "Central", league: "MLB" },
+  { rank: 25, team: "Pittsburgh Pirates", abbreviation: "PIT", wins: 4, losses: 11, pct: ".267", gb: "6", streak: "L5", conference: "NL", division: "Central", league: "MLB" },
+  // NL West
+  { rank: 26, team: "Los Angeles Dodgers", abbreviation: "LAD", wins: 12, losses: 3, pct: ".800", gb: "-", streak: "W4", conference: "NL", division: "West", league: "MLB" },
+  { rank: 27, team: "Arizona Diamondbacks", abbreviation: "ARI", wins: 9, losses: 6, pct: ".600", gb: "3", streak: "W1", conference: "NL", division: "West", league: "MLB" },
+  { rank: 28, team: "San Francisco Giants", abbreviation: "SF", wins: 7, losses: 8, pct: ".467", gb: "5", streak: "L1", conference: "NL", division: "West", league: "MLB" },
+  { rank: 29, team: "San Diego Padres", abbreviation: "SD", wins: 7, losses: 8, pct: ".467", gb: "5", streak: "W2", conference: "NL", division: "West", league: "MLB" },
+  { rank: 30, team: "Colorado Rockies", abbreviation: "COL", wins: 4, losses: 11, pct: ".267", gb: "8", streak: "L4", conference: "NL", division: "West", league: "MLB" },
 ];
 
 // ============ POWER RANKINGS ============

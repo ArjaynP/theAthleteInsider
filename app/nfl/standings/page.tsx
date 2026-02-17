@@ -118,8 +118,8 @@ function StandingsTable({
                     <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
                       {team.abbreviation.charAt(0)}
                     </div>
-                    <div>
-                      <p className="font-bold text-foreground">{team.team}</p>
+                    <div className="min-w-0">
+                      <p className="font-bold text-foreground whitespace-nowrap">{team.team}</p>
                       <p className="text-[10px] text-muted-foreground">
                         {team.conference}
                       </p>

@@ -59,3 +59,39 @@ model NBATeam {
   @@index([division])
   @@index([abbreviation])
 }
+
+model MLBTeam {
+  id             Int      @id @default(autoincrement())
+  name           String   // Full team name (e.g., "New York Yankees")
+  city           String   // City name (e.g., "New York")
+  abbreviation   String   @unique // Three-letter code (e.g., "NYY")
+  league         String   // "American" or "National"
+  division       String   // Division name (East, Central, West)
+  primaryColor   String?  // Hex color code
+  secondaryColor String?  // Hex color code
+  logoUrl        String?  // URL to team logo
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([league])
+  @@index([division])
+  @@index([abbreviation])
+}
+
+model NFLTeam {
+  id             Int      @id @default(autoincrement())
+  name           String   // Full team name (e.g., "Kansas City Chiefs")
+  city           String   // City name (e.g., "Kansas City")
+  abbreviation   String   @unique // Two-three letter code (e.g., "KC")
+  conference     String   // "AFC" or "NFC"
+  division       String   // Division name (East, North, South, West)
+  primaryColor   String?  // Hex color code
+  secondaryColor String?  // Hex color code
+  logoUrl        String?  // URL to team logo
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([conference])
+  @@index([division])
+  @@index([abbreviation])
+}
