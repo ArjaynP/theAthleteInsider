@@ -90,12 +90,16 @@ function StandingsTable({
                   <ArrowUpDown className="h-3 w-3" />
                 </button>
               </th>
-              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">
                 GB
               </th>
-              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
-                Streak
-              </th>
+              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">HOME</th>
+              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">AWAY</th>
+              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">RS</th>
+              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">RA</th>
+              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">DIFF</th>
+              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">STRK</th>
+              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">L10</th>
             </tr>
           </thead>
           <tbody>
@@ -120,30 +124,39 @@ function StandingsTable({
                     </div>
                   </div>
                 </td>
-                <td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">
+                <td className="px-3 py-3 text-center font-bold tabular-nums text-foreground">
                   {team.wins}
                 </td>
-                <td className="px-5 py-3 text-center tabular-nums text-muted-foreground">
+                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground">
                   {team.losses}
                 </td>
-                <td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">
+                <td className="px-3 py-3 text-center font-bold tabular-nums text-foreground">
                   {team.pct}
                 </td>
-                <td className="px-5 py-3 text-center tabular-nums text-muted-foreground">
+                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground">
                   {team.gb}
                 </td>
-                <td className="px-5 py-3 text-center">
+                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground whitespace-nowrap">{team.home ?? "-"}</td>
+                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground whitespace-nowrap">{team.away ?? "-"}</td>
+                <td className="px-3 py-3 text-center tabular-nums text-foreground">{team.rs ?? "-"}</td>
+                <td className="px-3 py-3 text-center tabular-nums text-foreground">{team.ra ?? "-"}</td>
+                <td className={cn(
+                  "px-3 py-3 text-center font-bold tabular-nums whitespace-nowrap",
+                  team.diff?.startsWith("+") ? "text-green-500" : team.diff?.startsWith("-") ? "text-destructive" : "text-muted-foreground"
+                )}>{team.diff ?? "-"}</td>
+                <td className="px-3 py-3 text-center">
                   <span
                     className={cn(
                       "rounded px-2 py-0.5 text-xs font-bold",
                       team.streak.startsWith("W")
-                        ? "bg-accent/20 text-accent"
+                        ? "bg-green-500/20 text-green-500"
                         : "bg-destructive/20 text-destructive"
                     )}
                   >
                     {team.streak}
                   </span>
                 </td>
+                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground whitespace-nowrap">{team.last10 ?? "-"}</td>
               </tr>
             ))}
           </tbody>
