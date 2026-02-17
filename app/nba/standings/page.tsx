@@ -145,28 +145,28 @@ function StandingsTable({
                   <td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">
                     {team.wins}
                   </td>
-                  <td className="px-5 py-3 text-center tabular-nums text-muted-foreground">
+                  <td className="px-5 py-3 text-center tabular-nums text-foreground">
                     {team.losses}
                   </td>
                   <td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">
                     {team.pct}
                   </td>
-                  <td className="px-5 py-3 text-center tabular-nums text-muted-foreground">
+                  <td className="px-5 py-3 text-center tabular-nums text-foreground">
                     {team.gb}
                   </td>
-                  <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                  <td className="px-5 py-3 text-center text-xs tabular-nums text-foreground">
                     {team.conferenceRecord || "-"}
                   </td>
-                  <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                  <td className="px-5 py-3 text-center text-xs tabular-nums text-foreground whitespace-nowrap">
                     {team.divisionRecord || "-"}
                   </td>
-                  <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                  <td className="px-5 py-3 text-center text-xs tabular-nums text-foreground">
                     {team.home || "-"}
                   </td>
-                  <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                  <td className="px-5 py-3 text-center text-xs tabular-nums text-foreground">
                     {team.away || "-"}
                   </td>
-                  <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                  <td className="px-5 py-3 text-center text-xs tabular-nums text-foreground whitespace-nowrap">
                     {team.last10 || "-"}
                   </td>
                   <td className="px-5 py-3 text-center">
@@ -249,7 +249,7 @@ function LeagueRankings({ rankings }: { rankings: LeagueStanding[] }) {
                     <span className="text-lg font-black text-foreground">{team.rank}</span>
                     <div className="flex flex-col items-center">
                       {team.trend === "up" && (
-                        <TrendingUp className="h-3 w-3 text-accent" />
+                        <TrendingUp className="h-3 w-3 text-green-500" />
                       )}
                       {team.trend === "down" && (
                         <TrendingDown className="h-3 w-3 text-destructive" />
@@ -272,25 +272,25 @@ function LeagueRankings({ rankings }: { rankings: LeagueStanding[] }) {
                 <td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">
                   {team.wins}
                 </td>
-                <td className="px-5 py-3 text-center tabular-nums text-muted-foreground">
+                <td className="px-5 py-3 text-center tabular-nums text-foreground">
                   {team.losses}
                 </td>
                 <td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">
                   {team.pct}
                 </td>
-                <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                <td className="px-5 py-3 text-center text-xs tabular-nums text-foreground">
                   {team.conferenceRecord || "-"}
                 </td>
-                <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                <td className="px-5 py-3 text-center text-xs tabular-nums text-foreground whitespace-nowrap">
                   {team.divisionRecord || "-"}
                 </td>
-                <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                <td className="px-5 py-3 text-center text-xs tabular-nums text-foreground">
                   {team.home || "-"}
                 </td>
-                <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                <td className="px-5 py-3 text-center text-xs tabular-nums text-foreground">
                   {team.away || "-"}
                 </td>
-                <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                <td className="px-5 py-3 text-center text-xs tabular-nums text-foreground whitespace-nowrap">
                   {team.last10 || "-"}
                 </td>
                 <td className="px-5 py-3 text-center">
@@ -827,12 +827,12 @@ export default function NBAStandingsPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-foreground">1.</span>
                     <span className="text-sm font-bold text-foreground">Boston Celtics</span>
-                    <TrendingUp className="ml-auto h-3 w-3 text-accent" />
+                    <TrendingUp className="ml-auto h-3 w-3 text-green-500" />
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-foreground">2.</span>
                     <span className="text-sm font-bold text-foreground">LA Lakers</span>
-                    <TrendingUp className="ml-auto h-3 w-3 text-accent" />
+                    <TrendingUp className="ml-auto h-3 w-3 text-green-500" />
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">3.</span>

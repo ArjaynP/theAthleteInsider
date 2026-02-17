@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { nflStandings, nflPowerRankings, type TeamStanding, type PowerRanking } from "@/lib/mock-data";
+import { nflStandings, nflPowerRankings, type TeamStanding, type LeagueStanding } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { ArrowUpDown, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
@@ -159,7 +159,7 @@ function StandingsTable({
   );
 }
 
-function PowerRankings({ rankings }: { rankings: PowerRanking[] }) {
+function PowerRankings({ rankings }: { rankings: LeagueStanding[] }) {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="flex items-center gap-2 border-b border-border px-5 py-4">
@@ -177,7 +177,7 @@ function PowerRankings({ rankings }: { rankings: PowerRanking[] }) {
               <span className="text-2xl font-black text-foreground">{team.rank}</span>
               <div className="flex items-center gap-1">
                 {team.trend === "up" && (
-                  <TrendingUp className="h-3 w-3 text-accent" />
+                  <TrendingUp className="h-3 w-3 text-green-500" />
                 )}
                 {team.trend === "down" && (
                   <TrendingDown className="h-3 w-3 text-destructive" />

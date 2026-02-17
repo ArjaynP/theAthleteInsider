@@ -463,7 +463,7 @@ export const nbaLeagueStandings: LeagueStanding[] = [
   { rank: 30, team: "Washington Wizards", abbreviation: "WAS", record: "12-41", lastWeek: 30, trend: "same", summary: "Worst record in the league, focused on future.", league: "NBA", wins: 12, losses: 41, pct: ".226", gb: "16.5", streak: "L8", conference: "East", division: "Southeast", home: "7-19", away: "5-22", last10: "1-9", conferenceRecord: "7-27", divisionRecord: "2-12" },
 ];
 
-export const nflPowerRankings: PowerRanking[] = [
+export const nflPowerRankings: LeagueStanding[] = [
   { rank: 1, team: "Kansas City Chiefs", abbreviation: "KC", record: "16-3", lastWeek: 1, trend: "same", summary: "Mahomes and Reid dynasty continues with 8 straight wins.", league: "NFL" },
   { rank: 2, team: "Detroit Lions", abbreviation: "DET", record: "15-4", lastWeek: 2, trend: "same", summary: "Most complete team in the NFC with elite offense and defense.", league: "NFL" },
   { rank: 3, team: "Buffalo Bills", abbreviation: "BUF", record: "14-5", lastWeek: 4, trend: "up", summary: "Josh Allen playing MVP-caliber football down the stretch.", league: "NFL" },
