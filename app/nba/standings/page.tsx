@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { nbaStandings, nbaPowerRankings, nbaCupGroups, nbaCupWildcards, nbaCupBracket, type TeamStanding, type PowerRanking, type NBACupBracketRound } from "@/lib/mock-data";
+import { nbaStandings, nbaLeagueStandings, nbaCupGroups, nbaCupWildcards, nbaCupBracket, type TeamStanding, type LeagueStanding, type NBACupBracketRound } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { ArrowUpDown, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
@@ -12,9 +12,11 @@ type SortKey = "wins" | "losses" | "pct" | "team";
 function StandingsTable({
   standings,
   title,
+  showPlayInBorders = false,
 }: {
   standings: TeamStanding[];
   title: string;
+  showPlayInBorders?: boolean;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("wins");
   const [sortAsc, setSortAsc] = useState(false);
@@ -86,7 +88,7 @@ function StandingsTable({
                   onClick={() => handleSort("pct")}
                   className="flex items-center justify-center gap-1 w-full"
                 >
-                  PCT
+                  WIN%
                   <ArrowUpDown className="h-3 w-3" />
                 </button>
               </th>
@@ -94,30 +96,177 @@ function StandingsTable({
                 GB
               </th>
               <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
-                Streak
+                CONF
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                DIV
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                HOME
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                AWAY
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                L10
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                STREAK
               </th>
             </tr>
           </thead>
           <tbody>
-            {sorted.map((team, i) => (
+            {sorted.map((team, i) => {
+              const position = i + 1;
+              // Determine border class for play-in visual separation
+              const borderClass = showPlayInBorders && (position === 6 || position === 10)
+                ? "border-b-4 border-primary/50"
+                : "border-b border-border/50";
+              
+              return (
+                <tr
+                  key={team.abbreviation}
+                  className={cn(
+                    borderClass,
+                    "transition-colors hover:bg-secondary/30"
+                  )}
+                >
+                  <td className="px-5 py-3 text-sm font-bold tabular-nums text-muted-foreground">
+                    {position}
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
+                        {team.abbreviation.charAt(0)}
+                      </div>
+                      <p className="font-bold text-foreground whitespace-nowrap">{team.team}</p>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">
+                    {team.wins}
+                  </td>
+                  <td className="px-5 py-3 text-center tabular-nums text-muted-foreground">
+                    {team.losses}
+                  </td>
+                  <td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">
+                    {team.pct}
+                  </td>
+                  <td className="px-5 py-3 text-center tabular-nums text-muted-foreground">
+                    {team.gb}
+                  </td>
+                  <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                    {team.conferenceRecord || "-"}
+                  </td>
+                  <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                    {team.divisionRecord || "-"}
+                  </td>
+                  <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                    {team.home || "-"}
+                  </td>
+                  <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                    {team.away || "-"}
+                  </td>
+                  <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                    {team.last10 || "-"}
+                  </td>
+                  <td className="px-5 py-3 text-center">
+                    <span
+                      className={cn(
+                        "rounded px-2 py-0.5 text-xs font-bold",
+                        team.streak.startsWith("W")
+                          ? "bg-accent/20 text-accent"
+                          : "bg-destructive/20 text-destructive"
+                      )}
+                    >
+                      {team.streak}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function LeagueRankings({ rankings }: { rankings: LeagueStanding[] }) {
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="flex items-center gap-2 border-b border-border px-5 py-4">
+        <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
+          League Standings
+        </h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border text-xs text-muted-foreground">
+              <th className="px-5 py-3 text-left font-bold uppercase tracking-widest">
+                RK
+              </th>
+              <th className="px-5 py-3 text-left font-bold uppercase tracking-widest">
+                Team
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                W
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                L
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                WIN%
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                CONF
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                DIV
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                HOME
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                AWAY
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                L10
+              </th>
+              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+                STREAK
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rankings.map((team) => (
               <tr
                 key={team.abbreviation}
                 className="border-b border-border/50 transition-colors hover:bg-secondary/30"
               >
-                <td className="px-5 py-3 text-sm font-bold tabular-nums text-muted-foreground">
-                  {i + 1}
-                </td>
                 <td className="px-5 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-black text-foreground">{team.rank}</span>
+                    <div className="flex flex-col items-center">
+                      {team.trend === "up" && (
+                        <TrendingUp className="h-3 w-3 text-accent" />
+                      )}
+                      {team.trend === "down" && (
+                        <TrendingDown className="h-3 w-3 text-destructive" />
+                      )}
+                      {team.trend === "same" && (
+                        <Minus className="h-3 w-3 text-muted-foreground" />
+                      )}
+                      <span className="text-[10px] text-muted-foreground">{team.lastWeek}</span>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-3 py-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
                       {team.abbreviation.charAt(0)}
                     </div>
-                    <div>
-                      <p className="font-bold text-foreground">{team.team}</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {team.conference}
-                      </p>
-                    </div>
+                    <p className="font-bold text-foreground text-sm whitespace-nowrap">{team.team}</p>
                   </div>
                 </td>
                 <td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">
@@ -129,73 +278,41 @@ function StandingsTable({
                 <td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">
                   {team.pct}
                 </td>
-                <td className="px-5 py-3 text-center tabular-nums text-muted-foreground">
-                  {team.gb}
+                <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                  {team.conferenceRecord || "-"}
+                </td>
+                <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                  {team.divisionRecord || "-"}
+                </td>
+                <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                  {team.home || "-"}
+                </td>
+                <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                  {team.away || "-"}
+                </td>
+                <td className="px-5 py-3 text-center text-xs tabular-nums text-muted-foreground">
+                  {team.last10 || "-"}
                 </td>
                 <td className="px-5 py-3 text-center">
-                  <span
-                    className={cn(
-                      "rounded px-2 py-0.5 text-xs font-bold",
-                      team.streak.startsWith("W")
-                        ? "bg-accent/20 text-accent"
-                        : "bg-destructive/20 text-destructive"
-                    )}
-                  >
-                    {team.streak}
-                  </span>
+                  {team.streak ? (
+                    <span
+                      className={cn(
+                        "rounded px-2 py-0.5 text-xs font-bold",
+                        team.streak.startsWith("W")
+                          ? "bg-accent/20 text-accent"
+                          : "bg-destructive/20 text-destructive"
+                      )}
+                    >
+                      {team.streak}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-    </div>
-  );
-}
-
-function PowerRankings({ rankings }: { rankings: PowerRanking[] }) {
-  return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <div className="flex items-center gap-2 border-b border-border px-5 py-4">
-        <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
-          Power Rankings
-        </h3>
-      </div>
-      <div className="divide-y divide-border">
-        {rankings.map((team) => (
-          <div
-            key={team.abbreviation}
-            className="flex items-center gap-4 p-5 transition-colors hover:bg-secondary/30"
-          >
-            <div className="flex w-12 flex-col items-center">
-              <span className="text-2xl font-black text-foreground">{team.rank}</span>
-              <div className="flex items-center gap-1">
-                {team.trend === "up" && (
-                  <TrendingUp className="h-3 w-3 text-accent" />
-                )}
-                {team.trend === "down" && (
-                  <TrendingDown className="h-3 w-3 text-destructive" />
-                )}
-                {team.trend === "same" && (
-                  <Minus className="h-3 w-3 text-muted-foreground" />
-                )}
-                <span className="text-xs text-muted-foreground">{team.lastWeek}</span>
-              </div>
-            </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary text-sm font-black text-foreground">
-              {team.abbreviation}
-            </div>
-            <div className="flex-1">
-              <div className="flex items-baseline justify-between">
-                <h4 className="font-bold text-foreground">{team.team}</h4>
-                <span className="text-sm font-bold tabular-nums text-muted-foreground">
-                  {team.record}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">{team.summary}</p>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -619,7 +736,7 @@ function NBACupStandings() {
         </h2>
         <div className="mb-6">
           <h3 className="mb-4 text-lg font-black uppercase tracking-tight text-foreground">
-            Eastern Conference
+            East
           </h3>
           <div className="grid gap-4 md:grid-cols-3">
             {eastGroups.map((group) => (
@@ -629,7 +746,7 @@ function NBACupStandings() {
         </div>
         <div>
           <h3 className="mb-4 text-lg font-black uppercase tracking-tight text-foreground">
-            Western Conference
+            West
           </h3>
           <div className="grid gap-4 md:grid-cols-3">
             {westGroups.map((group) => (
@@ -677,19 +794,117 @@ export default function NBAStandingsPage() {
           {/* Segmented Control */}
           <SegmentedControl value={view} onChange={setView} />
 
+          {/* Standings News & Insights */}
+          {view === "regular" && (
+            <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {/* Championship Odds */}
+              <div className="rounded-xl border border-border bg-card p-5">
+                <h3 className="mb-3 text-xs font-black uppercase tracking-widest text-muted-foreground">
+                  Championship Odds
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-foreground">BOS</span>
+                    <span className="text-sm font-bold text-accent">+280</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-foreground">LAL</span>
+                    <span className="text-sm font-bold text-accent">+350</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">DEN</span>
+                    <span className="text-sm text-muted-foreground">+450</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Power Rankings Top 5 */}
+              <div className="rounded-xl border border-border bg-card p-5">
+                <h3 className="mb-3 text-xs font-black uppercase tracking-widest text-muted-foreground">
+                  Power Rankings
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-foreground">1.</span>
+                    <span className="text-sm font-bold text-foreground">Boston Celtics</span>
+                    <TrendingUp className="ml-auto h-3 w-3 text-accent" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-foreground">2.</span>
+                    <span className="text-sm font-bold text-foreground">LA Lakers</span>
+                    <TrendingUp className="ml-auto h-3 w-3 text-accent" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">3.</span>
+                    <span className="text-sm text-muted-foreground">New York Knicks</span>
+                    <TrendingDown className="ml-auto h-3 w-3 text-destructive" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Biggest Surprise */}
+              <div className="rounded-xl border border-border bg-card p-5">
+                <h3 className="mb-3 text-xs font-black uppercase tracking-widest text-muted-foreground">
+                  Biggest Surprise
+                </h3>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-sm font-black text-foreground">
+                    LAL
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">LA Lakers</p>
+                    <p className="text-xs text-muted-foreground">38-15 • 1st West</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  LeBron and AD leading a 7-game win streak, exceeding preseason expectations.
+                </p>
+              </div>
+
+              {/* Biggest Upset */}
+              <div className="rounded-xl border border-border bg-card p-5">
+                <h3 className="mb-3 text-xs font-black uppercase tracking-widest text-muted-foreground">
+                  Biggest Disappointment
+                </h3>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-sm font-black text-foreground">
+                    PHX
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">Phoenix Suns</p>
+                    <p className="text-xs text-muted-foreground">27-26 • 10th West</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Big 3 of Durant, Booker, and Beal struggling to find chemistry and consistency.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Regular Season Standings */}
           {view === "regular" && (
             <>
               {/* Standings */}
-              <div className="mb-12 grid gap-6 lg:grid-cols-2">
+              <div className="mb-4 grid gap-6 lg:grid-cols-2">
             <StandingsTable
               standings={nbaStandings.filter((s) => s.conference === "East")}
               title="Eastern Conference"
+              showPlayInBorders={true}
             />
             <StandingsTable
               standings={nbaStandings.filter((s) => s.conference === "West")}
               title="Western Conference"
+              showPlayInBorders={true}
             />
+          </div>
+          
+          {/* Play-In Legend */}
+          <div className="mb-12 flex items-center justify-center gap-6 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="h-1 w-8 bg-primary/50" />
+              <span>1-6: Guaranteed Playoff Spots | 7-10: Play-In Tournament | 11-15: Eliminated</span>
+            </div>
           </div>
 
           {/* Divisional Standings */}
@@ -727,9 +942,9 @@ export default function NBAStandingsPage() {
             </div>
           </div>
 
-          {/* Power Rankings */}
+          {/* League Rankings */}
           <div className="mb-8">
-            <PowerRankings rankings={nbaPowerRankings} />
+            <LeagueRankings rankings={nbaLeagueStandings} />
           </div>
             </>
           )}

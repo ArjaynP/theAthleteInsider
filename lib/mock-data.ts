@@ -303,50 +303,55 @@ export interface TeamStanding {
   conference: string;
   division: string;
   league: "NBA" | "NFL" | "MLB";
+  home?: string;
+  away?: string;
+  last10?: string;
+  conferenceRecord?: string;
+  divisionRecord?: string;
 }
 
 export const nbaStandings: TeamStanding[] = [
   // Eastern Conference - Atlantic Division
-  { rank: 1, team: "Boston Celtics", abbreviation: "BOS", wins: 40, losses: 13, pct: ".755", gb: "-", streak: "W5", conference: "East", division: "Atlantic", league: "NBA" },
-  { rank: 2, team: "New York Knicks", abbreviation: "NYK", wins: 36, losses: 17, pct: ".679", gb: "4", streak: "W3", conference: "East", division: "Atlantic", league: "NBA" },
-  { rank: 3, team: "Philadelphia 76ers", abbreviation: "PHI", wins: 30, losses: 23, pct: ".566", gb: "10", streak: "L1", conference: "East", division: "Atlantic", league: "NBA" },
-  { rank: 4, team: "Brooklyn Nets", abbreviation: "BKN", wins: 25, losses: 28, pct: ".472", gb: "15", streak: "L2", conference: "East", division: "Atlantic", league: "NBA" },
-  { rank: 5, team: "Toronto Raptors", abbreviation: "TOR", wins: 20, losses: 33, pct: ".377", gb: "20", streak: "L4", conference: "East", division: "Atlantic", league: "NBA" },
+  { rank: 1, team: "Boston Celtics", abbreviation: "BOS", wins: 40, losses: 13, pct: ".755", gb: "-", streak: "W5", conference: "East", division: "Atlantic", league: "NBA", home: "22-5", away: "18-8", last10: "8-2", conferenceRecord: "28-7", divisionRecord: "12-2" },
+  { rank: 2, team: "New York Knicks", abbreviation: "NYK", wins: 36, losses: 17, pct: ".679", gb: "4", streak: "W3", conference: "East", division: "Atlantic", league: "NBA", home: "20-7", away: "16-10", last10: "7-3", conferenceRecord: "24-10", divisionRecord: "10-3" },
+  { rank: 3, team: "Philadelphia 76ers", abbreviation: "PHI", wins: 30, losses: 23, pct: ".566", gb: "10", streak: "L1", conference: "East", division: "Atlantic", league: "NBA", home: "18-9", away: "12-14", last10: "5-5", conferenceRecord: "19-15", divisionRecord: "8-6" },
+  { rank: 4, team: "Brooklyn Nets", abbreviation: "BKN", wins: 25, losses: 28, pct: ".472", gb: "15", streak: "L2", conference: "East", division: "Atlantic", league: "NBA", home: "15-12", away: "10-16", last10: "4-6", conferenceRecord: "16-18", divisionRecord: "6-8" },
+  { rank: 5, team: "Toronto Raptors", abbreviation: "TOR", wins: 20, losses: 33, pct: ".377", gb: "20", streak: "L4", conference: "East", division: "Atlantic", league: "NBA", home: "12-15", away: "8-18", last10: "2-8", conferenceRecord: "12-22", divisionRecord: "4-10" },
   
   // Eastern Conference - Central Division
-  { rank: 6, team: "Milwaukee Bucks", abbreviation: "MIL", wins: 34, losses: 19, pct: ".642", gb: "-", streak: "L1", conference: "East", division: "Central", league: "NBA" },
-  { rank: 7, team: "Cleveland Cavaliers", abbreviation: "CLE", wins: 34, losses: 20, pct: ".630", gb: "0.5", streak: "W2", conference: "East", division: "Central", league: "NBA" },
-  { rank: 8, team: "Indiana Pacers", abbreviation: "IND", wins: 27, losses: 26, pct: ".509", gb: "7", streak: "W1", conference: "East", division: "Central", league: "NBA" },
-  { rank: 9, team: "Chicago Bulls", abbreviation: "CHI", wins: 24, losses: 29, pct: ".453", gb: "10", streak: "W1", conference: "East", division: "Central", league: "NBA" },
-  { rank: 10, team: "Detroit Pistons", abbreviation: "DET", wins: 18, losses: 35, pct: ".340", gb: "16", streak: "L3", conference: "East", division: "Central", league: "NBA" },
+  { rank: 6, team: "Milwaukee Bucks", abbreviation: "MIL", wins: 34, losses: 19, pct: ".642", gb: "-", streak: "L1", conference: "East", division: "Central", league: "NBA", home: "19-8", away: "15-11", last10: "6-4", conferenceRecord: "23-13", divisionRecord: "11-3" },
+  { rank: 7, team: "Cleveland Cavaliers", abbreviation: "CLE", wins: 34, losses: 20, pct: ".630", gb: "0.5", streak: "W2", conference: "East", division: "Central", league: "NBA", home: "21-7", away: "13-13", last10: "7-3", conferenceRecord: "23-13", divisionRecord: "10-4" },
+  { rank: 8, team: "Indiana Pacers", abbreviation: "IND", wins: 27, losses: 26, pct: ".509", gb: "7", streak: "W1", conference: "East", division: "Central", league: "NBA", home: "16-11", away: "11-15", last10: "6-4", conferenceRecord: "18-17", divisionRecord: "8-6" },
+  { rank: 9, team: "Chicago Bulls", abbreviation: "CHI", wins: 24, losses: 29, pct: ".453", gb: "10", streak: "W1", conference: "East", division: "Central", league: "NBA", home: "14-13", away: "10-16", last10: "5-5", conferenceRecord: "15-19", divisionRecord: "7-7" },
+  { rank: 10, team: "Detroit Pistons", abbreviation: "DET", wins: 18, losses: 35, pct: ".340", gb: "16", streak: "L3", conference: "East", division: "Central", league: "NBA", home: "11-16", away: "7-19", last10: "3-7", conferenceRecord: "11-23", divisionRecord: "4-10" },
   
   // Eastern Conference - Southeast Division
-  { rank: 11, team: "Miami Heat", abbreviation: "MIA", wins: 28, losses: 24, pct: ".538", gb: "-", streak: "L2", conference: "East", division: "Southeast", league: "NBA" },
-  { rank: 12, team: "Orlando Magic", abbreviation: "ORL", wins: 26, losses: 26, pct: ".500", gb: "2", streak: "W2", conference: "East", division: "Southeast", league: "NBA" },
-  { rank: 13, team: "Atlanta Hawks", abbreviation: "ATL", wins: 23, losses: 29, pct: ".442", gb: "5", streak: "L1", conference: "East", division: "Southeast", league: "NBA" },
-  { rank: 14, team: "Charlotte Hornets", abbreviation: "CHA", wins: 15, losses: 38, pct: ".283", gb: "13.5", streak: "L6", conference: "East", division: "Southeast", league: "NBA" },
-  { rank: 15, team: "Washington Wizards", abbreviation: "WAS", wins: 12, losses: 41, pct: ".226", gb: "16.5", streak: "L8", conference: "East", division: "Southeast", league: "NBA" },
+  { rank: 11, team: "Miami Heat", abbreviation: "MIA", wins: 28, losses: 24, pct: ".538", gb: "-", streak: "L2", conference: "East", division: "Southeast", league: "NBA", home: "17-10", away: "11-14", last10: "4-6", conferenceRecord: "18-16", divisionRecord: "9-5" },
+  { rank: 12, team: "Orlando Magic", abbreviation: "ORL", wins: 26, losses: 26, pct: ".500", gb: "2", streak: "W2", conference: "East", division: "Southeast", league: "NBA", home: "15-11", away: "11-15", last10: "6-4", conferenceRecord: "17-17", divisionRecord: "8-6" },
+  { rank: 13, team: "Atlanta Hawks", abbreviation: "ATL", wins: 23, losses: 29, pct: ".442", gb: "5", streak: "L1", conference: "East", division: "Southeast", league: "NBA", home: "13-13", away: "10-16", last10: "4-6", conferenceRecord: "15-19", divisionRecord: "7-7" },
+  { rank: 14, team: "Charlotte Hornets", abbreviation: "CHA", wins: 15, losses: 38, pct: ".283", gb: "13.5", streak: "L6", conference: "East", division: "Southeast", league: "NBA", home: "9-18", away: "6-20", last10: "2-8", conferenceRecord: "9-25", divisionRecord: "3-11" },
+  { rank: 15, team: "Washington Wizards", abbreviation: "WAS", wins: 12, losses: 41, pct: ".226", gb: "16.5", streak: "L8", conference: "East", division: "Southeast", league: "NBA", home: "7-19", away: "5-22", last10: "1-9", conferenceRecord: "7-27", divisionRecord: "2-12" },
   
   // Western Conference - Pacific Division
-  { rank: 16, team: "Los Angeles Lakers", abbreviation: "LAL", wins: 38, losses: 15, pct: ".717", gb: "-", streak: "W7", conference: "West", division: "Pacific", league: "NBA" },
-  { rank: 17, team: "Golden State Warriors", abbreviation: "GSW", wins: 32, losses: 20, pct: ".615", gb: "5.5", streak: "W2", conference: "West", division: "Pacific", league: "NBA" },
-  { rank: 18, team: "LA Clippers", abbreviation: "LAC", wins: 31, losses: 21, pct: ".596", gb: "6.5", streak: "L1", conference: "West", division: "Pacific", league: "NBA" },
-  { rank: 19, team: "Sacramento Kings", abbreviation: "SAC", wins: 29, losses: 24, pct: ".547", gb: "9", streak: "W2", conference: "West", division: "Pacific", league: "NBA" },
-  { rank: 20, team: "Phoenix Suns", abbreviation: "PHX", wins: 27, losses: 26, pct: ".509", gb: "11", streak: "L1", conference: "West", division: "Pacific", league: "NBA" },
+  { rank: 16, team: "Los Angeles Lakers", abbreviation: "LAL", wins: 38, losses: 15, pct: ".717", gb: "-", streak: "W7", conference: "West", division: "Pacific", league: "NBA", home: "20-7", away: "18-8", last10: "9-1", conferenceRecord: "26-9", divisionRecord: "11-3" },
+  { rank: 17, team: "Golden State Warriors", abbreviation: "GSW", wins: 32, losses: 20, pct: ".615", gb: "5.5", streak: "W2", conference: "West", division: "Pacific", league: "NBA", home: "18-9", away: "14-11", last10: "7-3", conferenceRecord: "21-13", divisionRecord: "9-5" },
+  { rank: 18, team: "LA Clippers", abbreviation: "LAC", wins: 31, losses: 21, pct: ".596", gb: "6.5", streak: "L1", conference: "West", division: "Pacific", league: "NBA", home: "17-9", away: "14-12", last10: "5-5", conferenceRecord: "20-14", divisionRecord: "8-6" },
+  { rank: 19, team: "Sacramento Kings", abbreviation: "SAC", wins: 29, losses: 24, pct: ".547", gb: "9", streak: "W2", conference: "West", division: "Pacific", league: "NBA", home: "16-10", away: "13-14", last10: "6-4", conferenceRecord: "19-15", divisionRecord: "8-6" },
+  { rank: 20, team: "Phoenix Suns", abbreviation: "PHX", wins: 27, losses: 26, pct: ".509", gb: "11", streak: "L1", conference: "West", division: "Pacific", league: "NBA", home: "15-11", away: "12-15", last10: "5-5", conferenceRecord: "17-17", divisionRecord: "7-7" },
   
   // Western Conference - Northwest Division
-  { rank: 21, team: "Denver Nuggets", abbreviation: "DEN", wins: 35, losses: 18, pct: ".660", gb: "-", streak: "W1", conference: "West", division: "Northwest", league: "NBA" },
-  { rank: 22, team: "Oklahoma City Thunder", abbreviation: "OKC", wins: 33, losses: 20, pct: ".623", gb: "2", streak: "W3", conference: "West", division: "Northwest", league: "NBA" },
-  { rank: 23, team: "Minnesota Timberwolves", abbreviation: "MIN", wins: 30, losses: 23, pct: ".566", gb: "5", streak: "L2", conference: "West", division: "Northwest", league: "NBA" },
-  { rank: 24, team: "Portland Trail Blazers", abbreviation: "POR", wins: 21, losses: 32, pct: ".396", gb: "14", streak: "L3", conference: "West", division: "Northwest", league: "NBA" },
-  { rank: 25, team: "Utah Jazz", abbreviation: "UTA", wins: 17, losses: 36, pct: ".321", gb: "18", streak: "L5", conference: "West", division: "Northwest", league: "NBA" },
+  { rank: 21, team: "Denver Nuggets", abbreviation: "DEN", wins: 35, losses: 18, pct: ".660", gb: "-", streak: "W1", conference: "West", division: "Northwest", league: "NBA", home: "19-8", away: "16-10", last10: "6-4", conferenceRecord: "24-12", divisionRecord: "10-4" },
+  { rank: 22, team: "Oklahoma City Thunder", abbreviation: "OKC", wins: 33, losses: 20, pct: ".623", gb: "2", streak: "W3", conference: "West", division: "Northwest", league: "NBA", home: "18-9", away: "15-11", last10: "7-3", conferenceRecord: "22-13", divisionRecord: "9-5" },
+  { rank: 23, team: "Minnesota Timberwolves", abbreviation: "MIN", wins: 30, losses: 23, pct: ".566", gb: "5", streak: "L2", conference: "West", division: "Northwest", league: "NBA", home: "17-9", away: "13-14", last10: "4-6", conferenceRecord: "20-15", divisionRecord: "8-6" },
+  { rank: 24, team: "Portland Trail Blazers", abbreviation: "POR", wins: 21, losses: 32, pct: ".396", gb: "14", streak: "L3", conference: "West", division: "Northwest", league: "NBA", home: "12-14", away: "9-18", last10: "3-7", conferenceRecord: "13-21", divisionRecord: "5-9" },
+  { rank: 25, team: "Utah Jazz", abbreviation: "UTA", wins: 17, losses: 36, pct: ".321", gb: "18", streak: "L5", conference: "West", division: "Northwest", league: "NBA", home: "10-16", away: "7-20", last10: "2-8", conferenceRecord: "10-24", divisionRecord: "4-10" },
   
   // Western Conference - Southwest Division
-  { rank: 26, team: "Dallas Mavericks", abbreviation: "DAL", wins: 33, losses: 20, pct: ".623", gb: "-", streak: "W1", conference: "West", division: "Southwest", league: "NBA" },
-  { rank: 27, team: "Memphis Grizzlies", abbreviation: "MEM", wins: 30, losses: 22, pct: ".577", gb: "2.5", streak: "W2", conference: "West", division: "Southwest", league: "NBA" },
-  { rank: 28, team: "New Orleans Pelicans", abbreviation: "NOP", wins: 25, losses: 28, pct: ".472", gb: "8", streak: "L1", conference: "West", division: "Southwest", league: "NBA" },
-  { rank: 29, team: "Houston Rockets", abbreviation: "HOU", wins: 23, losses: 30, pct: ".434", gb: "10", streak: "W1", conference: "West", division: "Southwest", league: "NBA" },
-  { rank: 30, team: "San Antonio Spurs", abbreviation: "SAS", wins: 15, losses: 38, pct: ".283", gb: "18", streak: "L7", conference: "West", division: "Southwest", league: "NBA" },
+  { rank: 26, team: "Dallas Mavericks", abbreviation: "DAL", wins: 33, losses: 20, pct: ".623", gb: "-", streak: "W1", conference: "West", division: "Southwest", league: "NBA", home: "18-9", away: "15-11", last10: "6-4", conferenceRecord: "22-13", divisionRecord: "10-4" },
+  { rank: 27, team: "Memphis Grizzlies", abbreviation: "MEM", wins: 30, losses: 22, pct: ".577", gb: "2.5", streak: "W2", conference: "West", division: "Southwest", league: "NBA", home: "17-9", away: "13-13", last10: "7-3", conferenceRecord: "20-15", divisionRecord: "9-5" },
+  { rank: 28, team: "New Orleans Pelicans", abbreviation: "NOP", wins: 25, losses: 28, pct: ".472", gb: "8", streak: "L1", conference: "West", division: "Southwest", league: "NBA", home: "14-12", away: "11-16", last10: "4-6", conferenceRecord: "16-18", divisionRecord: "7-7" },
+  { rank: 29, team: "Houston Rockets", abbreviation: "HOU", wins: 23, losses: 30, pct: ".434", gb: "10", streak: "W1", conference: "West", division: "Southwest", league: "NBA", home: "13-13", away: "10-17", last10: "5-5", conferenceRecord: "15-19", divisionRecord: "6-8" },
+  { rank: 30, team: "San Antonio Spurs", abbreviation: "SAS", wins: 15, losses: 38, pct: ".283", gb: "18", streak: "L7", conference: "West", division: "Southwest", league: "NBA", home: "9-17", away: "6-21", last10: "1-9", conferenceRecord: "9-25", divisionRecord: "3-11" },
 ];
 
 export const nflStandings: TeamStanding[] = [
@@ -402,7 +407,7 @@ export const mlbStandings: TeamStanding[] = [
 ];
 
 // ============ POWER RANKINGS ============
-export interface PowerRanking {
+export interface LeagueStanding {
   rank: number;
   team: string;
   abbreviation: string;
@@ -411,39 +416,51 @@ export interface PowerRanking {
   trend: "up" | "down" | "same";
   summary: string;
   league: "NBA" | "NFL" | "MLB";
+  wins?: number;
+  losses?: number;
+  pct?: string;
+  gb?: string;
+  streak?: string;
+  conference?: string;
+  division?: string;
+  home?: string;
+  away?: string;
+  last10?: string;
+  conferenceRecord?: string;
+  divisionRecord?: string;
 }
 
-export const nbaPowerRankings: PowerRanking[] = [
-  { rank: 1, team: "Boston Celtics", abbreviation: "BOS", record: "40-13", lastWeek: 1, trend: "same", summary: "Dominant on both ends with league-best defense.", league: "NBA" },
-  { rank: 2, team: "Los Angeles Lakers", abbreviation: "LAL", record: "38-15", lastWeek: 3, trend: "up", summary: "LeBron and AD firing on all cylinders during 7-game win streak.", league: "NBA" },
-  { rank: 3, team: "New York Knicks", abbreviation: "NYK", record: "36-17", lastWeek: 2, trend: "down", summary: "Still elite but showing signs of fatigue in recent games.", league: "NBA" },
-  { rank: 4, team: "Denver Nuggets", abbreviation: "DEN", record: "35-18", lastWeek: 5, trend: "up", summary: "Jokic remains unstoppable as the reigning MVP.", league: "NBA" },
-  { rank: 5, team: "Milwaukee Bucks", abbreviation: "MIL", record: "34-19", lastWeek: 4, trend: "down", summary: "Giannis doing Giannis things but role players inconsistent.", league: "NBA" },
-  { rank: 6, team: "Cleveland Cavaliers", abbreviation: "CLE", record: "34-20", lastWeek: 6, trend: "same", summary: "Balanced attack keeps them in contention.", league: "NBA" },
-  { rank: 7, team: "Dallas Mavericks", abbreviation: "DAL", record: "33-20", lastWeek: 9, trend: "up", summary: "Luka's scoring tear has them surging in the West.", league: "NBA" },
-  { rank: 8, team: "Oklahoma City Thunder", abbreviation: "OKC", record: "33-20", lastWeek: 10, trend: "up", summary: "Young core led by SGA making serious playoff push.", league: "NBA" },
-  { rank: 9, team: "Golden State Warriors", abbreviation: "GSW", record: "32-20", lastWeek: 7, trend: "down", summary: "Curry still cooking but defense needs work.", league: "NBA" },
-  { rank: 10, team: "LA Clippers", abbreviation: "LAC", record: "31-21", lastWeek: 8, trend: "down", summary: "Kawhi's load management continues to be a storyline.", league: "NBA" },
-  { rank: 11, team: "Philadelphia 76ers", abbreviation: "PHI", record: "30-23", lastWeek: 11, trend: "same", summary: "Embiid's return gives them hope in crowded East.", league: "NBA" },
-  { rank: 12, team: "Minnesota Timberwolves", abbreviation: "MIN", record: "30-23", lastWeek: 12, trend: "same", summary: "Elite defense but offensive struggles persist.", league: "NBA" },
-  { rank: 13, team: "Memphis Grizzlies", abbreviation: "MEM", record: "30-22", lastWeek: 14, trend: "up", summary: "Ja Morant playing at an All-Star level.", league: "NBA" },
-  { rank: 14, team: "Sacramento Kings", abbreviation: "SAC", record: "29-24", lastWeek: 13, trend: "down", summary: "De'Aaron Fox keeping Kings in playoff hunt.", league: "NBA" },
-  { rank: 15, team: "Miami Heat", abbreviation: "MIA", record: "28-24", lastWeek: 15, trend: "same", summary: "Butler and Bam keep them competitive in the East.", league: "NBA" },
-  { rank: 16, team: "Phoenix Suns", abbreviation: "PHX", record: "27-26", lastWeek: 16, trend: "same", summary: "Big 3 needs to find consistency.", league: "NBA" },
-  { rank: 17, team: "Indiana Pacers", abbreviation: "IND", record: "27-26", lastWeek: 17, trend: "same", summary: "High-octane offense makes them dangerous.", league: "NBA" },
-  { rank: 18, team: "Orlando Magic", abbreviation: "ORL", record: "26-26", lastWeek: 19, trend: "up", summary: "Young team exceeding expectations.", league: "NBA" },
-  { rank: 19, team: "New Orleans Pelicans", abbreviation: "NOP", record: "25-28", lastWeek: 18, trend: "down", summary: "Zion and Ingram need help to make playoff push.", league: "NBA" },
-  { rank: 20, team: "Brooklyn Nets", abbreviation: "BKN", record: "25-28", lastWeek: 20, trend: "same", summary: "Bridges leading young core in rebuild year.", league: "NBA" },
-  { rank: 21, team: "Chicago Bulls", abbreviation: "CHI", record: "24-29", lastWeek: 21, trend: "same", summary: "LaVine and DeRozan keeping Bulls respectable.", league: "NBA" },
-  { rank: 22, team: "Atlanta Hawks", abbreviation: "ATL", record: "23-29", lastWeek: 22, trend: "same", summary: "Trae Young's brilliance not enough to lift Hawks.", league: "NBA" },
-  { rank: 23, team: "Houston Rockets", abbreviation: "HOU", record: "23-30", lastWeek: 23, trend: "same", summary: "Young roster showing flashes of potential.", league: "NBA" },
-  { rank: 24, team: "Portland Trail Blazers", abbreviation: "POR", record: "21-32", lastWeek: 24, trend: "same", summary: "Tanking for better draft position.", league: "NBA" },
-  { rank: 25, team: "Toronto Raptors", abbreviation: "TOR", record: "20-33", lastWeek: 25, trend: "same", summary: "Rebuild year in full effect north of the border.", league: "NBA" },
-  { rank: 26, team: "Detroit Pistons", abbreviation: "DET", record: "18-35", lastWeek: 26, trend: "same", summary: "Cade Cunningham's development is the bright spot.", league: "NBA" },
-  { rank: 27, team: "Utah Jazz", abbreviation: "UTA", record: "17-36", lastWeek: 27, trend: "same", summary: "Full rebuild mode after trading veterans.", league: "NBA" },
-  { rank: 28, team: "Charlotte Hornets", abbreviation: "CHA", record: "15-38", lastWeek: 28, trend: "same", summary: "LaMelo Ball dealing with injuries all season.", league: "NBA" },
-  { rank: 29, team: "San Antonio Spurs", abbreviation: "SAS", record: "15-38", lastWeek: 29, trend: "same", summary: "Wembanyama learning but team struggling.", league: "NBA" },
-  { rank: 30, team: "Washington Wizards", abbreviation: "WAS", record: "12-41", lastWeek: 30, trend: "same", summary: "Worst record in the league, focused on future.", league: "NBA" },
+export const nbaLeagueStandings: LeagueStanding[] = [
+  { rank: 1, team: "Boston Celtics", abbreviation: "BOS", record: "40-13", lastWeek: 1, trend: "same", summary: "Dominant on both ends with league-best defense.", league: "NBA", wins: 40, losses: 13, pct: ".755", gb: "-", streak: "W5", conference: "East", division: "Atlantic", home: "22-5", away: "18-8", last10: "8-2", conferenceRecord: "28-7", divisionRecord: "12-2" },
+  { rank: 2, team: "Los Angeles Lakers", abbreviation: "LAL", record: "38-15", lastWeek: 3, trend: "up", summary: "LeBron and AD firing on all cylinders during 7-game win streak.", league: "NBA", wins: 38, losses: 15, pct: ".717", gb: "-", streak: "W7", conference: "West", division: "Pacific", home: "20-7", away: "18-8", last10: "9-1", conferenceRecord: "26-9", divisionRecord: "11-3" },
+  { rank: 3, team: "New York Knicks", abbreviation: "NYK", record: "36-17", lastWeek: 2, trend: "down", summary: "Still elite but showing signs of fatigue in recent games.", league: "NBA", wins: 36, losses: 17, pct: ".679", gb: "4", streak: "W3", conference: "East", division: "Atlantic", home: "20-7", away: "16-10", last10: "7-3", conferenceRecord: "24-10", divisionRecord: "10-3" },
+  { rank: 4, team: "Denver Nuggets", abbreviation: "DEN", record: "35-18", lastWeek: 5, trend: "up", summary: "Jokic remains unstoppable as the reigning MVP.", league: "NBA", wins: 35, losses: 18, pct: ".660", gb: "-", streak: "W1", conference: "West", division: "Northwest", home: "19-8", away: "16-10", last10: "6-4", conferenceRecord: "24-12", divisionRecord: "10-4" },
+  { rank: 5, team: "Milwaukee Bucks", abbreviation: "MIL", record: "34-19", lastWeek: 4, trend: "down", summary: "Giannis doing Giannis things but role players inconsistent.", league: "NBA", wins: 34, losses: 19, pct: ".642", gb: "-", streak: "L1", conference: "East", division: "Central", home: "19-8", away: "15-11", last10: "6-4", conferenceRecord: "23-13", divisionRecord: "11-3" },
+  { rank: 6, team: "Cleveland Cavaliers", abbreviation: "CLE", record: "34-20", lastWeek: 6, trend: "same", summary: "Balanced attack keeps them in contention.", league: "NBA", wins: 34, losses: 20, pct: ".630", gb: "0.5", streak: "W2", conference: "East", division: "Central", home: "21-7", away: "13-13", last10: "7-3", conferenceRecord: "23-13", divisionRecord: "10-4" },
+  { rank: 7, team: "Dallas Mavericks", abbreviation: "DAL", record: "33-20", lastWeek: 9, trend: "up", summary: "Luka's scoring tear has them surging in the West.", league: "NBA", wins: 33, losses: 20, pct: ".623", gb: "-", streak: "W1", conference: "West", division: "Southwest", home: "18-9", away: "15-11", last10: "6-4", conferenceRecord: "22-13", divisionRecord: "10-4" },
+  { rank: 8, team: "Oklahoma City Thunder", abbreviation: "OKC", record: "33-20", lastWeek: 10, trend: "up", summary: "Young core led by SGA making serious playoff push.", league: "NBA", wins: 33, losses: 20, pct: ".623", gb: "2", streak: "W3", conference: "West", division: "Northwest", home: "18-9", away: "15-11", last10: "7-3", conferenceRecord: "22-13", divisionRecord: "9-5" },
+  { rank: 9, team: "Golden State Warriors", abbreviation: "GSW", record: "32-20", lastWeek: 7, trend: "down", summary: "Curry still cooking but defense needs work.", league: "NBA", wins: 32, losses: 20, pct: ".615", gb: "5.5", streak: "W2", conference: "West", division: "Pacific", home: "18-9", away: "14-11", last10: "7-3", conferenceRecord: "21-13", divisionRecord: "9-5" },
+  { rank: 10, team: "LA Clippers", abbreviation: "LAC", record: "31-21", lastWeek: 8, trend: "down", summary: "Kawhi's load management continues to be a storyline.", league: "NBA", wins: 31, losses: 21, pct: ".596", gb: "6.5", streak: "L1", conference: "West", division: "Pacific", home: "17-9", away: "14-12", last10: "5-5", conferenceRecord: "20-14", divisionRecord: "8-6" },
+  { rank: 11, team: "Philadelphia 76ers", abbreviation: "PHI", record: "30-23", lastWeek: 11, trend: "same", summary: "Embiid's return gives them hope in crowded East.", league: "NBA", wins: 30, losses: 23, pct: ".566", gb: "10", streak: "L1", conference: "East", division: "Atlantic", home: "18-9", away: "12-14", last10: "5-5", conferenceRecord: "19-15", divisionRecord: "8-6" },
+  { rank: 12, team: "Minnesota Timberwolves", abbreviation: "MIN", record: "30-23", lastWeek: 12, trend: "same", summary: "Elite defense but offensive struggles persist.", league: "NBA", wins: 30, losses: 23, pct: ".566", gb: "5", streak: "L2", conference: "West", division: "Northwest", home: "17-9", away: "13-14", last10: "4-6", conferenceRecord: "20-15", divisionRecord: "8-6" },
+  { rank: 13, team: "Memphis Grizzlies", abbreviation: "MEM", record: "30-22", lastWeek: 14, trend: "up", summary: "Ja Morant playing at an All-Star level.", league: "NBA", wins: 30, losses: 22, pct: ".577", gb: "2.5", streak: "W2", conference: "West", division: "Southwest", home: "17-9", away: "13-13", last10: "7-3", conferenceRecord: "20-15", divisionRecord: "9-5" },
+  { rank: 14, team: "Sacramento Kings", abbreviation: "SAC", record: "29-24", lastWeek: 13, trend: "down", summary: "De'Aaron Fox keeping Kings in playoff hunt.", league: "NBA", wins: 29, losses: 24, pct: ".547", gb: "9", streak: "W2", conference: "West", division: "Pacific", home: "16-10", away: "13-14", last10: "6-4", conferenceRecord: "19-15", divisionRecord: "8-6" },
+  { rank: 15, team: "Miami Heat", abbreviation: "MIA", record: "28-24", lastWeek: 15, trend: "same", summary: "Butler and Bam keep them competitive in the East.", league: "NBA", wins: 28, losses: 24, pct: ".538", gb: "-", streak: "L2", conference: "East", division: "Southeast", home: "17-10", away: "11-14", last10: "4-6", conferenceRecord: "18-16", divisionRecord: "9-5" },
+  { rank: 16, team: "Phoenix Suns", abbreviation: "PHX", record: "27-26", lastWeek: 16, trend: "same", summary: "Big 3 needs to find consistency.", league: "NBA", wins: 27, losses: 26, pct: ".509", gb: "11", streak: "L1", conference: "West", division: "Pacific", home: "15-11", away: "12-15", last10: "5-5", conferenceRecord: "17-17", divisionRecord: "7-7" },
+  { rank: 17, team: "Indiana Pacers", abbreviation: "IND", record: "27-26", lastWeek: 17, trend: "same", summary: "High-octane offense makes them dangerous.", league: "NBA", wins: 27, losses: 26, pct: ".509", gb: "7", streak: "W1", conference: "East", division: "Central", home: "16-11", away: "11-15", last10: "6-4", conferenceRecord: "18-17", divisionRecord: "8-6" },
+  { rank: 18, team: "Orlando Magic", abbreviation: "ORL", record: "26-26", lastWeek: 19, trend: "up", summary: "Young team exceeding expectations.", league: "NBA", wins: 26, losses: 26, pct: ".500", gb: "2", streak: "W2", conference: "East", division: "Southeast", home: "15-11", away: "11-15", last10: "6-4", conferenceRecord: "17-17", divisionRecord: "8-6" },
+  { rank: 19, team: "New Orleans Pelicans", abbreviation: "NOP", record: "25-28", lastWeek: 18, trend: "down", summary: "Zion and Ingram need help to make playoff push.", league: "NBA", wins: 25, losses: 28, pct: ".472", gb: "8", streak: "L1", conference: "West", division: "Southwest", home: "14-12", away: "11-16", last10: "4-6", conferenceRecord: "16-18", divisionRecord: "7-7" },
+  { rank: 20, team: "Brooklyn Nets", abbreviation: "BKN", record: "25-28", lastWeek: 20, trend: "same", summary: "Bridges leading young core in rebuild year.", league: "NBA", wins: 25, losses: 28, pct: ".472", gb: "15", streak: "L2", conference: "East", division: "Atlantic", home: "15-12", away: "10-16", last10: "4-6", conferenceRecord: "16-18", divisionRecord: "6-8" },
+  { rank: 21, team: "Chicago Bulls", abbreviation: "CHI", record: "24-29", lastWeek: 21, trend: "same", summary: "LaVine and DeRozan keeping Bulls respectable.", league: "NBA", wins: 24, losses: 29, pct: ".453", gb: "10", streak: "W1", conference: "East", division: "Central", home: "14-13", away: "10-16", last10: "5-5", conferenceRecord: "15-19", divisionRecord: "7-7" },
+  { rank: 22, team: "Atlanta Hawks", abbreviation: "ATL", record: "23-29", lastWeek: 22, trend: "same", summary: "Trae Young's brilliance not enough to lift Hawks.", league: "NBA", wins: 23, losses: 29, pct: ".442", gb: "5", streak: "L1", conference: "East", division: "Southeast", home: "13-13", away: "10-16", last10: "4-6", conferenceRecord: "15-19", divisionRecord: "7-7" },
+  { rank: 23, team: "Houston Rockets", abbreviation: "HOU", record: "23-30", lastWeek: 23, trend: "same", summary: "Young roster showing flashes of potential.", league: "NBA", wins: 23, losses: 30, pct: ".434", gb: "10", streak: "W1", conference: "West", division: "Southwest", home: "13-13", away: "10-17", last10: "5-5", conferenceRecord: "15-19", divisionRecord: "6-8" },
+  { rank: 24, team: "Portland Trail Blazers", abbreviation: "POR", record: "21-32", lastWeek: 24, trend: "same", summary: "Tanking for better draft position.", league: "NBA", wins: 21, losses: 32, pct: ".396", gb: "14", streak: "L3", conference: "West", division: "Northwest", home: "12-14", away: "9-18", last10: "3-7", conferenceRecord: "13-21", divisionRecord: "5-9" },
+  { rank: 25, team: "Toronto Raptors", abbreviation: "TOR", record: "20-33", lastWeek: 25, trend: "same", summary: "Rebuild year in full effect north of the border.", league: "NBA", wins: 20, losses: 33, pct: ".377", gb: "20", streak: "L4", conference: "East", division: "Atlantic", home: "12-15", away: "8-18", last10: "2-8", conferenceRecord: "12-22", divisionRecord: "4-10" },
+  { rank: 26, team: "Detroit Pistons", abbreviation: "DET", record: "18-35", lastWeek: 26, trend: "same", summary: "Cade Cunningham's development is the bright spot.", league: "NBA", wins: 18, losses: 35, pct: ".340", gb: "16", streak: "L3", conference: "East", division: "Central", home: "11-16", away: "7-19", last10: "3-7", conferenceRecord: "11-23", divisionRecord: "4-10" },
+  { rank: 27, team: "Utah Jazz", abbreviation: "UTA", record: "17-36", lastWeek: 27, trend: "same", summary: "Full rebuild mode after trading veterans.", league: "NBA", wins: 17, losses: 36, pct: ".321", gb: "18", streak: "L5", conference: "West", division: "Northwest", home: "10-16", away: "7-20", last10: "2-8", conferenceRecord: "10-24", divisionRecord: "4-10" },
+  { rank: 28, team: "Charlotte Hornets", abbreviation: "CHA", record: "15-38", lastWeek: 28, trend: "same", summary: "LaMelo Ball dealing with injuries all season.", league: "NBA", wins: 15, losses: 38, pct: ".283", gb: "13.5", streak: "L6", conference: "East", division: "Southeast", home: "9-18", away: "6-20", last10: "2-8", conferenceRecord: "9-25", divisionRecord: "3-11" },
+  { rank: 29, team: "San Antonio Spurs", abbreviation: "SAS", record: "15-38", lastWeek: 29, trend: "same", summary: "Wembanyama learning but team struggling.", league: "NBA", wins: 15, losses: 38, pct: ".283", gb: "18", streak: "L7", conference: "West", division: "Southwest", home: "9-17", away: "6-21", last10: "1-9", conferenceRecord: "9-25", divisionRecord: "3-11" },
+  { rank: 30, team: "Washington Wizards", abbreviation: "WAS", record: "12-41", lastWeek: 30, trend: "same", summary: "Worst record in the league, focused on future.", league: "NBA", wins: 12, losses: 41, pct: ".226", gb: "16.5", streak: "L8", conference: "East", division: "Southeast", home: "7-19", away: "5-22", last10: "1-9", conferenceRecord: "7-27", divisionRecord: "2-12" },
 ];
 
 export const nflPowerRankings: PowerRanking[] = [

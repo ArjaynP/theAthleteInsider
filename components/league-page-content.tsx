@@ -4,11 +4,11 @@ import {
   nbaStandings,
   nflStandings,
   mlbStandings,
-  nbaPowerRankings,
+  nbaLeagueStandings,
   nflPowerRankings,
   polls,
   type TeamStanding,
-  type PowerRanking,
+  type LeagueStanding,
 } from "@/lib/mock-data";
 import { ArticleCard } from "@/components/article-card";
 import { LiveScoreCard } from "@/components/live-score-card";
@@ -21,7 +21,7 @@ interface LeaguePageContentProps {
   league: "NBA" | "NFL" | "MLB";
 }
 
-function PowerRankingsCard({ rankings }: { rankings: PowerRanking[] }) {
+function PowerRankingsCard({ rankings }: { rankings: LeagueStanding[] }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="mb-4 flex items-center gap-2">
@@ -169,7 +169,7 @@ export function LeaguePageContent({ league }: LeaguePageContentProps) {
   const leagueGames = games.filter((g) => g.league === league);
   
   let standings = nbaStandings;
-  let rankings = nbaPowerRankings;
+  let rankings = nbaLeagueStandings;
   let conferences: string[] = ["East", "West"];
 
   if (league === "NFL") {
