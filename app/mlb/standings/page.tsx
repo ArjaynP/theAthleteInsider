@@ -8,13 +8,195 @@ import { cn } from "@/lib/utils";
 import { ArrowUpDown } from "lucide-react";
 
 type SortKey = "wins" | "losses" | "pct" | "team";
+type SeasonView = "regular" | "spring";
+
+const MLB_DIVISIONS = ["East", "Central", "West"] as const;
+
+const GRAPEFRUIT_TEAMS = new Set([
+  "New York Yankees",
+  "Baltimore Orioles",
+  "Boston Red Sox",
+  "Tampa Bay Rays",
+  "Toronto Blue Jays",
+  "Minnesota Twins",
+  "Detroit Tigers",
+  "Atlanta Braves",
+  "Philadelphia Phillies",
+  "New York Mets",
+  "Miami Marlins",
+  "Washington Nationals",
+  "St. Louis Cardinals",
+  "Houston Astros",
+  "Pittsburgh Pirates",
+]);
+
+function toPctValue(pct: string) {
+  const parsed = Number.parseFloat(pct);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function compareByRecord(a: TeamStanding, b: TeamStanding) {
+  const pctDiff = toPctValue(b.pct) - toPctValue(a.pct);
+  if (pctDiff !== 0) return pctDiff;
+  const winDiff = b.wins - a.wins;
+  if (winDiff !== 0) return winDiff;
+  return a.losses - b.losses;
+}
+
+function getDivisionLeaders(teams: TeamStanding[]) {
+  const leaders = MLB_DIVISIONS.map((division) => {
+    const divisionTeams = teams.filter((team) => team.division === division);
+    return [...divisionTeams].sort(compareByRecord)[0];
+  }).filter((team): team is TeamStanding => Boolean(team));
+
+  return leaders.sort(compareByRecord);
+}
+
+function getWildCards(teams: TeamStanding[]) {
+  const divisionLeaders = getDivisionLeaders(teams);
+  const leaderKeys = new Set(divisionLeaders.map((team) => team.team));
+  return teams
+    .filter((team) => !leaderKeys.has(team.team))
+    .sort(compareByRecord)
+    .slice(0, 3);
+}
+
+function getRemainingTeams(teams: TeamStanding[]) {
+  const divisionLeaders = getDivisionLeaders(teams);
+  const wildCards = getWildCards(teams);
+  const excluded = new Set([
+    ...divisionLeaders.map((team) => team.team),
+    ...wildCards.map((team) => team.team),
+  ]);
+
+  return teams.filter((team) => !excluded.has(team.team)).sort(compareByRecord);
+}
+
+function TeamStandingsRows({
+  teams,
+  startRank,
+}: {
+  teams: TeamStanding[];
+  startRank: number;
+}) {
+  return (
+    <>
+      {teams.map((team, i) => (
+        <tr
+          key={team.abbreviation}
+          className="border-b border-border/50 transition-colors hover:bg-secondary/30"
+        >
+          <td className="px-5 py-3 text-sm font-bold tabular-nums text-muted-foreground">
+            {startRank + i}
+          </td>
+          <td className="px-5 py-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
+                {team.abbreviation.charAt(0)}
+              </div>
+              <div className="min-w-0">
+                <p className="whitespace-nowrap font-bold text-foreground">{team.team}</p>
+                <p className="text-[10px] text-muted-foreground">{team.division}</p>
+              </div>
+            </div>
+          </td>
+          <td className="px-3 py-3 text-center font-bold tabular-nums text-foreground">
+            {team.wins}
+          </td>
+          <td className="px-3 py-3 text-center tabular-nums text-muted-foreground">
+            {team.losses}
+          </td>
+          <td className="px-3 py-3 text-center font-bold tabular-nums text-foreground">
+            {team.pct}
+          </td>
+          <td className="px-3 py-3 text-center tabular-nums text-muted-foreground">
+            {team.gb}
+          </td>
+          <td className="px-3 py-3 text-center tabular-nums text-muted-foreground whitespace-nowrap">{team.home ?? "-"}</td>
+          <td className="px-3 py-3 text-center tabular-nums text-muted-foreground whitespace-nowrap">{team.away ?? "-"}</td>
+          <td className="px-3 py-3 text-center tabular-nums text-foreground">{team.rs ?? "-"}</td>
+          <td className="px-3 py-3 text-center tabular-nums text-foreground">{team.ra ?? "-"}</td>
+          <td
+            className={cn(
+              "px-3 py-3 text-center font-bold tabular-nums whitespace-nowrap",
+              team.diff?.startsWith("+")
+                ? "text-green-500"
+                : team.diff?.startsWith("-")
+                  ? "text-destructive"
+                  : "text-muted-foreground"
+            )}
+          >
+            {team.diff ?? "-"}
+          </td>
+          <td className="px-3 py-3 text-center">
+            <span
+              className={cn(
+                "rounded px-2 py-0.5 text-xs font-bold",
+                team.streak.startsWith("W")
+                  ? "bg-green-500/20 text-green-500"
+                  : "bg-destructive/20 text-destructive"
+              )}
+            >
+              {team.streak}
+            </span>
+          </td>
+          <td className="px-3 py-3 text-center tabular-nums text-muted-foreground whitespace-nowrap">{team.last10 ?? "-"}</td>
+        </tr>
+      ))}
+    </>
+  );
+}
+
+function StandingsTableHeader({ onSort }: { onSort: (key: SortKey) => void }) {
+  return (
+    <thead>
+      <tr className="border-b border-border text-xs text-muted-foreground">
+        <th className="px-5 py-3 text-left font-bold uppercase tracking-widest">#</th>
+        <th className="px-5 py-3 text-left font-bold uppercase tracking-widest">
+          <button type="button" onClick={() => onSort("team")} className="flex items-center gap-1">
+            Team
+            <ArrowUpDown className="h-3 w-3" />
+          </button>
+        </th>
+        <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+          <button type="button" onClick={() => onSort("wins")} className="flex items-center gap-1">
+            W
+            <ArrowUpDown className="h-3 w-3" />
+          </button>
+        </th>
+        <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+          <button type="button" onClick={() => onSort("losses")} className="flex items-center gap-1">
+            L
+            <ArrowUpDown className="h-3 w-3" />
+          </button>
+        </th>
+        <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
+          <button type="button" onClick={() => onSort("pct")} className="flex items-center gap-1">
+            PCT
+            <ArrowUpDown className="h-3 w-3" />
+          </button>
+        </th>
+        <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">GB</th>
+        <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">HOME</th>
+        <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">AWAY</th>
+        <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">RS</th>
+        <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">RA</th>
+        <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">DIFF</th>
+        <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">STRK</th>
+        <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">L10</th>
+      </tr>
+    </thead>
+  );
+}
 
 function StandingsTable({
   standings,
   title,
+  showMlbPostseasonLayout = false,
 }: {
   standings: TeamStanding[];
   title: string;
+  showMlbPostseasonLayout?: boolean;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("wins");
   const [sortAsc, setSortAsc] = useState(false);
@@ -45,120 +227,32 @@ function StandingsTable({
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-xs text-muted-foreground">
-              <th className="px-5 py-3 text-left font-bold uppercase tracking-widest">
-                #
-              </th>
-              <th className="px-5 py-3 text-left font-bold uppercase tracking-widest">
-                <button
-                  type="button"
-                  onClick={() => handleSort("team")}
-                  className="flex items-center gap-1"
-                >
-                  Team
-                  <ArrowUpDown className="h-3 w-3" />
-                </button>
-              </th>
-              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
-                <button
-                  type="button"
-                  onClick={() => handleSort("wins")}
-                  className="flex items-center gap-1"
-                >
-                  W
-                  <ArrowUpDown className="h-3 w-3" />
-                </button>
-              </th>
-              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
-                <button
-                  type="button"
-                  onClick={() => handleSort("losses")}
-                  className="flex items-center gap-1"
-                >
-                  L
-                  <ArrowUpDown className="h-3 w-3" />
-                </button>
-              </th>
-              <th className="px-5 py-3 text-center font-bold uppercase tracking-widest">
-                <button
-                  type="button"
-                  onClick={() => handleSort("pct")}
-                  className="flex items-center gap-1"
-                >
-                  PCT
-                  <ArrowUpDown className="h-3 w-3" />
-                </button>
-              </th>
-              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">
-                GB
-              </th>
-              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">HOME</th>
-              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">AWAY</th>
-              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">RS</th>
-              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">RA</th>
-              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">DIFF</th>
-              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">STRK</th>
-              <th className="px-3 py-3 text-center font-bold uppercase tracking-widest">L10</th>
-            </tr>
-          </thead>
+          <StandingsTableHeader onSort={handleSort} />
           <tbody>
-            {sorted.map((team, i) => (
-              <tr
-                key={team.abbreviation}
-                className="border-b border-border/50 transition-colors hover:bg-secondary/30"
-              >
-                <td className="px-5 py-3 text-sm font-bold tabular-nums text-muted-foreground">
-                  {i + 1}
-                </td>
-                <td className="px-5 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
-                      {team.abbreviation.charAt(0)}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-bold text-foreground whitespace-nowrap">{team.team}</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {team.conference}
-                      </p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-3 py-3 text-center font-bold tabular-nums text-foreground">
-                  {team.wins}
-                </td>
-                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground">
-                  {team.losses}
-                </td>
-                <td className="px-3 py-3 text-center font-bold tabular-nums text-foreground">
-                  {team.pct}
-                </td>
-                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground">
-                  {team.gb}
-                </td>
-                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground whitespace-nowrap">{team.home ?? "-"}</td>
-                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground whitespace-nowrap">{team.away ?? "-"}</td>
-                <td className="px-3 py-3 text-center tabular-nums text-foreground">{team.rs ?? "-"}</td>
-                <td className="px-3 py-3 text-center tabular-nums text-foreground">{team.ra ?? "-"}</td>
-                <td className={cn(
-                  "px-3 py-3 text-center font-bold tabular-nums whitespace-nowrap",
-                  team.diff?.startsWith("+") ? "text-green-500" : team.diff?.startsWith("-") ? "text-destructive" : "text-muted-foreground"
-                )}>{team.diff ?? "-"}</td>
-                <td className="px-3 py-3 text-center">
-                  <span
-                    className={cn(
-                      "rounded px-2 py-0.5 text-xs font-bold",
-                      team.streak.startsWith("W")
-                        ? "bg-green-500/20 text-green-500"
-                        : "bg-destructive/20 text-destructive"
-                    )}
-                  >
-                    {team.streak}
-                  </span>
-                </td>
-                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground whitespace-nowrap">{team.last10 ?? "-"}</td>
-              </tr>
-            ))}
+            {showMlbPostseasonLayout ? (
+              <>
+                <tr className="bg-secondary/20">
+                  <td colSpan={13} className="px-5 py-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                    Division Leaders
+                  </td>
+                </tr>
+                <TeamStandingsRows teams={getDivisionLeaders(sorted)} startRank={1} />
+                <tr className="bg-secondary/10">
+                  <td colSpan={13} className="px-5 py-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                    Wild Card
+                  </td>
+                </tr>
+                <TeamStandingsRows teams={getWildCards(sorted)} startRank={4} />
+                <tr className="bg-secondary/5">
+                  <td colSpan={13} className="px-5 py-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                    Remaining Teams
+                  </td>
+                </tr>
+                <TeamStandingsRows teams={getRemainingTeams(sorted)} startRank={7} />
+              </>
+            ) : (
+              <TeamStandingsRows teams={sorted} startRank={1} />
+            )}
           </tbody>
         </table>
       </div>
@@ -167,76 +261,123 @@ function StandingsTable({
 }
 
 export default function MLBStandingsPage() {
-    return (
-        <div className="flex min-h-screen flex-col">
-        <SiteHeader />
-        <main className="flex-1">
-            <div className="mx-auto max-w-7xl px-4 py-8">
-            {/* Header */}
-            <div className="mb-8 flex items-center gap-3">
-                <div className="flex h-14 w-14 items-center bg-primary text-sm font-black text-primary-foreground shadow-md">
-                    <img src="/mlb-logo.png" alt="MLB Logo" />
-                </div>
-                <div className="h-10 w-1.5 rounded-full bg-primary" />
-                <div>
-                <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
-                    MLB Standings
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                    Current MLB standings
-                </p>
-                </div>
-            </div>
+  const [seasonView, setSeasonView] = useState<SeasonView>("regular");
 
-            {/* Standings */}
-            <div className="mb-12 grid gap-6 lg:grid-cols-2">
+  const alStandings = mlbStandings.filter((s) => s.conference === "AL");
+  const nlStandings = mlbStandings.filter((s) => s.conference === "NL");
+
+  const grapefruitStandings = mlbStandings.filter((s) => GRAPEFRUIT_TEAMS.has(s.team));
+  const cactusStandings = mlbStandings.filter((s) => !GRAPEFRUIT_TEAMS.has(s.team));
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      <SiteHeader />
+      <main className="flex-1">
+        <div className="mx-auto max-w-7xl px-4 py-8">
+          <div className="mb-8 flex items-center gap-3">
+            <div className="flex h-14 w-14 items-center bg-primary text-sm font-black text-primary-foreground shadow-md">
+              <img src="/mlb-logo.png" alt="MLB Logo" />
+            </div>
+            <div className="h-10 w-1.5 rounded-full bg-primary" />
+            <div>
+              <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
+                MLB Standings
+              </h1>
+              <p className="text-sm text-muted-foreground">Current MLB standings</p>
+            </div>
+          </div>
+
+          <div className="mb-8 inline-flex rounded-lg border border-border bg-card p-1">
+            <button
+              type="button"
+              onClick={() => setSeasonView("regular")}
+              className={cn(
+                "rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors",
+                seasonView === "regular"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Regular Season
+            </button>
+            <button
+              type="button"
+              onClick={() => setSeasonView("spring")}
+              className={cn(
+                "rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors",
+                seasonView === "spring"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Spring Training
+            </button>
+          </div>
+
+          {seasonView === "regular" ? (
+            <>
+              <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
+                WILD CARD
+              </h2>
+              <div className="mb-12 grid gap-6 lg:grid-cols-2">
                 <StandingsTable
-                standings={mlbStandings.filter((s) => s.conference === "AL")}
-                title="American League"
+                  standings={alStandings}
+                  title="American League"
+                  showMlbPostseasonLayout
                 />
                 <StandingsTable
-                standings={mlbStandings.filter((s) => s.conference === "NL")}
-                title="National League"
+                  standings={nlStandings}
+                  title="National League"
+                  showMlbPostseasonLayout
                 />
-            </div>
+              </div>
 
-            {/* Divisional Standings */}
-            <div className="mb-8">
+              <div className="mb-8">
                 <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
-                Divisional Standings
+                  Regular Season
                 </h2>
                 <div className="grid gap-6 lg:grid-cols-2">
-                {/* AL Divisions */}
-                <StandingsTable
+                  <StandingsTable
                     standings={mlbStandings.filter((s) => s.division === "East" && s.conference === "AL")}
                     title="AL East"
-                />
-                <StandingsTable
+                  />
+                  <StandingsTable
                     standings={mlbStandings.filter((s) => s.division === "Central" && s.conference === "AL")}
                     title="AL Central"
-                />
-                <StandingsTable
+                  />
+                  <StandingsTable
                     standings={mlbStandings.filter((s) => s.division === "West" && s.conference === "AL")}
                     title="AL West"
-                />
-                {/* NL Divisions */}
-                <StandingsTable
+                  />
+                  <StandingsTable
                     standings={mlbStandings.filter((s) => s.division === "East" && s.conference === "NL")}
                     title="NL East"
-                />
-                <StandingsTable
+                  />
+                  <StandingsTable
                     standings={mlbStandings.filter((s) => s.division === "Central" && s.conference === "NL")}
                     title="NL Central"
-                />
-                <StandingsTable
+                  />
+                  <StandingsTable
                     standings={mlbStandings.filter((s) => s.division === "West" && s.conference === "NL")}
                     title="NL West"
-                />
+                  />
                 </div>
-            </div>
-            </div>
-        </main>
-        <SiteFooter />
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
+                Spring Training Standings
+              </h2>
+              <div className="mb-12 grid gap-6 lg:grid-cols-2">
+                <StandingsTable standings={grapefruitStandings} title="Grapefruit" />
+                <StandingsTable standings={cactusStandings} title="Cactus" />
+              </div>
+            </>
+          )}
         </div>
-    );
+      </main>
+      <SiteFooter />
+    </div>
+  );
 }
