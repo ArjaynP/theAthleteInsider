@@ -1,36 +1,36 @@
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { PlayoffBracket } from "@/components/nba/playoff-bracket";
-import { nbaPlayoffBracket } from "@/lib/nba-playoff-data";
+import { NFLPlayoffBracket } from "@/components/nfl/playoff-bracket";
+import { nflPostseasonBracket } from "@/lib/nfl-playoff-data";
 
 export const metadata = {
-  title: "NBA Playoff Bracket | The Athlete Insider",
+  title: "NFL Postseason | The Athlete Insider",
   description:
-    "NBA playoff bracket with Play-In tournament. Western and Eastern Conference brackets leading to the NBA Finals.",
+    "NFL postseason bracket featuring AFC/NFC paths from Wild Card Weekend to the Super Bowl.",
 };
 
-export default function NBAPlayoffsPage() {
+export default function NFLPlayoffsPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="flex-1">
-        <div className="mx-auto max-w-[1600px] px-4 py-8 2xl:px-6">
+        <div className="mx-auto max-w-[1800px] px-4 py-8 2xl:px-6">
           <div className="mb-8 flex items-center gap-3">
             <div className="flex h-14 w-14 items-center justify-center text-sm font-black text-primary-foreground shadow-md">
-              <img src="/nba-logo-1.png" alt="NBA Logo" className="h-14 w-14 object-contain" />
+              <img src="/nfl-logo-2.png" alt="NFL Logo" className="h-10 w-10 object-contain" />
             </div>
             <div className="h-10 w-1.5 rounded-full bg-primary" />
             <div>
               <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
-                NBA Playoffs
+                NFL Postseason
               </h1>
               <p className="text-sm text-muted-foreground">
-                Play-In bracket and playoff tree
+                Playoff bracket from Wild Card Weekend through the Super Bowl
               </p>
             </div>
           </div>
 
-          <PlayoffBracket data={nbaPlayoffBracket} />
+          <NFLPlayoffBracket data={nflPostseasonBracket} />
         </div>
       </main>
       <SiteFooter />
