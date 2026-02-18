@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { MatchupCard } from "@/components/nba/matchup-card";
 import type {
@@ -9,7 +9,6 @@ import type {
   PlayInGame,
   PlayoffMatchup,
 } from "@/lib/nba-playoff-data";
-import { Trophy } from "lucide-react";
 
 interface PlayoffBracketProps {
   data: NBAPlayoffBracket;
@@ -238,12 +237,50 @@ function FinalsSection({ matchup }: { matchup: PlayoffMatchup | null }) {
 }
 
 export function PlayoffBracket({ data, className }: PlayoffBracketProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [scaledHeight, setScaledHeight] = useState<number | null>(null);
+  const [offsetX, setOffsetX] = useState(0);
 
   useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollLeft = 0;
-  }, []);
+    const updateScale = () => {
+      const viewportEl = viewportRef.current;
+      const contentEl = contentRef.current;
+
+      if (!viewportEl || !contentEl) return;
+
+      const viewportWidth = viewportEl.clientWidth;
+      const contentWidth = contentEl.scrollWidth;
+      const contentHeight = contentEl.scrollHeight;
+
+      if (!viewportWidth || !contentWidth || !contentHeight) return;
+
+      const nextScale = Math.min(1, viewportWidth / contentWidth);
+      setScale(nextScale);
+      setScaledHeight(contentHeight * nextScale);
+      setOffsetX(Math.max(0, (viewportWidth - contentWidth * nextScale) / 2));
+    };
+
+    updateScale();
+
+    const observer =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(() => updateScale())
+        : null;
+
+    if (observer) {
+      if (viewportRef.current) observer.observe(viewportRef.current);
+      if (contentRef.current) observer.observe(contentRef.current);
+    }
+
+    window.addEventListener("resize", updateScale);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateScale);
+    };
+  }, [data]);
 
   return (
     <div
@@ -254,32 +291,41 @@ export function PlayoffBracket({ data, className }: PlayoffBracketProps) {
     >
       <div className="mb-6 text-center">
         <h2 className="text-xl font-black uppercase tracking-tight text-foreground sm:text-2xl">
-          2025-2026 NBA PLAYOFFS
+          2026 NBA PLAYOFFS
         </h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Play-In → First Round → Conference Semis → Conference Finals → NBA Finals
         </p>
       </div>
 
-      {/* Horizontal bracket: West | Finals | East — scroll to start so West Play-In is visible */}
-      <div ref={scrollRef} className="overflow-x-auto overflow-y-hidden rounded-xl scroll-smooth" id="playoff-bracket-scroll">
-        <div className="flex min-w-max flex-col items-stretch gap-4 pl-2 lg:flex-row lg:items-start lg:justify-start lg:gap-3 lg:pl-3">
-          {/* WEST: strip + bracket columns (left edge; ensure Play-In visible) */}
-          <div className="flex min-w-max flex-shrink-0 items-start justify-start lg:justify-end">
-            <ConferenceStrip label="WEST" isWest />
-            <div className="flex items-start gap-1 pl-1 sm:gap-2 sm:pl-2">
-              <ConferenceBracketColumn bracket={data.west} side="left" />
+      {/* Auto-fit bracket: scales to container width so full tree is visible without horizontal scroll */}
+      <div ref={viewportRef} className="overflow-hidden rounded-xl" id="playoff-bracket-scroll">
+        <div className="relative w-full" style={{ minHeight: scaledHeight ? undefined : 380, height: scaledHeight ?? undefined }}>
+          <div
+            ref={contentRef}
+            className="absolute left-0 top-0 flex min-w-max flex-col items-stretch gap-4 pl-2 lg:flex-row lg:items-start lg:justify-start lg:gap-3 lg:pl-3"
+            style={{
+              transform: `translateX(${offsetX}px) scale(${scale})`,
+              transformOrigin: "top left",
+            }}
+          >
+            {/* WEST: strip + bracket columns */}
+            <div className="flex min-w-max flex-shrink-0 items-start justify-start lg:justify-end">
+              <ConferenceStrip label="WEST" isWest />
+              <div className="flex items-start gap-1 pl-1 sm:gap-2 sm:pl-2">
+                <ConferenceBracketColumn bracket={data.west} side="left" />
+              </div>
             </div>
-          </div>
 
-          <FinalsSection matchup={data.nbaFinals} />
+            <FinalsSection matchup={data.nbaFinals} />
 
-          {/* EAST: bracket columns + strip */}
-          <div className="flex min-w-max flex-shrink-0 items-start justify-start lg:justify-start">
-            <div className="flex items-start gap-1 pr-1 sm:gap-2 sm:pr-2">
-              <ConferenceBracketColumn bracket={data.east} side="right" />
+            {/* EAST: bracket columns + strip */}
+            <div className="flex min-w-max flex-shrink-0 items-start justify-start lg:justify-start">
+              <div className="flex items-start gap-1 pr-1 sm:gap-2 sm:pr-2">
+                <ConferenceBracketColumn bracket={data.east} side="right" />
+              </div>
+              <ConferenceStrip label="EAST" isWest={false} />
             </div>
-            <ConferenceStrip label="EAST" isWest={false} />
           </div>
         </div>
       </div>
