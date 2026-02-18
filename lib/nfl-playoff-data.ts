@@ -55,8 +55,8 @@ const nfcTeams: Record<string, NFLPlayoffTeam> = {
 };
 
 export const nflPostseasonBracket: NFLPostseasonBracket = {
-  seasonLabel: "2025-2026 NFL POSTSEASON",
-  championLabel: "Super Bowl Champions",
+  seasonLabel: "2026 NFL POSTSEASON",
+  championLabel: "Super Bowl LX Champions",
   afc: {
     conference: "AFC",
     byeTeam: afcTeams.den,

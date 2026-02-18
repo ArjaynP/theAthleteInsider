@@ -241,7 +241,6 @@ function SuperBowlSection({ data }: { data: NFLPostseasonBracket }) {
     >
       <div className="flex flex-col items-center gap-2">
         <div className="flex items-center gap-1.5 rounded-full bg-amber-500/20 px-2 py-1 sm:px-4 sm:py-1.5">
-          <Trophy className="h-3.5 w-3.5 text-amber-400 sm:h-4 sm:w-4" />
           <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 sm:text-xs">
             Super Bowl LX
           </span>
@@ -257,6 +256,11 @@ function SuperBowlSection({ data }: { data: NFLPostseasonBracket }) {
             size="lg"
           />
         </div>
+        <img
+          src="/lombardi.png"
+          alt="Lombardi Trophy"
+          className="mt-2 h-auto w-24 object-contain sm:w-28"
+        />
         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
           {champion.name} • {data.championLabel}
         </p>
