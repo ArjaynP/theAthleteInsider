@@ -1,12 +1,13 @@
+import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { NFLPlayoffBracket } from "@/components/nfl/playoff-bracket";
 import { nflPostseasonBracket } from "@/lib/nfl-playoff-data";
 
-export const metadata = {
-  title: "NFL Postseason | The Athlete Insider",
+export const metadata: Metadata = {
+  title: "NFL Playoffs | The Athlete Insider",
   description:
-    "NFL postseason bracket featuring AFC/NFC paths from Wild Card Weekend to the Super Bowl.",
+    "NFL playoffs bracket featuring AFC/NFC paths from Wild Card Weekend to the Super Bowl.",
 };
 
 export default function NFLPlayoffsPage() {
@@ -17,7 +18,7 @@ export default function NFLPlayoffsPage() {
         <div className="mx-auto max-w-[1800px] px-4 py-8 2xl:px-6">
           <div className="mb-8 flex items-center gap-3">
             <div className="flex h-14 w-14 items-center justify-center text-sm font-black text-primary-foreground shadow-md">
-              <img src="/nfl-logo-2.png" alt="NFL Logo" className="h-10 w-10 object-contain" />
+              <img src="/nfl-logo-2.png" alt="NFL Logo" className="h-14 w-14 object-contain" />
             </div>
             <div className="h-10 w-1.5 rounded-full bg-primary" />
             <div>

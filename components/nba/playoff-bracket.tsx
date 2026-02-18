@@ -254,7 +254,7 @@ export function PlayoffBracket({ data, className }: PlayoffBracketProps) {
     >
       <div className="mb-6 text-center">
         <h2 className="text-xl font-black uppercase tracking-tight text-foreground sm:text-2xl">
-          2025-2026 NBA POSTSEASON
+          2025-2026 NBA PLAYOFFS
         </h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Play-In → First Round → Conference Semis → Conference Finals → NBA Finals
