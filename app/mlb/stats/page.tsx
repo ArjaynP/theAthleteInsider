@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { mlbPlayerStats, type StatCategory } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { Medal, Trophy, TrendingUp } from "lucide-react";
+import { TeamBadge } from "@/components/team-badge";
 
 function StatCard({ category }: { category: StatCategory }) {
   const topPlayer = category.leaders[0];
@@ -40,9 +41,7 @@ function StatCard({ category }: { category: StatCategory }) {
           </div>
           <p className="font-bold text-foreground">{topPlayer.player}</p>
           <div className="mt-1 flex items-center gap-2">
-            <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-bold text-foreground">
-              {topPlayer.team}
-            </span>
+            <TeamBadge abbreviation={topPlayer.team} league="MLB" size="sm" />
           </div>
         </div>
       </div>
@@ -61,7 +60,10 @@ function StatCard({ category }: { category: StatCategory }) {
                 </td>
                 <td className="p-3">
                   <div className="font-bold text-foreground">{stat.player}</div>
-                  <div className="text-[10px] text-muted-foreground">{stat.team}</div>
+                  <div className="mt-1 flex items-center gap-2 text-[10px] text-muted-foreground">
+                    <TeamBadge abbreviation={stat.team} league="MLB" size="sm" />
+                    <span>{stat.team}</span>
+                  </div>
                 </td>
                 <td className="p-3 text-right font-black tabular-nums text-foreground group-hover:text-primary transition-colors">
                   {stat.value}

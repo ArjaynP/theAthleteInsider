@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { mlbStandings, type TeamStanding } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { ArrowUpDown } from "lucide-react";
+import { TeamBadge } from "@/components/team-badge";
 
 type SortKey = "wins" | "losses" | "pct" | "team";
 type SeasonView = "regular" | "spring";
@@ -91,9 +92,7 @@ function TeamStandingsRows({
           </td>
           <td className="px-5 py-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
-                {team.abbreviation.charAt(0)}
-              </div>
+              <TeamBadge abbreviation={team.abbreviation} league="MLB" size="md" />
               <div className="min-w-0">
                 <p className="whitespace-nowrap font-bold text-foreground">{team.team}</p>
                 <p className="text-[10px] text-muted-foreground">{team.division}</p>

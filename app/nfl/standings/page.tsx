@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { nflStandings, nflPowerRankings, type TeamStanding, type LeagueStanding } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { ArrowUpDown, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TeamBadge } from "@/components/team-badge";
 
 type SortKey = "wins" | "losses" | "pct" | "team";
 
@@ -119,9 +120,7 @@ function StandingsTable({
                 </td>
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
-                      {team.abbreviation.charAt(0)}
-                    </div>
+                    <TeamBadge abbreviation={team.abbreviation} league="NFL" size="md" />
                     <div className="min-w-0">
                       <p className="font-bold text-foreground whitespace-nowrap">{team.team}</p>
                       <p className="text-[10px] text-muted-foreground">
@@ -201,9 +200,7 @@ function PowerRankings({ rankings }: { rankings: LeagueStanding[] }) {
                 <span className="text-xs text-muted-foreground">{team.lastWeek}</span>
               </div>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary text-sm font-black text-foreground">
-              {team.abbreviation}
-            </div>
+            <TeamBadge abbreviation={team.abbreviation} league="NFL" size="lg" />
             <div className="flex-1">
               <div className="flex items-baseline justify-between">
                 <h4 className="font-bold text-foreground">{team.team}</h4>

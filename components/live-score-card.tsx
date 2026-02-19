@@ -1,5 +1,6 @@
 import type { Game } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { TeamBadge } from "@/components/team-badge";
 
 interface LiveScoreCardProps {
   game: Game;
@@ -8,6 +9,7 @@ interface LiveScoreCardProps {
 export function LiveScoreCard({ game }: LiveScoreCardProps) {
   const isLive = game.status === "LIVE";
   const isFinal = game.status === "FINAL";
+  const badgeLeague = game.league === "NBA" || game.league === "NFL" || game.league === "MLB" ? game.league : null;
 
   return (
     <div
@@ -42,9 +44,13 @@ export function LiveScoreCard({ game }: LiveScoreCardProps) {
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
-              {game.awayTeam.charAt(0)}
-            </div>
+            {badgeLeague ? (
+              <TeamBadge abbreviation={game.awayTeam} league={badgeLeague} size="md" />
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
+                {game.awayTeam.charAt(0)}
+              </div>
+            )}
             <div>
               <p className="text-sm font-black uppercase text-foreground">
                 {game.awayTeam}
@@ -72,9 +78,13 @@ export function LiveScoreCard({ game }: LiveScoreCardProps) {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
-              {game.homeTeam.charAt(0)}
-            </div>
+            {badgeLeague ? (
+              <TeamBadge abbreviation={game.homeTeam} league={badgeLeague} size="md" />
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
+                {game.homeTeam.charAt(0)}
+              </div>
+            )}
             <div>
               <p className="text-sm font-black uppercase text-foreground">
                 {game.homeTeam}

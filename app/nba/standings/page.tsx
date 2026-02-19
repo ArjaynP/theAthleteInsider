@@ -6,6 +6,13 @@ import { SiteFooter } from "@/components/site-footer";
 import { nbaStandings, nbaLeagueStandings, nbaCupGroups, nbaCupWildcards, nbaCupBracket, type TeamStanding, type LeagueStanding, type NBACupBracketRound } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { ArrowUpDown, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TeamBadge } from "@/components/team-badge";
+
+const teamAbbreviationMap = new Map(nbaStandings.map((t) => [t.team, t.abbreviation]));
+
+function getAbbreviation(name: string) {
+  return teamAbbreviationMap.get(name) ?? name.slice(0, 3).toUpperCase();
+}
 
 type SortKey = "wins" | "losses" | "pct" | "team";
 
@@ -136,9 +143,7 @@ function StandingsTable({
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
-                        {team.abbreviation.charAt(0)}
-                      </div>
+                      <TeamBadge abbreviation={team.abbreviation} league="NBA" size="md" />
                       <p className="font-bold text-foreground whitespace-nowrap">{team.team}</p>
                     </div>
                   </td>
@@ -263,9 +268,7 @@ function LeagueRankings({ rankings }: { rankings: LeagueStanding[] }) {
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
-                      {team.abbreviation.charAt(0)}
-                    </div>
+                    <TeamBadge abbreviation={team.abbreviation} league="NBA" size="sm" />
                     <p className="font-bold text-foreground text-sm whitespace-nowrap">{team.team}</p>
                   </div>
                 </td>
@@ -385,9 +388,7 @@ function NBACupStandings() {
                 >
                   <td className="px-4 py-2">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-6 w-6 items-center justify-center rounded bg-secondary text-xs font-black text-foreground">
-                        {team.abbreviation.charAt(0)}
-                      </div>
+                      <TeamBadge abbreviation={team.abbreviation} league="NBA" size="sm" />
                       <span className="font-bold text-foreground">{team.abbreviation}</span>
                       {team.qualified && (
                         <span className="rounded bg-accent px-1.5 py-0.5 text-[10px] font-bold text-accent-foreground">Q</span>
@@ -432,9 +433,7 @@ function NBACupStandings() {
               <div key={team.abbreviation} className="flex items-center justify-between rounded-lg border border-border bg-secondary/20 px-4 py-3">
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-black text-muted-foreground">{i + 1}</span>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
-                    {team.abbreviation.charAt(0)}
-                  </div>
+                  <TeamBadge abbreviation={team.abbreviation} league="NBA" size="md" />
                   <div>
                     <p className="font-bold text-foreground">{team.team}</p>
                     <p className="text-xs text-muted-foreground">Group {team.group.split(" ")[1]} Winner</p>
@@ -450,9 +449,7 @@ function NBACupStandings() {
               <div className="flex items-center justify-between rounded-lg border border-amber/30 bg-amber/5 px-4 py-3">
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-black text-amber">4</span>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
-                    {eastWildcard.abbreviation.charAt(0)}
-                  </div>
+                      <TeamBadge abbreviation={eastWildcard.abbreviation} league="NBA" size="md" />
                   <div>
                     <p className="font-bold text-foreground">{eastWildcard.team}</p>
                     <p className="text-xs text-amber font-bold">Wildcard</p>
@@ -479,9 +476,7 @@ function NBACupStandings() {
               <div key={team.abbreviation} className="flex items-center justify-between rounded-lg border border-border bg-secondary/20 px-4 py-3">
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-black text-muted-foreground">{i + 1}</span>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
-                    {team.abbreviation.charAt(0)}
-                  </div>
+                  <TeamBadge abbreviation={team.abbreviation} league="NBA" size="md" />
                   <div>
                     <p className="font-bold text-foreground">{team.team}</p>
                     <p className="text-xs text-muted-foreground">Group {team.group.split(" ")[1]} Winner</p>
@@ -497,9 +492,7 @@ function NBACupStandings() {
               <div className="flex items-center justify-between rounded-lg border border-amber/30 bg-amber/5 px-4 py-3">
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-black text-amber">4</span>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
-                    {westWildcard.abbreviation.charAt(0)}
-                  </div>
+                      <TeamBadge abbreviation={westWildcard.abbreviation} league="NBA" size="md" />
                   <div>
                     <p className="font-bold text-foreground">{westWildcard.team}</p>
                     <p className="text-xs text-amber font-bold">Wildcard</p>
@@ -540,9 +533,7 @@ function NBACupStandings() {
           )}>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-muted-foreground w-4">{matchup.team1.seed}</span>
-              <div className="flex h-6 w-6 items-center justify-center rounded bg-secondary text-[10px] font-black">
-                {matchup.team1.team.substring(0, 2).toUpperCase()}
-              </div>
+                <TeamBadge abbreviation={getAbbreviation(matchup.team1.teamFull)} league="NBA" size="sm" />
               <span className="text-sm font-bold">{matchup.team1.teamFull}</span>
             </div>
             <span className="text-lg font-black">{matchup.team1.score}</span>
@@ -553,9 +544,7 @@ function NBACupStandings() {
           )}>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-muted-foreground w-4">{matchup.team2.seed}</span>
-              <div className="flex h-6 w-6 items-center justify-center rounded bg-secondary text-[10px] font-black">
-                {matchup.team2.team.substring(0, 2).toUpperCase()}
-              </div>
+                <TeamBadge abbreviation={getAbbreviation(matchup.team2.teamFull)} league="NBA" size="sm" />
               <span className="text-sm font-bold">{matchup.team2.teamFull}</span>
             </div>
             <span className="text-lg font-black">{matchup.team2.score}</span>
@@ -630,9 +619,7 @@ function NBACupStandings() {
                       final.matchups[0].team1.winner ? "bg-accent/30 border-2 border-accent" : "bg-secondary/50"
                     )}>
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-black">
-                          {final.matchups[0].team1.team}
-                        </div>
+                          <TeamBadge abbreviation={getAbbreviation(final.matchups[0].team1.teamFull)} league="NBA" size="lg" />
                         <span className="text-base font-bold">{final.matchups[0].team1.teamFull}</span>
                       </div>
                       <span className="text-3xl font-black">{final.matchups[0].team1.score}</span>
@@ -643,9 +630,7 @@ function NBACupStandings() {
                       final.matchups[0].team2.winner ? "bg-accent/30 border-2 border-accent" : "bg-secondary/50"
                     )}>
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-black">
-                          {final.matchups[0].team2.team}
-                        </div>
+                          <TeamBadge abbreviation={getAbbreviation(final.matchups[0].team2.teamFull)} league="NBA" size="lg" />
                         <span className="text-base font-bold">{final.matchups[0].team2.teamFull}</span>
                       </div>
                       <span className="text-3xl font-black">{final.matchups[0].team2.score}</span>

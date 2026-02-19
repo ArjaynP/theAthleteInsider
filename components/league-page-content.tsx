@@ -14,6 +14,7 @@ import { ArticleCard } from "@/components/article-card";
 import { LiveScoreCard } from "@/components/live-score-card";
 import { PollWidget } from "@/components/poll-widget";
 import { NewsletterSignup } from "@/components/newsletter-signup";
+import { TeamBadge } from "@/components/team-badge";
 import { ArrowUp, ArrowDown, Minus, Trophy, Calendar, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ function PowerRankingsCard({ rankings }: { rankings: LeagueStanding[] }) {
       <div className="flex flex-col gap-3">
         {rankings.map((team) => {
           const diff = team.lastWeek - team.rank;
+          const badgeLeague = team.league === "NBA" || team.league === "NFL" ? team.league : null;
           return (
             <div
               key={team.abbreviation}
@@ -41,9 +43,13 @@ function PowerRankingsCard({ rankings }: { rankings: LeagueStanding[] }) {
               <span className="w-6 text-center text-lg font-black text-foreground">
                 {team.rank}
               </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
-                {team.abbreviation.charAt(0)}
-              </div>
+              {badgeLeague ? (
+                <TeamBadge abbreviation={team.abbreviation} league={badgeLeague} size="md" />
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
+                  {team.abbreviation.charAt(0)}
+                </div>
+              )}
               <div className="flex-1">
                 <p className="text-sm font-bold text-foreground">
                   {team.team}
@@ -217,9 +223,18 @@ export function LeaguePageContent({ league }: LeaguePageContentProps) {
           </div>
           <div className="flex items-center justify-center gap-8">
             <div className="text-center">
-              <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-xl bg-secondary text-xl font-black text-foreground">
-                {gameOfWeek.awayTeam.charAt(0)}
-              </div>
+              {gameOfWeek.league === "NBA" || gameOfWeek.league === "NFL" ? (
+                <TeamBadge
+                  abbreviation={gameOfWeek.awayTeam}
+                  league={gameOfWeek.league}
+                  size="lg"
+                  className="mx-auto mb-2"
+                />
+              ) : (
+                <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-xl bg-secondary text-xl font-black text-foreground">
+                  {gameOfWeek.awayTeam.charAt(0)}
+                </div>
+              )}
               <p className="text-lg font-black text-foreground">
                 {gameOfWeek.awayTeam}
               </p>
@@ -256,9 +271,18 @@ export function LeaguePageContent({ league }: LeaguePageContentProps) {
               )}
             </div>
             <div className="text-center">
-              <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-xl bg-secondary text-xl font-black text-foreground">
-                {gameOfWeek.homeTeam.charAt(0)}
-              </div>
+              {gameOfWeek.league === "NBA" || gameOfWeek.league === "NFL" ? (
+                <TeamBadge
+                  abbreviation={gameOfWeek.homeTeam}
+                  league={gameOfWeek.league}
+                  size="lg"
+                  className="mx-auto mb-2"
+                />
+              ) : (
+                <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-xl bg-secondary text-xl font-black text-foreground">
+                  {gameOfWeek.homeTeam.charAt(0)}
+                </div>
+              )}
               <p className="text-lg font-black text-foreground">
                 {gameOfWeek.homeTeam}
               </p>
