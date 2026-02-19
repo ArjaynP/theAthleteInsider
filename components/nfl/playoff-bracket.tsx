@@ -136,7 +136,7 @@ function ConferenceBracketColumn({
   const colClass = "flex min-w-0 shrink-0 flex-col w-28 sm:w-32 md:w-36 lg:w-40 xl:w-44 max-w-[220px] overflow-hidden";
 
   const wildCardCol = (
-    <div className={cn(colClass, "gap-2")} data-column="wildcard">
+    <div key={`${side}-wildcard`} className={cn(colClass, "gap-2")} data-column="wildcard">
       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
         Wild Card
       </p>
@@ -162,7 +162,7 @@ function ConferenceBracketColumn({
   );
 
   const divisionalCol = (
-    <div className={cn(colClass, "gap-2")} data-column="divisional">
+    <div key={`${side}-divisional`} className={cn(colClass, "gap-2")} data-column="divisional">
       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
         Divisional
       </p>
@@ -201,7 +201,7 @@ function ConferenceBracketColumn({
   );
 
   const conferenceCol = (
-    <div className={cn(colClass, "gap-2")} data-column="conference">
+    <div key={`${side}-conference`} className={cn(colClass, "gap-2")} data-column="conference">
       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
         Conference Finals
       </p>
