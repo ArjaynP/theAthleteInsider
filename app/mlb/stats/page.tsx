@@ -87,7 +87,17 @@ function StatCard({ category }: { category: StatCategory }) {
 export default function MLBStatsPage() {
     const [activeTab, setActiveTab] = useState<"hitting" | "pitching">("hitting");
 
-    const hittingStats = ["runs", "hits", "home_runs", "rbi", "stolen_bases", "batting_avg"];
+    const hittingStats = [
+      "runs",
+      "hits",
+      "doubles",
+      "triples",
+      "home_runs",
+      "rbi",
+      "slugging_percentage",
+      "stolen_bases",
+      "batting_avg",
+    ];
     
     const pitchingSections = [
         { title: "Record & Run Prevention", ids: ["wins", "losses", "era"] },

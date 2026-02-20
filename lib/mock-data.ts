@@ -1210,6 +1210,42 @@ export const mlbPlayerStats: StatCategory[] = [
     ],
   },
   {
+    id: "doubles",
+    label: "Doubles",
+    abbreviation: "2B",
+    leaders: [
+      { rank: 1, player: "Freddie Freeman", team: "LAD", value: 59 },
+      { rank: 2, player: "Matt Olson", team: "ATL", value: 52 },
+      { rank: 3, player: "Marcus Semien", team: "TEX", value: 48 },
+      { rank: 4, player: "Austin Riley", team: "ATL", value: 45 },
+      { rank: 5, player: "Corey Seager", team: "TEX", value: 44 },
+    ],
+  },
+  {
+    id: "triples",
+    label: "Triples",
+    abbreviation: "3B",
+    leaders: [
+      { rank: 1, player: "Corbin Carroll", team: "ARI", value: 10 },
+      { rank: 2, player: "Elly De La Cruz", team: "CIN", value: 9 },
+      { rank: 3, player: "Bobby Witt Jr.", team: "KC", value: 8 },
+      { rank: 4, player: "Luis Robert Jr.", team: "CHW", value: 7 },
+      { rank: 5, player: "Jazz Chisholm Jr.", team: "MIA", value: 7 },
+    ],
+  },
+  {
+    id: "slugging_percentage",
+    label: "Slugging Percentage",
+    abbreviation: "SLG",
+    leaders: [
+      { rank: 1, player: "Shohei Ohtani", team: "LAD", value: 0.654 },
+      { rank: 2, player: "Matt Olson", team: "ATL", value: 0.604 },
+      { rank: 3, player: "Corey Seager", team: "TEX", value: 0.593 },
+      { rank: 4, player: "Aaron Judge", team: "NYY", value: 0.579 },
+      { rank: 5, player: "Mookie Betts", team: "LAD", value: 0.568 },
+    ],
+  },
+  {
     id: "home_runs",
     label: "Home Runs",
     abbreviation: "HR",

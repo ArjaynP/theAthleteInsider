@@ -95,3 +95,7 @@ model NFLTeam {
   @@index([division])
   @@index([abbreviation])
 }
+
+model Quizzes {
+  
+}
