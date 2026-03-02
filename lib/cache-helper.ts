@@ -1,4 +1,4 @@
-import { redis } from './redis';
+import { redis } from '@/services/cacheService';
 
 // Cache durations (in seconds)
 export const CACHE_DURATIONS = {
@@ -24,7 +24,7 @@ export async function getCached<T>(
   ttl: number
 ): Promise<T> {
   try {
-    const cached = await redis.get<string>(key);
+    const cached = await redis.get(key);
     
     if (cached) {
       return JSON.parse(cached) as T;

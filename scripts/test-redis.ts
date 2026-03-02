@@ -1,10 +1,13 @@
 import 'dotenv/config';
-import { redis } from '../lib/redis';
+import { redis, getCache, setCache } from '../services/cacheService';
 
 async function testRedis() {
   console.log('Testing Redis connection...\n');
 
   try {
+    await redis.ping();
+    console.log('✅ PING Redis');
+
     // Test 1: Set a value
     await redis.set('test-key', 'Hello from Redis!');
     console.log('✅ SET test-key');
@@ -28,6 +31,12 @@ async function testRedis() {
     // Test 6: Verify deletion
     const deleted = await redis.get('test-key');
     console.log('✅ GET test-key after delete:', deleted === null ? 'null (deleted)' : deleted);
+
+    // Test 7: Service helpers set/get JSON with TTL
+    await setCache('json-test', { ok: true, at: new Date().toISOString() }, 30);
+    const jsonValue = await getCache<{ ok: boolean; at: string }>('json-test');
+    console.log('✅ service set/get JSON:', jsonValue?.ok === true);
+    await redis.del('json-test');
 
     console.log('\n🎉 All Redis tests passed!');
   } catch (error) {
