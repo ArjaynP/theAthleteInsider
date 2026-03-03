@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "db:seed": "tsx prisma/seed.ts",
-    "test:redis": "tsx scripts/test-redis.ts"
+    "test:redis": "tsx scripts/test-redis.ts",
+    "test:nba-api": "tsx scripts/test-nba-api.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
