@@ -1,33 +1,38 @@
-// Add this at the very top of the file
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
-
+import 'dotenv/config';
 import { fetchNBAStandings } from '../lib/sportsApi';
 
 async function testNBAAPI() {
   console.log('🏀 Testing NBA API...\n');
 
-  // Debug: Check if env vars are loaded
+  const hasKey = Boolean(process.env.RAPIDAPI_KEY);
+  const hasHost = Boolean(process.env.RAPIDAPI_HOST_NBA);
+
   console.log('Environment check:');
-  console.log('- RAPIDAPI_KEY:', process.env.RAPIDAPI_KEY ? '✅ Set' : '❌ Missing');
-  console.log('- RAPIDAPI_HOST_NBA:', process.env.RAPIDAPI_HOST_NBA ? '✅ Set' : '❌ Missing');
-  console.log('');
+  console.log(`- RAPIDAPI_KEY: ${hasKey ? '✅ Set' : '❌ Missing'}`);
+  console.log(`- RAPIDAPI_HOST_NBA: ${hasHost ? '✅ Set' : '❌ Missing'}`);
+
+  if (!hasKey || !hasHost) {
+    console.error('\n❌ Missing required environment variables.');
+    console.error('Set RAPIDAPI_KEY and RAPIDAPI_HOST_NBA in .env.local');
+    process.exit(1);
+  }
 
   try {
-    console.log('Testing NBA Standings...');
+    console.log('\nTesting NBA Standings...');
     const standings = await fetchNBAStandings();
-    
-    // Log the entire response to see its structure
-    console.log('Full response:', JSON.stringify(standings, null, 2));
-    
-    // Check different possible structures
-    console.log('\nChecking response structure:');
-    console.log('- standings.body:', standings?.body ? `Array with ${standings.body.length} items` : 'undefined');
-    console.log('- standings.response:', standings?.response ? `Array with ${standings.response.length} items` : 'undefined');
-    console.log('- standings.data:', standings?.data ? `Array with ${standings.data.length} items` : 'undefined');
-    console.log('- standings itself:', Array.isArray(standings) ? `Array with ${standings.length} items` : 'Not array');
-    
-    console.log('\n✅ NBA standings API test completed!');
+    console.log('✅ Standings data received');
+    console.log('   Teams found:', Array.isArray(standings) ? standings.length : 0);
+
+    if (Array.isArray(standings) && standings.length > 0) {
+      const firstTeam = standings[0];
+      console.log('   Example team:', {
+        name: firstTeam?.team?.displayName ?? firstTeam?.team?.name ?? 'Unknown',
+        wins: firstTeam?.stats?.find((stat: any) => stat.type === 'wins')?.displayValue ?? 'N/A',
+        losses: firstTeam?.stats?.find((stat: any) => stat.type === 'losses')?.displayValue ?? 'N/A',
+      });
+    }
+
+    console.log('\n🎉 NBA standings API test passed!');
   } catch (error) {
     console.error('❌ NBA API test failed:', error);
     process.exit(1);

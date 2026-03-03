@@ -20,11 +20,13 @@ export async function GET(request: Request) {
         );
     }
 
-    return NextResponse.json(standings);
+    // Return the teams array directly
+    return NextResponse.json({ teams: standings });
   } catch (error) {
     console.error('Error fetching standings:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to fetch standings', details: error.message },
+      { error: 'Failed to fetch standings', details: message },
       { status: 500 }
     );
   }

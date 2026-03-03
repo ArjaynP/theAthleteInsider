@@ -1,12 +1,18 @@
-// NBA Teams Standings
 export async function fetchNBAStandings() {
-  const url = `https://${process.env.RAPIDAPI_HOST_NBA}/nbastandings`;
+  const apiKey = process.env.RAPIDAPI_KEY;
+  const apiHost = process.env.RAPIDAPI_HOST_NBA;
+
+  if (!apiKey || !apiHost) {
+    throw new Error('Missing RAPIDAPI_KEY or RAPIDAPI_HOST_NBA in environment.');
+  }
+
+  const url = `https://${apiHost}/nbastandings`;
 
   const response = await fetch(url, {
     method: 'GET',
     headers: {
-      'X-RapidAPI-Key': process.env.RAPIDAPI_KEY!,
-      'X-RapidAPI-Host': process.env.RAPIDAPI_HOST_NBA!,
+      'X-RapidAPI-Key': apiKey,
+      'X-RapidAPI-Host': apiHost,
     },
   });
 
@@ -14,5 +20,8 @@ export async function fetchNBAStandings() {
     throw new Error(`NBA Standings API error: ${response.status}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  
+  // Extract the entries (teams) from the nested structure
+  return data.standings?.entries || [];
 }
