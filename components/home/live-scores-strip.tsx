@@ -3,10 +3,48 @@
 import { games } from "@/lib/mock-data";
 import { LiveScoreCard } from "@/components/live-score-card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
+type ApiTeam = {
+  abbreviation?: string;
+  logo?: string;
+  logoLight?: string;
+  logoDark?: string;
+};
+
+function normalizeAbbreviation(value: string) {
+  const normalized = value.toUpperCase();
+  const aliasMap: Record<string, string> = {
+    GS: "GSW",
+    NY: "NYK",
+    NO: "NOP",
+    SA: "SAS",
+    UTAH: "UTA",
+    WSH: "WAS",
+  };
+  return aliasMap[normalized] ?? normalized;
+}
 
 export function LiveScoresStrip() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetch("/api/teams", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!Array.isArray(data?.teams)) return;
+        const logos = (data.teams as ApiTeam[]).reduce<Record<string, string>>((acc, team) => {
+          if (!team.abbreviation) return acc;
+          const abbr = normalizeAbbreviation(team.abbreviation);
+          const logo = team.logoLight || team.logo || team.logoDark;
+          if (logo) acc[abbr] = logo;
+          return acc;
+        }, {});
+        setTeamLogos(logos);
+      })
+      .catch(() => {});
+  }, []);
 
   function scroll(direction: "left" | "right") {
     if (!scrollRef.current) return;
@@ -49,7 +87,7 @@ export function LiveScoresStrip() {
           style={{ scrollbarWidth: "none" }}
         >
           {games.map((game) => (
-            <LiveScoreCard key={game.id} game={game} />
+            <LiveScoreCard key={game.id} game={game} teamLogos={teamLogos} />
           ))}
         </div>
 

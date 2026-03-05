@@ -31,6 +31,13 @@ type ApiStanding = {
   stats: ApiStat[];
 };
 
+type ApiTeam = {
+  abbreviation?: string;
+  logo?: string;
+  logoLight?: string;
+  logoDark?: string;
+};
+
 const DIVISION_BY_TEAM: Record<string, string> = {
   BOS: "Atlantic",
   BKN: "Atlantic",
@@ -163,10 +170,12 @@ function StandingsTable({
   standings,
   title,
   showPlayInBorders = false,
+  teamLogos,
 }: {
   standings: TeamStanding[];
   title: string;
   showPlayInBorders?: boolean;
+  teamLogos: Record<string, string>;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("wins");
   const [sortAsc, setSortAsc] = useState(false);
@@ -229,6 +238,7 @@ function StandingsTable({
           <tbody>
             {sorted.map((team, i) => {
               const position = i + 1;
+              const teamLogo = teamLogos[team.abbreviation];
               const borderClass =
                 showPlayInBorders && (position === 6 || position === 10)
                   ? "border-b-4 border-primary/50"
@@ -239,7 +249,15 @@ function StandingsTable({
                   <td className="px-5 py-3 text-sm font-bold tabular-nums text-muted-foreground">{position}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
-                      <TeamBadge abbreviation={team.abbreviation} league="NBA" size="md" />
+                      {teamLogo ? (
+                        <img
+                          src={teamLogo}
+                          alt={`${team.team} logo`}
+                          className="h-8 w-8 object-contain"
+                        />
+                      ) : (
+                        <TeamBadge abbreviation={team.abbreviation} league="NBA" size="md" />
+                      )}
                       <p className="font-bold text-foreground whitespace-nowrap">{team.team}</p>
                     </div>
                   </td>
@@ -274,7 +292,13 @@ function StandingsTable({
   );
 }
 
-function LeagueRankings({ rankings }: { rankings: LeagueStanding[] }) {
+function LeagueRankings({
+  rankings,
+  teamLogos,
+}: {
+  rankings: LeagueStanding[];
+  teamLogos: Record<string, string>;
+}) {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="flex items-center gap-2 border-b border-border px-5 py-4">
@@ -298,7 +322,10 @@ function LeagueRankings({ rankings }: { rankings: LeagueStanding[] }) {
             </tr>
           </thead>
           <tbody>
-            {rankings.map((team) => (
+            {rankings.map((team) => {
+              const teamLogo = teamLogos[team.abbreviation];
+
+              return (
               <tr key={team.abbreviation} className="border-b border-border/50 transition-colors hover:bg-secondary/30">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-2">
@@ -313,7 +340,15 @@ function LeagueRankings({ rankings }: { rankings: LeagueStanding[] }) {
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-2">
-                    <TeamBadge abbreviation={team.abbreviation} league="NBA" size="sm" />
+                    {teamLogo ? (
+                      <img
+                        src={teamLogo}
+                        alt={`${team.team} logo`}
+                        className="h-6 w-6 object-contain"
+                      />
+                    ) : (
+                      <TeamBadge abbreviation={team.abbreviation} league="NBA" size="sm" />
+                    )}
                     <p className="font-bold text-foreground text-sm whitespace-nowrap">{team.team}</p>
                   </div>
                 </td>
@@ -340,7 +375,7 @@ function LeagueRankings({ rankings }: { rankings: LeagueStanding[] }) {
                   )}
                 </td>
               </tr>
-            ))}
+            );})}
           </tbody>
         </table>
       </div>
@@ -487,8 +522,37 @@ function NBACupStandings() {
 export default function NBAStandingsPage() {
   const [view, setView] = useState<ViewType>("regular");
   const [standings, setStandings] = useState<TeamStanding[]>([]);
+  const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchTeamLogos() {
+      try {
+        const response = await fetch("/api/teams", { cache: "no-store" });
+        const data = await response.json();
+
+        if (!response.ok || !Array.isArray(data?.teams)) {
+          return;
+        }
+
+        const logos = (data.teams as ApiTeam[]).reduce<Record<string, string>>((acc, team) => {
+          if (!team.abbreviation) return acc;
+          const abbreviation = normalizeAbbreviation(team.abbreviation);
+          const logo = team.logoLight || team.logo || team.logoDark;
+          if (logo) {
+            acc[abbreviation] = logo;
+          }
+          return acc;
+        }, {});
+
+        setTeamLogos(logos);
+      } catch {
+      }
+    }
+
+    fetchTeamLogos();
+  }, []);
 
   useEffect(() => {
     async function fetchStandings() {
@@ -576,8 +640,8 @@ export default function NBAStandingsPage() {
           {view === "regular" && !loading && !error && (
             <>
               <div className="mb-4 grid gap-6 lg:grid-cols-2">
-                <StandingsTable standings={eastStandings} title="Eastern Conference" showPlayInBorders={true} />
-                <StandingsTable standings={westStandings} title="Western Conference" showPlayInBorders={true} />
+                <StandingsTable standings={eastStandings} title="Eastern Conference" showPlayInBorders={true} teamLogos={teamLogos} />
+                <StandingsTable standings={westStandings} title="Western Conference" showPlayInBorders={true} teamLogos={teamLogos} />
               </div>
 
               <div className="mb-12 flex items-center justify-center gap-6 text-xs text-muted-foreground">
@@ -590,17 +654,17 @@ export default function NBAStandingsPage() {
               <div className="mb-8">
                 <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">Divisional Standings</h2>
                 <div className="grid gap-6 lg:grid-cols-2">
-                  <StandingsTable standings={standings.filter((s) => s.division === "Atlantic")} title="Atlantic Division" />
-                  <StandingsTable standings={standings.filter((s) => s.division === "Central")} title="Central Division" />
-                  <StandingsTable standings={standings.filter((s) => s.division === "Southeast")} title="Southeast Division" />
-                  <StandingsTable standings={standings.filter((s) => s.division === "Pacific")} title="Pacific Division" />
-                  <StandingsTable standings={standings.filter((s) => s.division === "Northwest")} title="Northwest Division" />
-                  <StandingsTable standings={standings.filter((s) => s.division === "Southwest")} title="Southwest Division" />
+                  <StandingsTable standings={standings.filter((s) => s.division === "Atlantic")} title="Atlantic Division" teamLogos={teamLogos} />
+                  <StandingsTable standings={standings.filter((s) => s.division === "Central")} title="Central Division" teamLogos={teamLogos} />
+                  <StandingsTable standings={standings.filter((s) => s.division === "Southeast")} title="Southeast Division" teamLogos={teamLogos} />
+                  <StandingsTable standings={standings.filter((s) => s.division === "Pacific")} title="Pacific Division" teamLogos={teamLogos} />
+                  <StandingsTable standings={standings.filter((s) => s.division === "Northwest")} title="Northwest Division" teamLogos={teamLogos} />
+                  <StandingsTable standings={standings.filter((s) => s.division === "Southwest")} title="Southwest Division" teamLogos={teamLogos} />
                 </div>
               </div>
 
               <div className="mb-8">
-                <LeagueRankings rankings={leagueRankings} />
+                <LeagueRankings rankings={leagueRankings} teamLogos={teamLogos} />
               </div>
             </>
           )}

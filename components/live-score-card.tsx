@@ -4,12 +4,28 @@ import { TeamBadge } from "@/components/team-badge";
 
 interface LiveScoreCardProps {
   game: Game;
+  teamLogos?: Record<string, string>;
 }
 
-export function LiveScoreCard({ game }: LiveScoreCardProps) {
+function normalizeAbbreviation(value: string) {
+  const normalized = value.toUpperCase();
+  const aliasMap: Record<string, string> = {
+    GS: "GSW",
+    NY: "NYK",
+    NO: "NOP",
+    SA: "SAS",
+    UTAH: "UTA",
+    WSH: "WAS",
+  };
+  return aliasMap[normalized] ?? normalized;
+}
+
+export function LiveScoreCard({ game, teamLogos }: LiveScoreCardProps) {
   const isLive = game.status === "LIVE";
   const isFinal = game.status === "FINAL";
   const badgeLeague = game.league === "NBA" || game.league === "NFL" || game.league === "MLB" ? game.league : null;
+  const awayLogo = badgeLeague === "NBA" ? teamLogos?.[normalizeAbbreviation(game.awayTeam)] : undefined;
+  const homeLogo = badgeLeague === "NBA" ? teamLogos?.[normalizeAbbreviation(game.homeTeam)] : undefined;
 
   return (
     <div
@@ -44,7 +60,9 @@ export function LiveScoreCard({ game }: LiveScoreCardProps) {
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {badgeLeague ? (
+            {awayLogo ? (
+              <img src={awayLogo} alt={`${game.awayTeam} logo`} className="h-8 w-8 object-contain" />
+            ) : badgeLeague ? (
               <TeamBadge abbreviation={game.awayTeam} league={badgeLeague} size="md" />
             ) : (
               <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
@@ -78,7 +96,9 @@ export function LiveScoreCard({ game }: LiveScoreCardProps) {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {badgeLeague ? (
+            {homeLogo ? (
+              <img src={homeLogo} alt={`${game.homeTeam} logo`} className="h-8 w-8 object-contain" />
+            ) : badgeLeague ? (
               <TeamBadge abbreviation={game.homeTeam} league={badgeLeague} size="md" />
             ) : (
               <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">

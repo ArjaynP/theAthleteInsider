@@ -55,30 +55,32 @@ export interface NBAPlayoffBracket {
 }
 
 // Mock data: 2025-style bracket with placeholder teams
+const ESPN_BASE = "https://a.espncdn.com/i/teamlogos/nba/500";
+
 const westTeams: Record<string, PlayoffTeam> = {
-  okc: { id: "okc", name: "Oklahoma City Thunder", abbreviation: "OKC", seed: 1, primaryColor: "#007AC1" },
-  den: { id: "den", name: "Denver Nuggets", abbreviation: "DEN", seed: 2, primaryColor: "#0E2240" },
-  min: { id: "min", name: "Minnesota Timberwolves", abbreviation: "MIN", seed: 3, primaryColor: "#0C2340" },
-  lac: { id: "lac", name: "LA Clippers", abbreviation: "LAC", seed: 4, primaryColor: "#C8102E" },
-  dal: { id: "dal", name: "Dallas Mavericks", abbreviation: "DAL", seed: 5, primaryColor: "#00538C" },
-  phx: { id: "phx", name: "Phoenix Suns", abbreviation: "PHX", seed: 6, primaryColor: "#1D1160" },
-  sac: { id: "sac", name: "Sacramento Kings", abbreviation: "SAC", seed: 7, primaryColor: "#5A2D81" },
-  lal: { id: "lal", name: "Los Angeles Lakers", abbreviation: "LAL", seed: 8, primaryColor: "#552583" },
-  gsw: { id: "gsw", name: "Golden State Warriors", abbreviation: "GSW", seed: 9, primaryColor: "#1D428A" },
-  hou: { id: "hou", name: "Houston Rockets", abbreviation: "HOU", seed: 10, primaryColor: "#CE1141" },
+  okc: { id: "okc", name: "Oklahoma City Thunder", abbreviation: "OKC", seed: 1, primaryColor: "#007AC1", logoUrl: `${ESPN_BASE}/okc.png` },
+  den: { id: "den", name: "Denver Nuggets", abbreviation: "DEN", seed: 2, primaryColor: "#0E2240", logoUrl: `${ESPN_BASE}/den.png` },
+  min: { id: "min", name: "Minnesota Timberwolves", abbreviation: "MIN", seed: 3, primaryColor: "#0C2340", logoUrl: `${ESPN_BASE}/min.png` },
+  lac: { id: "lac", name: "LA Clippers", abbreviation: "LAC", seed: 4, primaryColor: "#C8102E", logoUrl: `${ESPN_BASE}/lac.png` },
+  dal: { id: "dal", name: "Dallas Mavericks", abbreviation: "DAL", seed: 5, primaryColor: "#00538C", logoUrl: `${ESPN_BASE}/dal.png` },
+  phx: { id: "phx", name: "Phoenix Suns", abbreviation: "PHX", seed: 6, primaryColor: "#1D1160", logoUrl: `${ESPN_BASE}/phx.png` },
+  sac: { id: "sac", name: "Sacramento Kings", abbreviation: "SAC", seed: 7, primaryColor: "#5A2D81", logoUrl: `${ESPN_BASE}/sac.png` },
+  lal: { id: "lal", name: "Los Angeles Lakers", abbreviation: "LAL", seed: 8, primaryColor: "#552583", logoUrl: `${ESPN_BASE}/lal.png` },
+  gsw: { id: "gsw", name: "Golden State Warriors", abbreviation: "GSW", seed: 9, primaryColor: "#1D428A", logoUrl: `${ESPN_BASE}/gs.png` },
+  hou: { id: "hou", name: "Houston Rockets", abbreviation: "HOU", seed: 10, primaryColor: "#CE1141", logoUrl: `${ESPN_BASE}/hou.png` },
 };
 
 const eastTeams: Record<string, PlayoffTeam> = {
-  bos: { id: "bos", name: "Boston Celtics", abbreviation: "BOS", seed: 1, primaryColor: "#007A33" },
-  ny: { id: "ny", name: "New York Knicks", abbreviation: "NY", seed: 2, primaryColor: "#006BB6" },
-  mil: { id: "mil", name: "Milwaukee Bucks", abbreviation: "MIL", seed: 3, primaryColor: "#00471B" },
-  cle: { id: "cle", name: "Cleveland Cavaliers", abbreviation: "CLE", seed: 4, primaryColor: "#860038" },
-  orl: { id: "orl", name: "Orlando Magic", abbreviation: "ORL", seed: 5, primaryColor: "#0077C0" },
-  ind: { id: "ind", name: "Indiana Pacers", abbreviation: "IND", seed: 6, primaryColor: "#002D62" },
-  phi: { id: "phi", name: "Philadelphia 76ers", abbreviation: "PHI", seed: 7, primaryColor: "#006BB6" },
-  mia: { id: "mia", name: "Miami Heat", abbreviation: "MIA", seed: 8, primaryColor: "#98002E" },
-  chi: { id: "chi", name: "Chicago Bulls", abbreviation: "CHI", seed: 9, primaryColor: "#CE1141" },
-  atl: { id: "atl", name: "Atlanta Hawks", abbreviation: "ATL", seed: 10, primaryColor: "#E03A3E" },
+  bos: { id: "bos", name: "Boston Celtics", abbreviation: "BOS", seed: 1, primaryColor: "#007A33", logoUrl: `${ESPN_BASE}/bos.png` },
+  ny: { id: "ny", name: "New York Knicks", abbreviation: "NY", seed: 2, primaryColor: "#006BB6", logoUrl: `${ESPN_BASE}/ny.png` },
+  mil: { id: "mil", name: "Milwaukee Bucks", abbreviation: "MIL", seed: 3, primaryColor: "#00471B", logoUrl: `${ESPN_BASE}/mil.png` },
+  cle: { id: "cle", name: "Cleveland Cavaliers", abbreviation: "CLE", seed: 4, primaryColor: "#860038", logoUrl: `${ESPN_BASE}/cle.png` },
+  orl: { id: "orl", name: "Orlando Magic", abbreviation: "ORL", seed: 5, primaryColor: "#0077C0", logoUrl: `${ESPN_BASE}/orl.png` },
+  ind: { id: "ind", name: "Indiana Pacers", abbreviation: "IND", seed: 6, primaryColor: "#002D62", logoUrl: `${ESPN_BASE}/ind.png` },
+  phi: { id: "phi", name: "Philadelphia 76ers", abbreviation: "PHI", seed: 7, primaryColor: "#006BB6", logoUrl: `${ESPN_BASE}/phi.png` },
+  mia: { id: "mia", name: "Miami Heat", abbreviation: "MIA", seed: 8, primaryColor: "#98002E", logoUrl: `${ESPN_BASE}/mia.png` },
+  chi: { id: "chi", name: "Chicago Bulls", abbreviation: "CHI", seed: 9, primaryColor: "#CE1141", logoUrl: `${ESPN_BASE}/chi.png` },
+  atl: { id: "atl", name: "Atlanta Hawks", abbreviation: "ATL", seed: 10, primaryColor: "#E03A3E", logoUrl: `${ESPN_BASE}/atl.png` },
 };
 
 export const nbaPlayoffBracket: NBAPlayoffBracket = {

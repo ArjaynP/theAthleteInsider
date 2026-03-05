@@ -18,11 +18,25 @@ import { TeamBadge } from "@/components/team-badge";
 import { ArrowUp, ArrowDown, Minus, Trophy, Calendar, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface LeaguePageContentProps {
-  league: "NBA" | "NFL" | "MLB";
+function normalizeAbbreviation(value: string) {
+  const normalized = value.toUpperCase();
+  const aliasMap: Record<string, string> = {
+    GS: "GSW",
+    NY: "NYK",
+    NO: "NOP",
+    SA: "SAS",
+    UTAH: "UTA",
+    WSH: "WAS",
+  };
+  return aliasMap[normalized] ?? normalized;
 }
 
-function PowerRankingsCard({ rankings }: { rankings: LeagueStanding[] }) {
+interface LeaguePageContentProps {
+  league: "NBA" | "NFL" | "MLB";
+  teamLogos?: Record<string, string>;
+}
+
+function PowerRankingsCard({ rankings, teamLogos }: { rankings: LeagueStanding[]; teamLogos: Record<string, string> }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="mb-4 flex items-center gap-2">
@@ -35,6 +49,7 @@ function PowerRankingsCard({ rankings }: { rankings: LeagueStanding[] }) {
         {rankings.map((team) => {
           const diff = team.lastWeek - team.rank;
           const badgeLeague = team.league === "NBA" || team.league === "NFL" ? team.league : null;
+          const teamLogo = teamLogos[normalizeAbbreviation(team.abbreviation)];
           return (
             <div
               key={team.abbreviation}
@@ -43,7 +58,9 @@ function PowerRankingsCard({ rankings }: { rankings: LeagueStanding[] }) {
               <span className="w-6 text-center text-lg font-black text-foreground">
                 {team.rank}
               </span>
-              {badgeLeague ? (
+              {teamLogo ? (
+                <img src={teamLogo} alt={`${team.abbreviation} logo`} className="h-8 w-8 object-contain" />
+              ) : badgeLeague ? (
                 <TeamBadge abbreviation={team.abbreviation} league={badgeLeague} size="md" />
               ) : (
                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-xs font-black text-foreground">
@@ -88,9 +105,11 @@ function PowerRankingsCard({ rankings }: { rankings: LeagueStanding[] }) {
 function MiniStandingsTable({
   standings,
   conference,
+  teamLogos,
 }: {
   standings: TeamStanding[];
   conference: string;
+  teamLogos: Record<string, string>;
 }) {
   const filtered = standings.filter((s) => s.conference === conference);
   return (
@@ -117,16 +136,23 @@ function MiniStandingsTable({
             </tr>
           </thead>
           <tbody>
-            {filtered.map((team) => (
+            {filtered.map((team) => {
+              const teamLogo = teamLogos[normalizeAbbreviation(team.abbreviation)];
+              return (
               <tr
                 key={team.abbreviation}
                 className="border-b border-border/50 transition-colors hover:bg-secondary/50"
               >
                 <td className="py-2 font-bold text-foreground">
-                  <span className="mr-2 text-xs text-muted-foreground">
-                    {team.rank}
-                  </span>
-                  {team.abbreviation}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {team.rank}
+                    </span>
+                    {teamLogo ? (
+                      <img src={teamLogo} alt={`${team.abbreviation} logo`} className="h-5 w-5 object-contain" />
+                    ) : null}
+                    {team.abbreviation}
+                  </div>
                 </td>
                 <td className="py-2 text-center tabular-nums text-foreground">
                   {team.wins}
@@ -138,7 +164,8 @@ function MiniStandingsTable({
                   {team.pct}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -170,7 +197,7 @@ function UpcomingGamesWidget({ leagueGames }: { leagueGames: typeof games }) {
   );
 }
 
-export function LeaguePageContent({ league }: LeaguePageContentProps) {
+export function LeaguePageContent({ league, teamLogos: passedLogos }: LeaguePageContentProps) {
   const leagueArticles = articles.filter((a) => a.league === league);
   const leagueGames = games.filter((g) => g.league === league);
   
@@ -188,6 +215,8 @@ export function LeaguePageContent({ league }: LeaguePageContentProps) {
   }
 
   const leaguePolls = polls.filter((p) => p.league === league);
+
+  const teamLogos: Record<string, string> = passedLogos ?? {};
 
   // Pick a "Game of the Week"
   const gameOfWeek = leagueGames[0];
@@ -223,7 +252,13 @@ export function LeaguePageContent({ league }: LeaguePageContentProps) {
           </div>
           <div className="flex items-center justify-center gap-8">
             <div className="text-center">
-              {gameOfWeek.league === "NBA" || gameOfWeek.league === "NFL" ? (
+              {teamLogos[normalizeAbbreviation(gameOfWeek.awayTeam)] ? (
+                <img
+                  src={teamLogos[normalizeAbbreviation(gameOfWeek.awayTeam)]}
+                  alt={`${gameOfWeek.awayTeam} logo`}
+                  className="mx-auto mb-2 h-14 w-14 object-contain"
+                />
+              ) : gameOfWeek.league === "NBA" || gameOfWeek.league === "NFL" ? (
                 <TeamBadge
                   abbreviation={gameOfWeek.awayTeam}
                   league={gameOfWeek.league}
@@ -271,7 +306,13 @@ export function LeaguePageContent({ league }: LeaguePageContentProps) {
               )}
             </div>
             <div className="text-center">
-              {gameOfWeek.league === "NBA" || gameOfWeek.league === "NFL" ? (
+              {teamLogos[normalizeAbbreviation(gameOfWeek.homeTeam)] ? (
+                <img
+                  src={teamLogos[normalizeAbbreviation(gameOfWeek.homeTeam)]}
+                  alt={`${gameOfWeek.homeTeam} logo`}
+                  className="mx-auto mb-2 h-14 w-14 object-contain"
+                />
+              ) : gameOfWeek.league === "NBA" || gameOfWeek.league === "NFL" ? (
                 <TeamBadge
                   abbreviation={gameOfWeek.homeTeam}
                   league={gameOfWeek.league}
@@ -329,6 +370,7 @@ export function LeaguePageContent({ league }: LeaguePageContentProps) {
                   key={conf}
                   standings={standings}
                   conference={conf}
+                  teamLogos={teamLogos}
                 />
               ))}
             </div>
@@ -337,7 +379,7 @@ export function LeaguePageContent({ league }: LeaguePageContentProps) {
 
         {/* Sidebar */}
         <aside className="flex flex-col gap-6">
-          <PowerRankingsCard rankings={rankings} />
+          <PowerRankingsCard rankings={rankings} teamLogos={teamLogos} />
           <UpcomingGamesWidget leagueGames={leagueGames} />
           <NewsletterSignup />
         </aside>

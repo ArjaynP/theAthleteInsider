@@ -29,6 +29,7 @@ function TeamRow({
   size: "sm" | "md" | "lg";
 }) {
   const logoSize = size === "sm" ? "h-7 w-7 text-xs" : size === "md" ? "h-8 w-8 text-sm" : "h-10 w-10 text-base";
+  const imgSize = size === "sm" ? "h-7 w-7" : size === "md" ? "h-8 w-8" : "h-10 w-10";
   const nameSize = size === "sm" ? "text-xs" : size === "md" ? "text-sm" : "text-base";
 
   return (
@@ -40,16 +41,24 @@ function TeamRow({
       )}
     >
       <div className="flex min-w-0 flex-1 items-center gap-2">
-        <div
-          className={cn(
-            "flex shrink-0 items-center justify-center rounded-md font-black text-white",
-            logoSize,
-            team.primaryColor ? "" : "bg-secondary text-foreground"
-          )}
-          style={team.primaryColor ? { backgroundColor: team.primaryColor } : undefined}
-        >
-          {team.abbreviation.slice(0, 2)}
-        </div>
+        {team.logoUrl ? (
+          <img
+            src={team.logoUrl}
+            alt={`${team.abbreviation} logo`}
+            className={cn("shrink-0 object-contain", imgSize)}
+          />
+        ) : (
+          <div
+            className={cn(
+              "flex shrink-0 items-center justify-center rounded-md font-black text-white",
+              logoSize,
+              team.primaryColor ? "" : "bg-secondary text-foreground"
+            )}
+            style={team.primaryColor ? { backgroundColor: team.primaryColor } : undefined}
+          >
+            {team.abbreviation.slice(0, 2)}
+          </div>
+        )}
         <span className={cn("truncate font-bold uppercase text-foreground", nameSize)}>
           {team.abbreviation}
         </span>

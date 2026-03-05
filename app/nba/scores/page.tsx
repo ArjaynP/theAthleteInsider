@@ -1,11 +1,62 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { LiveScoreCard } from "@/components/live-score-card";
 import { games } from "@/lib/mock-data";
 
+type ApiTeam = {
+  abbreviation?: string;
+  logo?: string;
+  logoLight?: string;
+  logoDark?: string;
+};
+
+function normalizeAbbreviation(value: string) {
+  const normalized = value.toUpperCase();
+  const aliasMap: Record<string, string> = {
+    GS: "GSW",
+    NY: "NYK",
+    NO: "NOP",
+    SA: "SAS",
+    UTAH: "UTA",
+    WSH: "WAS",
+  };
+  return aliasMap[normalized] ?? normalized;
+}
+
 export default function NBAScoresPage() {
+  const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    async function fetchTeamLogos() {
+      try {
+        const response = await fetch("/api/teams", { cache: "no-store" });
+        const data = await response.json();
+
+        if (!response.ok || !Array.isArray(data?.teams)) {
+          return;
+        }
+
+        const logos = (data.teams as ApiTeam[]).reduce<Record<string, string>>((acc, team) => {
+          if (!team.abbreviation) return acc;
+          const abbreviation = normalizeAbbreviation(team.abbreviation);
+          const logo = team.logoLight || team.logo || team.logoDark;
+          if (logo) {
+            acc[abbreviation] = logo;
+          }
+          return acc;
+        }, {});
+
+        setTeamLogos(logos);
+      } catch {
+      }
+    }
+
+    fetchTeamLogos();
+  }, []);
+
   const nbaGames = games.filter((g) => g.league === "NBA");
   const liveGames = nbaGames.filter((g) => g.status === "LIVE");
   const finalGames = nbaGames.filter((g) => g.status === "FINAL");
@@ -46,7 +97,7 @@ export default function NBAScoresPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {liveGames.map((game) => (
-                  <LiveScoreCard key={game.id} game={game} />
+                  <LiveScoreCard key={game.id} game={game} teamLogos={teamLogos} />
                 ))}
               </div>
             </section>
@@ -63,7 +114,7 @@ export default function NBAScoresPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {finalGames.map((game) => (
-                  <LiveScoreCard key={game.id} game={game} />
+                  <LiveScoreCard key={game.id} game={game} teamLogos={teamLogos} />
                 ))}
               </div>
             </section>
@@ -80,7 +131,7 @@ export default function NBAScoresPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {upcomingGames.map((game) => (
-                  <LiveScoreCard key={game.id} game={game} />
+                  <LiveScoreCard key={game.id} game={game} teamLogos={teamLogos} />
                 ))}
               </div>
             </section>

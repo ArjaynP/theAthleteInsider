@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { nbaPlayerStats, type StatCategory } from "@/lib/mock-data";
@@ -7,9 +8,30 @@ import { cn } from "@/lib/utils";
 import { Medal, Trophy, TrendingUp } from "lucide-react";
 import { TeamBadge } from "@/components/team-badge";
 
-function StatCard({ category }: { category: StatCategory }) {
+type ApiTeam = {
+  abbreviation?: string;
+  logo?: string;
+  logoLight?: string;
+  logoDark?: string;
+};
+
+function normalizeAbbreviation(value: string) {
+  const normalized = value.toUpperCase();
+  const aliasMap: Record<string, string> = {
+    GS: "GSW",
+    NY: "NYK",
+    NO: "NOP",
+    SA: "SAS",
+    UTAH: "UTA",
+    WSH: "WAS",
+  };
+  return aliasMap[normalized] ?? normalized;
+}
+
+function StatCard({ category, teamLogos }: { category: StatCategory; teamLogos: Record<string, string> }) {
   const topPlayer = category.leaders[0];
   const others = category.leaders.slice(1);
+  const topTeamLogo = teamLogos[normalizeAbbreviation(topPlayer.team)];
 
   return (
     <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm transition-all hover:shadow-md">
@@ -40,7 +62,11 @@ function StatCard({ category }: { category: StatCategory }) {
           </div>
           <p className="font-bold text-foreground">{topPlayer.player}</p>
           <div className="mt-1 flex items-center gap-2">
-            <TeamBadge abbreviation={topPlayer.team} league="NBA" size="sm" />
+            {topTeamLogo ? (
+              <img src={topTeamLogo} alt={`${topPlayer.team} logo`} className="h-6 w-6 object-contain" />
+            ) : (
+              <TeamBadge abbreviation={topPlayer.team} league="NBA" size="sm" />
+            )}
           </div>
         </div>
       </div>
@@ -50,8 +76,8 @@ function StatCard({ category }: { category: StatCategory }) {
         <table className="w-full text-sm">
           <tbody>
             {others.map((stat) => (
-              <tr 
-                key={stat.rank} 
+              <tr
+                key={stat.rank}
                 className="group border-b border-border/40 last:border-0 hover:bg-muted/50"
               >
                 <td className="w-8 p-3 text-center text-xs font-bold text-muted-foreground">
@@ -60,7 +86,15 @@ function StatCard({ category }: { category: StatCategory }) {
                 <td className="p-3">
                   <div className="font-bold text-foreground">{stat.player}</div>
                   <div className="mt-1 flex items-center gap-2 text-[10px] text-muted-foreground">
-                    <TeamBadge abbreviation={stat.team} league="NBA" size="sm" />
+                    {teamLogos[normalizeAbbreviation(stat.team)] ? (
+                      <img
+                        src={teamLogos[normalizeAbbreviation(stat.team)]}
+                        alt={`${stat.team} logo`}
+                        className="h-5 w-5 object-contain"
+                      />
+                    ) : (
+                      <TeamBadge abbreviation={stat.team} league="NBA" size="sm" />
+                    )}
                     <span>{stat.team}</span>
                   </div>
                 </td>
@@ -84,6 +118,36 @@ function StatCard({ category }: { category: StatCategory }) {
 }
 
 export default function NBAStatsPage() {
+  const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    async function fetchTeamLogos() {
+      try {
+        const response = await fetch("/api/teams", { cache: "no-store" });
+        const data = await response.json();
+
+        if (!response.ok || !Array.isArray(data?.teams)) {
+          return;
+        }
+
+        const logos = (data.teams as ApiTeam[]).reduce<Record<string, string>>((acc, team) => {
+          if (!team.abbreviation) return acc;
+          const abbreviation = normalizeAbbreviation(team.abbreviation);
+          const logo = team.logoLight || team.logo || team.logoDark;
+          if (logo) {
+            acc[abbreviation] = logo;
+          }
+          return acc;
+        }, {});
+
+        setTeamLogos(logos);
+      } catch {
+      }
+    }
+
+    fetchTeamLogos();
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
@@ -126,7 +190,7 @@ export default function NBAStatsPage() {
                   {section.ids.map((id) => {
                     const category = nbaPlayerStats.find((s) => s.id === id);
                     if (!category) return null;
-                    return <StatCard key={category.id} category={category} />;
+                    return <StatCard key={category.id} category={category} teamLogos={teamLogos} />;
                   })}
                 </div>
               </section>
