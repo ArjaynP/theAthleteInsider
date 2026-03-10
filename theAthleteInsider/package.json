@@ -1,0 +1,31 @@
+{
+  "name": "theAthleteInsider",
+  "version": "1.0.0",
+  "description": "A web application designed to provide users with up-to-date information about NBA teams, leveraging caching mechanisms for optimized data retrieval.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint ."
+  },
+  "keywords": [
+    "NBA",
+    "teams",
+    "sports",
+    "nextjs",
+    "react"
+  ],
+  "author": "ArjaynP",
+  "license": "MIT",
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest"
+  }
+}
