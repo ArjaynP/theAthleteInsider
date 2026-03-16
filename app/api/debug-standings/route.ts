@@ -5,8 +5,7 @@ export async function GET() {
   try {
     // Check environment variables
     const envCheck = {
-      RAPIDAPI_KEY: process.env.RAPIDAPI_KEY ? 'Set ✅' : 'Missing ❌',
-      RAPIDAPI_HOST_NBA: process.env.RAPIDAPI_HOST_NBA || 'Missing ❌',
+      SPORTSRADAR_API_KEY: process.env.SPORTSRADAR_API_KEY ? 'Set ✅' : 'Missing ❌',
     };
 
     // Fetch standings

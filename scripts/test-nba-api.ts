@@ -4,16 +4,14 @@ import { fetchNBAStandings } from '../lib/sportsApi';
 async function testNBAAPI() {
   console.log('🏀 Testing NBA API...\n');
 
-  const hasKey = Boolean(process.env.RAPIDAPI_KEY);
-  const hasHost = Boolean(process.env.RAPIDAPI_HOST_NBA);
+  const hasKey = Boolean(process.env.SPORTSRADAR_API_KEY);
 
   console.log('Environment check:');
-  console.log(`- RAPIDAPI_KEY: ${hasKey ? '✅ Set' : '❌ Missing'}`);
-  console.log(`- RAPIDAPI_HOST_NBA: ${hasHost ? '✅ Set' : '❌ Missing'}`);
+  console.log(`- SPORTSRADAR_API_KEY: ${hasKey ? '✅ Set' : '❌ Missing'}`);
 
-  if (!hasKey || !hasHost) {
+  if (!hasKey) {
     console.error('\n❌ Missing required environment variables.');
-    console.error('Set RAPIDAPI_KEY and RAPIDAPI_HOST_NBA in .env.local');
+    console.error('Set SPORTSRADAR_API_KEY in .env.local');
     process.exit(1);
   }
 

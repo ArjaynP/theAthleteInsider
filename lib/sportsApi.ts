@@ -1,18 +1,16 @@
 export async function fetchNBAStandings() {
-  const apiKey = process.env.RAPIDAPI_KEY;
-  const apiHost = process.env.RAPIDAPI_HOST_NBA;
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
 
-  if (!apiKey || !apiHost) {
-    throw new Error('Missing RAPIDAPI_KEY or RAPIDAPI_HOST_NBA in environment.');
+  if (!apiKey) {
+    throw new Error('Missing SPORTSRADAR_API_KEY in environment.');
   }
 
-  const url = `https://${apiHost}/nbastandings`;
+  const url = `https://api.sportradar.com/nba/trial/v8/en/seasons/2025/REG/standings.json?api_key=${apiKey}`;
 
   const response = await fetch(url, {
     method: 'GET',
     headers: {
-      'X-RapidAPI-Key': apiKey,
-      'X-RapidAPI-Host': apiHost,
+      'Accept': 'application/json',
     },
   });
 
@@ -37,18 +35,16 @@ export type NBATeamListItem = {
 };
 
 export async function fetchNBATeamsList(): Promise<NBATeamListItem[]> {
-  const apiKey = process.env.RAPIDAPI_KEY;
-  const apiHost = process.env.RAPIDAPI_HOST_NBA;
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
 
-  if (!apiKey || !apiHost) {
-    throw new Error('Missing RAPIDAPI_KEY or RAPIDAPI_HOST_NBA in environment.');
+  if (!apiKey) {
+    throw new Error('Missing SPORTSRADAR_API_KEY in environment.');
   }
 
-  const response = await fetch(`https://${apiHost}/nbateamlist`, {
+  const response = await fetch(`https://api.sportradar.com/nba/trial/v8/en/league/teams.json?api_key=${apiKey}`, {
     method: 'GET',
     headers: {
-      'X-RapidAPI-Key': apiKey,
-      'X-RapidAPI-Host': apiHost,
+      'Accept': 'application/json',
     },
   });
 
