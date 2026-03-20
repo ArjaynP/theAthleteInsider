@@ -83,3 +83,39 @@ export async function fetchNBATeamsList(): Promise<NBATeamListItem[]> {
     } satisfies NBATeamListItem;
   });
 }
+
+export async function fetchNFLStandings() {
+  const url =
+    'https://site.api.espn.com/apis/v2/sports/football/nfl/standings?season=2025';
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    next: { revalidate: 3600 },
+  });
+
+  if (!response.ok) {
+    throw new Error(`NFL Standings API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.standings?.entries || [];
+}
+
+export async function fetchMLBStandings() {
+  const url =
+    'https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings?season=2025';
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    next: { revalidate: 3600 },
+  });
+
+  if (!response.ok) {
+    throw new Error(`MLB Standings API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.standings?.entries || [];
+}

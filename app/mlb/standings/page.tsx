@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { mlbStandings, type TeamStanding } from "@/lib/mock-data";
@@ -11,10 +11,107 @@ import { TeamBadge } from "@/components/team-badge";
 type SortKey = "wins" | "losses" | "pct" | "team";
 type SeasonView = "regular" | "spring";
 
+type ApiStat = {
+  type?: string;
+  name?: string;
+  value?: number;
+  displayValue?: string;
+  summary?: string;
+};
+
+type ApiStanding = {
+  team: {
+    displayName: string;
+    abbreviation: string;
+  };
+  stats: ApiStat[];
+};
+
+const MLB_TEAM_INFO: Record<string, { conference: string; division: string }> = {
+  // AL East
+  BAL: { conference: "AL", division: "East" },
+  BOS: { conference: "AL", division: "East" },
+  NYY: { conference: "AL", division: "East" },
+  TB: { conference: "AL", division: "East" },
+  TOR: { conference: "AL", division: "East" },
+  // AL Central
+  CWS: { conference: "AL", division: "Central" },
+  CLE: { conference: "AL", division: "Central" },
+  DET: { conference: "AL", division: "Central" },
+  KC: { conference: "AL", division: "Central" },
+  MIN: { conference: "AL", division: "Central" },
+  // AL West
+  HOU: { conference: "AL", division: "West" },
+  LAA: { conference: "AL", division: "West" },
+  OAK: { conference: "AL", division: "West" },
+  ATH: { conference: "AL", division: "West" },
+  SEA: { conference: "AL", division: "West" },
+  TEX: { conference: "AL", division: "West" },
+  // NL East
+  ATL: { conference: "NL", division: "East" },
+  MIA: { conference: "NL", division: "East" },
+  NYM: { conference: "NL", division: "East" },
+  PHI: { conference: "NL", division: "East" },
+  WSH: { conference: "NL", division: "East" },
+  // NL Central
+  CHC: { conference: "NL", division: "Central" },
+  CIN: { conference: "NL", division: "Central" },
+  MIL: { conference: "NL", division: "Central" },
+  PIT: { conference: "NL", division: "Central" },
+  STL: { conference: "NL", division: "Central" },
+  // NL West
+  ARI: { conference: "NL", division: "West" },
+  COL: { conference: "NL", division: "West" },
+  LAD: { conference: "NL", division: "West" },
+  SD: { conference: "NL", division: "West" },
+  SF: { conference: "NL", division: "West" },
+};
+
 const MLB_DIVISIONS = ["East", "Central", "West"] as const;
 
+function statDisplay(stats: ApiStat[], type: string, fallback = "-") {
+  return stats.find((s) => s.type === type)?.displayValue ?? fallback;
+}
+
+function statValue(stats: ApiStat[], type: string, fallback = 0) {
+  return stats.find((s) => s.type === type)?.value ?? fallback;
+}
+
+function toRecordPair(stats: ApiStat[], type: string) {
+  return stats.find((s) => s.type === type)?.summary ?? "-";
+}
+
+function buildTeamStanding(entry: ApiStanding): TeamStanding {
+  const abbreviation = entry.team.abbreviation?.toUpperCase() ?? "";
+  const info = MLB_TEAM_INFO[abbreviation] ?? { conference: "AL", division: "East" };
+  const wins = Math.round(statValue(entry.stats, "wins"));
+  const losses = Math.round(statValue(entry.stats, "losses"));
+  const seed = Math.round(statValue(entry.stats, "playoffseed", 99));
+
+  return {
+    rank: seed,
+    team: entry.team.displayName,
+    abbreviation,
+    wins,
+    losses,
+    pct: statDisplay(entry.stats, "winpercent", ".000"),
+    gb: statDisplay(entry.stats, "gamesbehind", "-"),
+    streak: statDisplay(entry.stats, "streak", "-"),
+    conference: info.conference,
+    division: info.division,
+    league: "MLB",
+    home: toRecordPair(entry.stats, "home"),
+    away: toRecordPair(entry.stats, "road"),
+    last10: toRecordPair(entry.stats, "lasttengames"),
+    rs: statDisplay(entry.stats, "runsscored", "-"),
+    ra: statDisplay(entry.stats, "runsallowed", "-"),
+    diff: statDisplay(entry.stats, "rundifferential", "-"),
+    conferenceRecord: toRecordPair(entry.stats, "vsleague"),
+    divisionRecord: toRecordPair(entry.stats, "vsdivision"),
+  };
+}
+
 const GRAPEFRUIT_TEAMS = new Set([
-  "New York Yankees",
   "Baltimore Orioles",
   "Boston Red Sox",
   "Tampa Bay Rays",
@@ -261,12 +358,53 @@ function StandingsTable({
 
 export default function MLBStandingsPage() {
   const [seasonView, setSeasonView] = useState<SeasonView>("regular");
-
-  const alStandings = mlbStandings.filter((s) => s.conference === "AL");
-  const nlStandings = mlbStandings.filter((s) => s.conference === "NL");
+  const [standings, setStandings] = useState<TeamStanding[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const grapefruitStandings = mlbStandings.filter((s) => GRAPEFRUIT_TEAMS.has(s.team));
   const cactusStandings = mlbStandings.filter((s) => !GRAPEFRUIT_TEAMS.has(s.team));
+
+  useEffect(() => {
+    async function fetchStandings() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch("/api/standings?league=MLB", { cache: "no-store" });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.details || data?.error || "Failed to fetch MLB standings");
+        }
+
+        if (!Array.isArray(data?.teams)) {
+          throw new Error("Unexpected standings format from API");
+        }
+
+        const mapped = (data.teams as ApiStanding[])
+          .map(buildTeamStanding)
+          .sort((a, b) => {
+            const aPct = Number.parseFloat(a.pct || "0");
+            const bPct = Number.parseFloat(b.pct || "0");
+            if (aPct !== bPct) return bPct - aPct;
+            return b.wins - a.wins;
+          });
+
+        setStandings(mapped);
+      } catch (err) {
+        console.error("Error fetching MLB standings:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch standings");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchStandings();
+  }, []);
+
+  const alStandings = standings.filter((s) => s.conference === "AL");
+  const nlStandings = standings.filter((s) => s.conference === "NL");
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -315,53 +453,69 @@ export default function MLBStandingsPage() {
 
           {seasonView === "regular" ? (
             <>
-              <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
-                WILD CARD
-              </h2>
-              <div className="mb-12 grid gap-6 lg:grid-cols-2">
-                <StandingsTable
-                  standings={alStandings}
-                  title="American League"
-                  showMlbPostseasonLayout
-                />
-                <StandingsTable
-                  standings={nlStandings}
-                  title="National League"
-                  showMlbPostseasonLayout
-                />
-              </div>
-
-              <div className="mb-8">
-                <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
-                  Regular Season
-                </h2>
-                <div className="grid gap-6 lg:grid-cols-2">
-                  <StandingsTable
-                    standings={mlbStandings.filter((s) => s.division === "East" && s.conference === "AL")}
-                    title="AL East"
-                  />
-                  <StandingsTable
-                    standings={mlbStandings.filter((s) => s.division === "Central" && s.conference === "AL")}
-                    title="AL Central"
-                  />
-                  <StandingsTable
-                    standings={mlbStandings.filter((s) => s.division === "West" && s.conference === "AL")}
-                    title="AL West"
-                  />
-                  <StandingsTable
-                    standings={mlbStandings.filter((s) => s.division === "East" && s.conference === "NL")}
-                    title="NL East"
-                  />
-                  <StandingsTable
-                    standings={mlbStandings.filter((s) => s.division === "Central" && s.conference === "NL")}
-                    title="NL Central"
-                  />
-                  <StandingsTable
-                    standings={mlbStandings.filter((s) => s.division === "West" && s.conference === "NL")}
-                    title="NL West"
-                  />
+              {loading && (
+                <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
+                  Loading MLB standings...
                 </div>
-              </div>
+              )}
+
+              {error && (
+                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-8 text-center text-destructive">
+                  {error}
+                </div>
+              )}
+
+              {!loading && !error && (
+                <>
+                  <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
+                    WILD CARD
+                  </h2>
+                  <div className="mb-12 grid gap-6 lg:grid-cols-2">
+                    <StandingsTable
+                      standings={alStandings}
+                      title="American League"
+                      showMlbPostseasonLayout
+                    />
+                    <StandingsTable
+                      standings={nlStandings}
+                      title="National League"
+                      showMlbPostseasonLayout
+                    />
+                  </div>
+
+                  <div className="mb-8">
+                    <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
+                      Regular Season
+                    </h2>
+                    <div className="grid gap-6 lg:grid-cols-2">
+                      <StandingsTable
+                        standings={standings.filter((s) => s.division === "East" && s.conference === "AL")}
+                        title="AL East"
+                      />
+                      <StandingsTable
+                        standings={standings.filter((s) => s.division === "Central" && s.conference === "AL")}
+                        title="AL Central"
+                      />
+                      <StandingsTable
+                        standings={standings.filter((s) => s.division === "West" && s.conference === "AL")}
+                        title="AL West"
+                      />
+                      <StandingsTable
+                        standings={standings.filter((s) => s.division === "East" && s.conference === "NL")}
+                        title="NL East"
+                      />
+                      <StandingsTable
+                        standings={standings.filter((s) => s.division === "Central" && s.conference === "NL")}
+                        title="NL Central"
+                      />
+                      <StandingsTable
+                        standings={standings.filter((s) => s.division === "West" && s.conference === "NL")}
+                        title="NL West"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           ) : (
             <>

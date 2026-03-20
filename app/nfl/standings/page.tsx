@@ -1,15 +1,109 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { nflStandings, nflPowerRankings, type TeamStanding, type LeagueStanding } from "@/lib/mock-data";
+import { nflPowerRankings, type TeamStanding, type LeagueStanding } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { ArrowUpDown, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { TeamBadge } from "@/components/team-badge";
 
 type SortKey = "wins" | "losses" | "pct" | "team";
+
+type ApiStat = {
+  type?: string;
+  name?: string;
+  value?: number;
+  displayValue?: string;
+  summary?: string;
+};
+
+type ApiStanding = {
+  team: {
+    displayName: string;
+    abbreviation: string;
+  };
+  stats: ApiStat[];
+};
+
+const NFL_TEAM_INFO: Record<string, { conference: string; division: string }> = {
+  BUF: { conference: "AFC", division: "East" },
+  MIA: { conference: "AFC", division: "East" },
+  NE: { conference: "AFC", division: "East" },
+  NYJ: { conference: "AFC", division: "East" },
+  BAL: { conference: "AFC", division: "North" },
+  CIN: { conference: "AFC", division: "North" },
+  CLE: { conference: "AFC", division: "North" },
+  PIT: { conference: "AFC", division: "North" },
+  HOU: { conference: "AFC", division: "South" },
+  IND: { conference: "AFC", division: "South" },
+  JAC: { conference: "AFC", division: "South" },
+  JAX: { conference: "AFC", division: "South" },
+  TEN: { conference: "AFC", division: "South" },
+  DEN: { conference: "AFC", division: "West" },
+  KC: { conference: "AFC", division: "West" },
+  LV: { conference: "AFC", division: "West" },
+  LAC: { conference: "AFC", division: "West" },
+  DAL: { conference: "NFC", division: "East" },
+  NYG: { conference: "NFC", division: "East" },
+  PHI: { conference: "NFC", division: "East" },
+  WAS: { conference: "NFC", division: "East" },
+  CHI: { conference: "NFC", division: "North" },
+  DET: { conference: "NFC", division: "North" },
+  GB: { conference: "NFC", division: "North" },
+  MIN: { conference: "NFC", division: "North" },
+  ATL: { conference: "NFC", division: "South" },
+  CAR: { conference: "NFC", division: "South" },
+  NO: { conference: "NFC", division: "South" },
+  TB: { conference: "NFC", division: "South" },
+  ARI: { conference: "NFC", division: "West" },
+  LAR: { conference: "NFC", division: "West" },
+  SEA: { conference: "NFC", division: "West" },
+  SF: { conference: "NFC", division: "West" },
+};
+
+function statDisplay(stats: ApiStat[], type: string, fallback = "-") {
+  return stats.find((s) => s.type === type)?.displayValue ?? fallback;
+}
+
+function statValue(stats: ApiStat[], type: string, fallback = 0) {
+  return stats.find((s) => s.type === type)?.value ?? fallback;
+}
+
+function toRecordPair(stats: ApiStat[], type: string) {
+  return stats.find((s) => s.type === type)?.summary ?? "-";
+}
+
+function buildTeamStanding(entry: ApiStanding): TeamStanding {
+  const abbreviation = entry.team.abbreviation?.toUpperCase() ?? "";
+  const info = NFL_TEAM_INFO[abbreviation] ?? { conference: "AFC", division: "East" };
+  const wins = Math.round(statValue(entry.stats, "wins"));
+  const losses = Math.round(statValue(entry.stats, "losses"));
+  const seed = Math.round(statValue(entry.stats, "playoffseed", 99));
+
+  return {
+    rank: seed,
+    team: entry.team.displayName,
+    abbreviation,
+    wins,
+    losses,
+    pct: statDisplay(entry.stats, "winpercent", ".000"),
+    gb: statDisplay(entry.stats, "gamesbehind", "-"),
+    streak: statDisplay(entry.stats, "streak", "-"),
+    conference: info.conference,
+    division: info.division,
+    league: "NFL",
+    home: toRecordPair(entry.stats, "home"),
+    away: toRecordPair(entry.stats, "road"),
+    last10: toRecordPair(entry.stats, "lasttengames"),
+    rs: statDisplay(entry.stats, "pointsfor", "-"),
+    ra: statDisplay(entry.stats, "pointsagainst", "-"),
+    diff: statDisplay(entry.stats, "pointdifferential", "-"),
+    conferenceRecord: toRecordPair(entry.stats, "vsconf"),
+    divisionRecord: toRecordPair(entry.stats, "vsdiv"),
+  };
+}
 
 function StandingsTable({
   standings,
@@ -218,6 +312,48 @@ function PowerRankings({ rankings }: { rankings: LeagueStanding[] }) {
 }
 
 export default function NFLStandingsPage() {
+  const [standings, setStandings] = useState<TeamStanding[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchStandings() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch("/api/standings?league=NFL", { cache: "no-store" });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.details || data?.error || "Failed to fetch NFL standings");
+        }
+
+        if (!Array.isArray(data?.teams)) {
+          throw new Error("Unexpected standings format from API");
+        }
+
+        const mapped = (data.teams as ApiStanding[])
+          .map(buildTeamStanding)
+          .sort((a, b) => {
+            const aPct = Number.parseFloat(a.pct || "0");
+            const bPct = Number.parseFloat(b.pct || "0");
+            if (aPct !== bPct) return bPct - aPct;
+            return b.wins - a.wins;
+          });
+
+        setStandings(mapped);
+      } catch (err) {
+        console.error("Error fetching NFL standings:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch standings");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchStandings();
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
@@ -239,65 +375,81 @@ export default function NFLStandingsPage() {
             </div>
           </div>
 
-          {/* Standings */}
-          <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
-            Conference Standings
-          </h2>
-          <div className="mb-12 grid gap-6 lg:grid-cols-2">
-            <StandingsTable
-              standings={nflStandings.filter((s) => s.conference === "AFC")}
-              title="AFC"
-              logoSrc="/afc-conference.png"
-            />
-            <StandingsTable
-              standings={nflStandings.filter((s) => s.conference === "NFC")}
-              title="NFC"
-              logoSrc="/nfc-conference.png"
-            />
-          </div>
-
-          {/* Divisional Standings */}
-          <div className="mb-8">
-            <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
-              Divisional Standings
-            </h2>
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* AFC Divisions */}
-              <StandingsTable
-                standings={nflStandings.filter((s) => s.division === "East" && s.conference === "AFC")}
-                title="AFC East"
-              />
-              <StandingsTable
-                standings={nflStandings.filter((s) => s.division === "North" && s.conference === "AFC")}
-                title="AFC North"
-              />
-              <StandingsTable
-                standings={nflStandings.filter((s) => s.division === "South" && s.conference === "AFC")}
-                title="AFC South"
-              />
-              <StandingsTable
-                standings={nflStandings.filter((s) => s.division === "West" && s.conference === "AFC")}
-                title="AFC West"
-              />
-              {/* NFC Divisions */}
-              <StandingsTable
-                standings={nflStandings.filter((s) => s.division === "East" && s.conference === "NFC")}
-                title="NFC East"
-              />
-              <StandingsTable
-                standings={nflStandings.filter((s) => s.division === "North" && s.conference === "NFC")}
-                title="NFC North"
-              />
-              <StandingsTable
-                standings={nflStandings.filter((s) => s.division === "South" && s.conference === "NFC")}
-                title="NFC South"
-              />
-              <StandingsTable
-                standings={nflStandings.filter((s) => s.division === "West" && s.conference === "NFC")}
-                title="NFC West"
-              />
+          {loading && (
+            <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
+              Loading NFL standings...
             </div>
-          </div>
+          )}
+
+          {error && (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-8 text-center text-destructive">
+              {error}
+            </div>
+          )}
+
+          {!loading && !error && (
+            <>
+              {/* Standings */}
+              <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
+                Conference Standings
+              </h2>
+              <div className="mb-12 grid gap-6 lg:grid-cols-2">
+                <StandingsTable
+                  standings={standings.filter((s) => s.conference === "AFC")}
+                  title="AFC"
+                  logoSrc="/afc-conference.png"
+                />
+                <StandingsTable
+                  standings={standings.filter((s) => s.conference === "NFC")}
+                  title="NFC"
+                  logoSrc="/nfc-conference.png"
+                />
+              </div>
+
+              {/* Divisional Standings */}
+              <div className="mb-8">
+                <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
+                  Divisional Standings
+                </h2>
+                <div className="grid gap-6 lg:grid-cols-2">
+                  {/* AFC Divisions */}
+                  <StandingsTable
+                    standings={standings.filter((s) => s.division === "East" && s.conference === "AFC")}
+                    title="AFC East"
+                  />
+                  <StandingsTable
+                    standings={standings.filter((s) => s.division === "North" && s.conference === "AFC")}
+                    title="AFC North"
+                  />
+                  <StandingsTable
+                    standings={standings.filter((s) => s.division === "South" && s.conference === "AFC")}
+                    title="AFC South"
+                  />
+                  <StandingsTable
+                    standings={standings.filter((s) => s.division === "West" && s.conference === "AFC")}
+                    title="AFC West"
+                  />
+                  {/* NFC Divisions */}
+                  <StandingsTable
+                    standings={standings.filter((s) => s.division === "East" && s.conference === "NFC")}
+                    title="NFC East"
+                  />
+                  <StandingsTable
+                    standings={standings.filter((s) => s.division === "North" && s.conference === "NFC")}
+                    title="NFC North"
+                  />
+                  <StandingsTable
+                    standings={standings.filter((s) => s.division === "South" && s.conference === "NFC")}
+                    title="NFC South"
+                  />
+                  <StandingsTable
+                    standings={standings.filter((s) => s.division === "West" && s.conference === "NFC")}
+                    title="NFC West"
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Power Rankings */}
           <div className="mb-8">
