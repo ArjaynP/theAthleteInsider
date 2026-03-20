@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCachedNBAStandings, getCachedNFLStandings, getCachedMLBStandings } from '@/lib/cachedSportsData';
+import { getCachedNBAStandings, getCachedNFLStandings, getCachedMLBStandings, getCachedMLBSpringTrainingStandings } from '@/lib/cachedSportsData';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -17,6 +17,9 @@ export async function GET(request: Request) {
         break;
       case 'MLB':
         standings = await getCachedMLBStandings();
+        break;
+      case 'MLB_SPRING':
+        standings = await getCachedMLBSpringTrainingStandings();
         break;
       default:
         return NextResponse.json(

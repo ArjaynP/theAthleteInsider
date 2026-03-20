@@ -119,3 +119,21 @@ export async function fetchMLBStandings() {
   const data = await response.json();
   return data.standings?.entries || [];
 }
+
+export async function fetchMLBSpringTrainingStandings() {
+  const url =
+    'https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings?season=2026&seasontype=1';
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    next: { revalidate: 3600 },
+  });
+
+  if (!response.ok) {
+    throw new Error(`MLB Spring Training Standings API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.standings?.entries || [];
+}

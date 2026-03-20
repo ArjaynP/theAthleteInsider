@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { mlbStandings, type TeamStanding } from "@/lib/mock-data";
+import { type TeamStanding } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { ArrowUpDown } from "lucide-react";
 import { TeamBadge } from "@/components/team-badge";
@@ -361,9 +361,13 @@ export default function MLBStandingsPage() {
   const [standings, setStandings] = useState<TeamStanding[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [springStandings, setSpringStandings] = useState<TeamStanding[]>([]);
+  const [springLoading, setSpringLoading] = useState(false);
+  const [springError, setSpringError] = useState<string | null>(null);
+  const hasFetchedSpring = useRef(false);
 
-  const grapefruitStandings = mlbStandings.filter((s) => GRAPEFRUIT_TEAMS.has(s.team));
-  const cactusStandings = mlbStandings.filter((s) => !GRAPEFRUIT_TEAMS.has(s.team));
+  const grapefruitStandings = springStandings.filter((s) => GRAPEFRUIT_TEAMS.has(s.team));
+  const cactusStandings = springStandings.filter((s) => !GRAPEFRUIT_TEAMS.has(s.team));
 
   useEffect(() => {
     async function fetchStandings() {
@@ -402,6 +406,47 @@ export default function MLBStandingsPage() {
 
     fetchStandings();
   }, []);
+
+  useEffect(() => {
+    if (seasonView !== "spring" || hasFetchedSpring.current) return;
+    hasFetchedSpring.current = true;
+
+    async function fetchSpringStandings() {
+      try {
+        setSpringLoading(true);
+        setSpringError(null);
+
+        const response = await fetch("/api/standings?league=MLB_SPRING", { cache: "no-store" });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.details || data?.error || "Failed to fetch spring training standings");
+        }
+
+        if (!Array.isArray(data?.teams)) {
+          throw new Error("Unexpected standings format from API");
+        }
+
+        const mapped = (data.teams as ApiStanding[])
+          .map(buildTeamStanding)
+          .sort((a, b) => {
+            const aPct = Number.parseFloat(a.pct || "0");
+            const bPct = Number.parseFloat(b.pct || "0");
+            if (aPct !== bPct) return bPct - aPct;
+            return b.wins - a.wins;
+          });
+
+        setSpringStandings(mapped);
+      } catch (err) {
+        console.error("Error fetching spring training standings:", err);
+        setSpringError(err instanceof Error ? err.message : "Failed to fetch standings");
+      } finally {
+        setSpringLoading(false);
+      }
+    }
+
+    fetchSpringStandings();
+  }, [seasonView]);
 
   const alStandings = standings.filter((s) => s.conference === "AL");
   const nlStandings = standings.filter((s) => s.conference === "NL");
@@ -522,10 +567,25 @@ export default function MLBStandingsPage() {
               <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">
                 Spring Training Standings
               </h2>
-              <div className="mb-12 grid gap-6 lg:grid-cols-2">
-                <StandingsTable standings={grapefruitStandings} title="Grapefruit" />
-                <StandingsTable standings={cactusStandings} title="Cactus" />
-              </div>
+
+              {springLoading && (
+                <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
+                  Loading spring training standings...
+                </div>
+              )}
+
+              {springError && (
+                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-8 text-center text-destructive">
+                  {springError}
+                </div>
+              )}
+
+              {!springLoading && !springError && (
+                <div className="mb-12 grid gap-6 lg:grid-cols-2">
+                  <StandingsTable standings={grapefruitStandings} title="Grapefruit League" />
+                  <StandingsTable standings={cactusStandings} title="Cactus League" />
+                </div>
+              )}
             </>
           )}
         </div>
