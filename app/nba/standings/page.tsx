@@ -442,7 +442,16 @@ function SegmentedControl({ value, onChange }: { value: ViewType; onChange: (val
   );
 }
 
-function NBACupStandings() {
+function TeamLogo({ abbreviation, teamLogos, size = "sm" }: { abbreviation: string; teamLogos: Record<string, string>; size?: "sm" | "md" }) {
+  const logo = teamLogos[abbreviation];
+  const px = size === "md" ? "h-8 w-8" : "h-6 w-6";
+  if (logo) {
+    return <img src={logo} alt={abbreviation} className={`${px} object-contain`} />;
+  }
+  return <TeamBadge abbreviation={abbreviation} league="NBA" size={size} />;
+}
+
+function NBACupStandings({ teamLogos }: { teamLogos: Record<string, string> }) {
   const eastQuarterfinals = nbaCupBracket.find((r) => r.round === "Quarterfinals" && r.conference === "East");
   const westQuarterfinals = nbaCupBracket.find((r) => r.round === "Quarterfinals" && r.conference === "West");
   const final = nbaCupBracket.find((r) => r.round === "Final");
@@ -458,14 +467,14 @@ function NBACupStandings() {
             <div className="text-xs text-muted-foreground mb-2">{m.date} • {m.time}</div>
             <div className="flex items-center justify-between py-1">
               <div className="flex items-center gap-2">
-                <TeamBadge abbreviation={getAbbreviation(m.team1.teamFull)} league="NBA" size="sm" />
+                <TeamLogo abbreviation={getAbbreviation(m.team1.teamFull)} teamLogos={teamLogos} size="sm" />
                 <span className="font-semibold">{m.team1.teamFull}</span>
               </div>
               <span className="font-black">{m.team1.score ?? "-"}</span>
             </div>
             <div className="flex items-center justify-between py-1">
               <div className="flex items-center gap-2">
-                <TeamBadge abbreviation={getAbbreviation(m.team2.teamFull)} league="NBA" size="sm" />
+                <TeamLogo abbreviation={getAbbreviation(m.team2.teamFull)} teamLogos={teamLogos} size="sm" />
                 <span className="font-semibold">{m.team2.teamFull}</span>
               </div>
               <span className="font-black">{m.team2.score ?? "-"}</span>
@@ -494,14 +503,14 @@ function NBACupStandings() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <TeamBadge abbreviation={getAbbreviation(m.team1.teamFull)} league="NBA" size="md" />
+                    <TeamLogo abbreviation={getAbbreviation(m.team1.teamFull)} teamLogos={teamLogos} size="md" />
                     <span className="font-bold">{m.team1.teamFull}</span>
                   </div>
                   <span className="text-2xl font-black">{m.team1.score ?? "-"}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <TeamBadge abbreviation={getAbbreviation(m.team2.teamFull)} league="NBA" size="md" />
+                    <TeamLogo abbreviation={getAbbreviation(m.team2.teamFull)} teamLogos={teamLogos} size="md" />
                     <span className="font-bold">{m.team2.teamFull}</span>
                   </div>
                   <span className="text-2xl font-black">{m.team2.score ?? "-"}</span>
@@ -521,7 +530,7 @@ function NBACupStandings() {
             <div key={`${team.group}-${team.abbreviation}`} className="rounded border border-border p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <TeamBadge abbreviation={team.abbreviation} league="NBA" size="sm" />
+                  <TeamLogo abbreviation={team.abbreviation} teamLogos={teamLogos} size="sm" />
                   <span className="font-semibold">{team.team}</span>
                 </div>
                 <span className="text-xs text-muted-foreground">{team.group}</span>
@@ -539,7 +548,7 @@ function NBACupStandings() {
           {nbaCupWildcards.map((team) => (
             <div key={team.abbreviation} className="rounded border border-border p-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <TeamBadge abbreviation={team.abbreviation} league="NBA" size="sm" />
+                <TeamLogo abbreviation={team.abbreviation} teamLogos={teamLogos} size="sm" />
                 <span className="font-semibold">{team.team}</span>
               </div>
               <span className="text-xs text-muted-foreground">{team.conference} • {team.wins}-{team.losses}</span>
@@ -714,7 +723,7 @@ export default function NBAStandingsPage() {
             </>
           )}
 
-          {view === "nbacup" && <NBACupStandings />}
+          {view === "nbacup" && <NBACupStandings teamLogos={teamLogos} />}
         </div>
       </main>
       <SiteFooter />

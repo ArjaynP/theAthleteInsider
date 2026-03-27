@@ -23,21 +23,33 @@ export async function getCached<T>(
   fetchFn: () => Promise<T>,
   ttl: number
 ): Promise<T> {
+  // Try reading from cache — failures skip the cache (don't throw)
   try {
     const cached = await redis.get(key);
-    
     if (cached) {
       return JSON.parse(cached) as T;
     }
-    
-    const fresh = await fetchFn();
-    await redis.setex(key, ttl, JSON.stringify(fresh));
-    
-    return fresh;
-  } catch (error) {
-    console.error(`Cache error for key ${key}:`, error);
-    return fetchFn();
+  } catch (readError) {
+    console.warn(`Cache read skipped for key ${key}:`, (readError as Error).message);
   }
+
+  // Fetch fresh data
+  const fresh = await fetchFn();
+
+  // Don't cache empty arrays or nullish values to prevent stale empty cache entries
+  const isEmpty = fresh === null || fresh === undefined ||
+    (Array.isArray(fresh) && (fresh as unknown[]).length === 0);
+
+  if (!isEmpty) {
+    // Write failures are non-fatal — app continues without caching
+    try {
+      await redis.setex(key, ttl, JSON.stringify(fresh));
+    } catch (writeError) {
+      console.warn(`Cache write skipped for key ${key}:`, (writeError as Error).message);
+    }
+  }
+
+  return fresh;
 }
 
 // Invalidate cache (useful when data updates)

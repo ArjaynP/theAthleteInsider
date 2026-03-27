@@ -79,18 +79,10 @@ export type NBATeamListItem = {
 };
 
 export async function fetchNBATeamsList(): Promise<NBATeamListItem[]> {
-  const apiKey = process.env.SPORTSRADAR_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('Missing SPORTSRADAR_API_KEY in environment.');
-  }
-
-  const response = await fetch(`https://api.sportradar.com/nba/trial/v8/en/league/teams.json?api_key=${apiKey}`, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-    },
-  });
+  const response = await fetch(
+    'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams',
+    { method: 'GET', headers: { Accept: 'application/json' }, next: { revalidate: 86400 } }
+  );
 
   if (!response.ok) {
     throw new Error(`NBA Teams API error: ${response.status}`);
@@ -98,23 +90,19 @@ export async function fetchNBATeamsList(): Promise<NBATeamListItem[]> {
 
   const data = await response.json();
 
-  const leagues = Array.isArray(data?.sports)
-    ? data.sports.flatMap((sport: any) => (Array.isArray(sport?.leagues) ? sport.leagues : []))
-    : [];
+  const teamEntries: any[] =
+    data?.sports?.[0]?.leagues?.[0]?.teams ?? [];
 
-  const nbaLeague = leagues.find((league: any) => league?.abbreviation === 'NBA') ?? leagues[0];
-  const teams = Array.isArray(nbaLeague?.teams) ? nbaLeague.teams : [];
-
-  return teams.map((entry: any) => {
+  return teamEntries.map((entry: any) => {
     const team = entry?.team ?? entry;
-    const logos = Array.isArray(team?.logos) ? team.logos : [];
+    const logos: any[] = Array.isArray(team?.logos) ? team.logos : [];
 
     const defaultLogo =
-      logos.find((logo: any) => Array.isArray(logo?.rel) && logo.rel.includes('default'))?.href ??
+      logos.find((l) => Array.isArray(l?.rel) && l.rel.includes('default') && !l.rel.includes('scoreboard'))?.href ??
       logos[0]?.href;
 
     const darkLogo =
-      logos.find((logo: any) => Array.isArray(logo?.rel) && logo.rel.includes('dark'))?.href ??
+      logos.find((l) => Array.isArray(l?.rel) && l.rel.includes('dark') && !l.rel.includes('scoreboard'))?.href ??
       defaultLogo;
 
     return {
