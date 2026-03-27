@@ -7,9 +7,11 @@ import {
   nbaLeagueStandings,
   nflPowerRankings,
   polls,
+  type Game,
   type TeamStanding,
   type LeagueStanding,
 } from "@/lib/mock-data";
+import Link from "next/link";
 import { ArticleCard } from "@/components/article-card";
 import { LiveScoreCard } from "@/components/live-score-card";
 import { PollWidget } from "@/components/poll-widget";
@@ -34,6 +36,12 @@ function normalizeAbbreviation(value: string) {
 interface LeaguePageContentProps {
   league: "NBA" | "NFL" | "MLB";
   teamLogos?: Record<string, string>;
+  standingsOverride?: TeamStanding[];
+  rankingsOverride?: LeagueStanding[];
+  conferencesOverride?: string[];
+  gamesOverride?: Game[];
+  featuredGameOverride?: Game;
+  scoresPageHref?: string;
 }
 
 function PowerRankingsCard({ rankings, teamLogos }: { rankings: LeagueStanding[]; teamLogos: Record<string, string> }) {
@@ -173,10 +181,18 @@ function MiniStandingsTable({
   );
 }
 
-function UpcomingGamesWidget({ leagueGames }: { leagueGames: typeof games }) {
+function UpcomingGamesWidget({
+  leagueGames,
+  teamLogos,
+  scoresPageHref,
+}: {
+  leagueGames: Game[];
+  teamLogos: Record<string, string>;
+  scoresPageHref: string;
+}) {
   const upcoming = leagueGames.filter((g) => g.status === "UPCOMING");
   const live = leagueGames.filter((g) => g.status === "LIVE");
-  const activeGames = [...live, ...upcoming];
+  const activeGames = [...live, ...upcoming].slice(0, 4);
 
   if (activeGames.length === 0) return null;
 
@@ -190,16 +206,33 @@ function UpcomingGamesWidget({ leagueGames }: { leagueGames: typeof games }) {
       </div>
       <div className="flex flex-col gap-3">
         {activeGames.map((game) => (
-          <LiveScoreCard key={game.id} game={game} />
+          <LiveScoreCard key={game.id} game={game} teamLogos={teamLogos} />
         ))}
+      </div>
+      <div className="mt-4">
+        <Link
+          href={scoresPageHref}
+          className="inline-flex w-full items-center justify-center rounded-lg border border-border bg-secondary px-4 py-2 text-sm font-bold uppercase tracking-wide text-foreground transition-colors hover:bg-secondary/70"
+        >
+          View All Scores
+        </Link>
       </div>
     </div>
   );
 }
 
-export function LeaguePageContent({ league, teamLogos: passedLogos }: LeaguePageContentProps) {
+export function LeaguePageContent({
+  league,
+  teamLogos: passedLogos,
+  standingsOverride,
+  rankingsOverride,
+  conferencesOverride,
+  gamesOverride,
+  featuredGameOverride,
+  scoresPageHref,
+}: LeaguePageContentProps) {
   const leagueArticles = articles.filter((a) => a.league === league);
-  const leagueGames = games.filter((g) => g.league === league);
+  const leagueGames = gamesOverride ?? games.filter((g) => g.league === league);
   
   let standings = nbaStandings;
   let rankings = nbaLeagueStandings;
@@ -214,12 +247,30 @@ export function LeaguePageContent({ league, teamLogos: passedLogos }: LeaguePage
     conferences = ["AL", "NL"];
   }
 
+  if (standingsOverride && standingsOverride.length > 0) {
+    standings = standingsOverride;
+  }
+
+  if (rankingsOverride && rankingsOverride.length > 0) {
+    rankings = rankingsOverride;
+  }
+
+  if (conferencesOverride && conferencesOverride.length > 0) {
+    conferences = conferencesOverride;
+  }
+
   const leaguePolls = polls.filter((p) => p.league === league);
 
   const teamLogos: Record<string, string> = passedLogos ?? {};
 
-  // Pick a "Game of the Week"
-  const gameOfWeek = leagueGames[0];
+  const gameOfDay =
+    featuredGameOverride ??
+    leagueGames.find((g) => g.status === "LIVE") ??
+    leagueGames.find((g) => g.status === "UPCOMING") ??
+    leagueGames[0];
+
+  const resolvedScoresPageHref =
+    scoresPageHref ?? `/${league.toLowerCase()}/scores`;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -241,56 +292,56 @@ export function LeaguePageContent({ league, teamLogos: passedLogos }: LeaguePage
         </div>
       </div>
 
-      {/* Game of the Week Banner */}
-      {gameOfWeek && (
+      {/* Game of the Day Banner */}
+      {gameOfDay && (
         <div className="mb-8 rounded-xl border border-amber/30 bg-amber/5 p-6">
           <div className="mb-3 flex items-center gap-2">
             <Star className="h-5 w-5 text-amber" />
             <span className="text-sm font-black uppercase tracking-widest text-amber">
-              Game of the Week
+              Game of the Day
             </span>
           </div>
           <div className="flex items-center justify-center gap-8">
             <div className="text-center">
-              {teamLogos[normalizeAbbreviation(gameOfWeek.awayTeam)] ? (
+              {teamLogos[normalizeAbbreviation(gameOfDay.awayTeam)] ? (
                 <img
-                  src={teamLogos[normalizeAbbreviation(gameOfWeek.awayTeam)]}
-                  alt={`${gameOfWeek.awayTeam} logo`}
+                  src={teamLogos[normalizeAbbreviation(gameOfDay.awayTeam)]}
+                  alt={`${gameOfDay.awayTeam} logo`}
                   className="mx-auto mb-2 h-14 w-14 object-contain"
                 />
-              ) : gameOfWeek.league === "NBA" || gameOfWeek.league === "NFL" ? (
+              ) : gameOfDay.league === "NBA" || gameOfDay.league === "NFL" ? (
                 <TeamBadge
-                  abbreviation={gameOfWeek.awayTeam}
-                  league={gameOfWeek.league}
+                  abbreviation={gameOfDay.awayTeam}
+                  league={gameOfDay.league}
                   size="lg"
                   className="mx-auto mb-2"
                 />
               ) : (
                 <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-xl bg-secondary text-xl font-black text-foreground">
-                  {gameOfWeek.awayTeam.charAt(0)}
+                  {gameOfDay.awayTeam.charAt(0)}
                 </div>
               )}
               <p className="text-lg font-black text-foreground">
-                {gameOfWeek.awayTeam}
+                {gameOfDay.awayTeam}
               </p>
               <p className="text-xs text-muted-foreground">
-                {gameOfWeek.awayRecord}
+                {gameOfDay.awayRecord}
               </p>
             </div>
             <div className="text-center">
-              {gameOfWeek.status === "LIVE" ? (
+              {gameOfDay.status === "LIVE" ? (
                 <div>
                   <p className="text-3xl font-black tabular-nums text-foreground">
-                    {gameOfWeek.awayScore} - {gameOfWeek.homeScore}
+                    {gameOfDay.awayScore} - {gameOfDay.homeScore}
                   </p>
                   <p className="text-xs font-bold text-accent">
-                    {gameOfWeek.quarter} {gameOfWeek.time}
+                    {gameOfDay.quarter} {gameOfDay.time}
                   </p>
                 </div>
-              ) : gameOfWeek.status === "FINAL" ? (
+              ) : gameOfDay.status === "FINAL" ? (
                 <div>
                   <p className="text-3xl font-black tabular-nums text-foreground">
-                    {gameOfWeek.awayScore} - {gameOfWeek.homeScore}
+                    {gameOfDay.awayScore} - {gameOfDay.homeScore}
                   </p>
                   <p className="text-xs font-bold text-muted-foreground">
                     FINAL
@@ -300,35 +351,35 @@ export function LeaguePageContent({ league, teamLogos: passedLogos }: LeaguePage
                 <div>
                   <p className="text-2xl font-black text-foreground">VS</p>
                   <p className="text-xs font-bold text-primary">
-                    {gameOfWeek.startTime}
+                    {gameOfDay.startTime}
                   </p>
                 </div>
               )}
             </div>
             <div className="text-center">
-              {teamLogos[normalizeAbbreviation(gameOfWeek.homeTeam)] ? (
+              {teamLogos[normalizeAbbreviation(gameOfDay.homeTeam)] ? (
                 <img
-                  src={teamLogos[normalizeAbbreviation(gameOfWeek.homeTeam)]}
-                  alt={`${gameOfWeek.homeTeam} logo`}
+                  src={teamLogos[normalizeAbbreviation(gameOfDay.homeTeam)]}
+                  alt={`${gameOfDay.homeTeam} logo`}
                   className="mx-auto mb-2 h-14 w-14 object-contain"
                 />
-              ) : gameOfWeek.league === "NBA" || gameOfWeek.league === "NFL" ? (
+              ) : gameOfDay.league === "NBA" || gameOfDay.league === "NFL" ? (
                 <TeamBadge
-                  abbreviation={gameOfWeek.homeTeam}
-                  league={gameOfWeek.league}
+                  abbreviation={gameOfDay.homeTeam}
+                  league={gameOfDay.league}
                   size="lg"
                   className="mx-auto mb-2"
                 />
               ) : (
                 <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-xl bg-secondary text-xl font-black text-foreground">
-                  {gameOfWeek.homeTeam.charAt(0)}
+                  {gameOfDay.homeTeam.charAt(0)}
                 </div>
               )}
               <p className="text-lg font-black text-foreground">
-                {gameOfWeek.homeTeam}
+                {gameOfDay.homeTeam}
               </p>
               <p className="text-xs text-muted-foreground">
-                {gameOfWeek.homeRecord}
+                {gameOfDay.homeRecord}
               </p>
             </div>
           </div>
@@ -380,7 +431,11 @@ export function LeaguePageContent({ league, teamLogos: passedLogos }: LeaguePage
         {/* Sidebar */}
         <aside className="flex flex-col gap-6">
           <PowerRankingsCard rankings={rankings} teamLogos={teamLogos} />
-          <UpcomingGamesWidget leagueGames={leagueGames} />
+          <UpcomingGamesWidget
+            leagueGames={leagueGames}
+            teamLogos={teamLogos}
+            scoresPageHref={resolvedScoresPageHref}
+          />
           <NewsletterSignup />
         </aside>
       </div>
