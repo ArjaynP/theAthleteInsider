@@ -160,6 +160,30 @@ function buildLeagueStanding(team: TeamStanding, rank: number): LeagueStanding {
 type SortKey = "wins" | "losses" | "pct" | "team";
 type ViewType = "regular" | "nbacup";
 
+const CLINCHED_CONFIG: Record<string, { label: string; title: string; className: string }> = {
+  division:      { label: "z",  title: "Clinched Division",      className: "bg-yellow-500/20 text-yellow-500 border border-yellow-500/40" },
+  conference:    { label: "y",  title: "Clinched Conference",    className: "bg-yellow-500/20 text-yellow-500 border border-yellow-500/40" },
+  playoff_berth: { label: "x",  title: "Clinched Playoff Berth", className: "bg-green-500/20 text-green-500 border border-green-500/40" },
+  play_in:       { label: "pi", title: "Clinched Play-In Spot",  className: "bg-blue-500/20 text-blue-500 border border-blue-500/40" },
+  eliminated:    { label: "e",  title: "Eliminated",             className: "bg-muted text-muted-foreground border border-border" },
+};
+
+function ClinchedBadge({ status }: { status: string }) {
+  const config = CLINCHED_CONFIG[status];
+  if (!config) return null;
+  return (
+    <span
+      title={config.title}
+      className={cn(
+        "inline-flex items-center rounded px-1 py-px text-[9px] font-black uppercase leading-none",
+        config.className
+      )}
+    >
+      {config.label}
+    </span>
+  );
+}
+
 const teamAbbreviationMap = new Map(nbaCupGroups.map((t) => [t.team, t.abbreviation]));
 
 function getAbbreviation(name: string) {
@@ -171,11 +195,13 @@ function StandingsTable({
   title,
   showPlayInBorders = false,
   teamLogos,
+  clinchedMap = {},
 }: {
   standings: TeamStanding[];
   title: string;
   showPlayInBorders?: boolean;
   teamLogos: Record<string, string>;
+  clinchedMap?: Record<string, string>;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("wins");
   const [sortAsc, setSortAsc] = useState(false);
@@ -258,7 +284,10 @@ function StandingsTable({
                       ) : (
                         <TeamBadge abbreviation={team.abbreviation} league="NBA" size="md" />
                       )}
-                      <p className="font-bold text-foreground whitespace-nowrap">{team.team}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-bold text-foreground whitespace-nowrap">{team.team}</p>
+                        {clinchedMap[team.team] && <ClinchedBadge status={clinchedMap[team.team]} />}
+                      </div>
                     </div>
                   </td>
                   <td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">{team.wins}</td>
@@ -295,9 +324,11 @@ function StandingsTable({
 function LeagueRankings({
   rankings,
   teamLogos,
+  clinchedMap = {},
 }: {
   rankings: LeagueStanding[];
   teamLogos: Record<string, string>;
+  clinchedMap?: Record<string, string>;
 }) {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -350,6 +381,7 @@ function LeagueRankings({
                       <TeamBadge abbreviation={team.abbreviation} league="NBA" size="sm" />
                     )}
                     <p className="font-bold text-foreground text-sm whitespace-nowrap">{team.team}</p>
+                  {clinchedMap[team.team] && <ClinchedBadge status={clinchedMap[team.team]} />}
                   </div>
                 </td>
                 <td className="px-5 py-3 text-center font-bold tabular-nums text-foreground">{team.wins}</td>
@@ -522,6 +554,7 @@ function NBACupStandings() {
 export default function NBAStandingsPage() {
   const [view, setView] = useState<ViewType>("regular");
   const [standings, setStandings] = useState<TeamStanding[]>([]);
+  const [clinchedMap, setClinchedMap] = useState<Record<string, string>>({});
   const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -571,8 +604,7 @@ export default function NBAStandingsPage() {
           throw new Error("Unexpected standings format from API");
         }
 
-        const mapped = (data.teams as ApiStanding[])
-          .map(buildTeamStanding)
+        const mapped = (data.teams as TeamStanding[])
           .sort((a, b) => {
             const aPct = Number.parseFloat(a.pct || "0");
             const bPct = Number.parseFloat(b.pct || "0");
@@ -581,6 +613,7 @@ export default function NBAStandingsPage() {
           });
 
         setStandings(mapped);
+        setClinchedMap((data.clinched as Record<string, string>) ?? {});
       } catch (err) {
         console.error("Error fetching standings:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch standings");
@@ -640,8 +673,8 @@ export default function NBAStandingsPage() {
           {view === "regular" && !loading && !error && (
             <>
               <div className="mb-4 grid gap-6 lg:grid-cols-2">
-                <StandingsTable standings={eastStandings} title="Eastern Conference" showPlayInBorders={true} teamLogos={teamLogos} />
-                <StandingsTable standings={westStandings} title="Western Conference" showPlayInBorders={true} teamLogos={teamLogos} />
+                <StandingsTable standings={eastStandings} title="Eastern Conference" showPlayInBorders={true} teamLogos={teamLogos} clinchedMap={clinchedMap} />
+                <StandingsTable standings={westStandings} title="Western Conference" showPlayInBorders={true} teamLogos={teamLogos} clinchedMap={clinchedMap} />
               </div>
 
               <div className="mb-12 flex items-center justify-center gap-6 text-xs text-muted-foreground">
@@ -651,20 +684,32 @@ export default function NBAStandingsPage() {
                 </div>
               </div>
 
+              {Object.keys(clinchedMap).length > 0 && (
+                <div className="mb-8 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                  <span className="font-bold uppercase tracking-wide">Clinched:</span>
+                  {Object.entries(CLINCHED_CONFIG).map(([key, cfg]) => (
+                    <div key={key} className="flex items-center gap-1.5">
+                      <ClinchedBadge status={key} />
+                      <span>{cfg.title}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className="mb-8">
                 <h2 className="mb-6 text-2xl font-black uppercase tracking-tight text-foreground">Divisional Standings</h2>
                 <div className="grid gap-6 lg:grid-cols-2">
-                  <StandingsTable standings={standings.filter((s) => s.division === "Atlantic")} title="Atlantic Division" teamLogos={teamLogos} />
-                  <StandingsTable standings={standings.filter((s) => s.division === "Central")} title="Central Division" teamLogos={teamLogos} />
-                  <StandingsTable standings={standings.filter((s) => s.division === "Southeast")} title="Southeast Division" teamLogos={teamLogos} />
-                  <StandingsTable standings={standings.filter((s) => s.division === "Pacific")} title="Pacific Division" teamLogos={teamLogos} />
-                  <StandingsTable standings={standings.filter((s) => s.division === "Northwest")} title="Northwest Division" teamLogos={teamLogos} />
-                  <StandingsTable standings={standings.filter((s) => s.division === "Southwest")} title="Southwest Division" teamLogos={teamLogos} />
+                  <StandingsTable standings={standings.filter((s) => s.division === "Atlantic")} title="Atlantic Division" teamLogos={teamLogos} clinchedMap={clinchedMap} />
+                  <StandingsTable standings={standings.filter((s) => s.division === "Central")} title="Central Division" teamLogos={teamLogos} clinchedMap={clinchedMap} />
+                  <StandingsTable standings={standings.filter((s) => s.division === "Southeast")} title="Southeast Division" teamLogos={teamLogos} clinchedMap={clinchedMap} />
+                  <StandingsTable standings={standings.filter((s) => s.division === "Pacific")} title="Pacific Division" teamLogos={teamLogos} clinchedMap={clinchedMap} />
+                  <StandingsTable standings={standings.filter((s) => s.division === "Northwest")} title="Northwest Division" teamLogos={teamLogos} clinchedMap={clinchedMap} />
+                  <StandingsTable standings={standings.filter((s) => s.division === "Southwest")} title="Southwest Division" teamLogos={teamLogos} clinchedMap={clinchedMap} />
                 </div>
               </div>
 
               <div className="mb-8">
-                <LeagueRankings rankings={leagueRankings} teamLogos={teamLogos} />
+                <LeagueRankings rankings={leagueRankings} teamLogos={teamLogos} clinchedMap={clinchedMap} />
               </div>
             </>
           )}

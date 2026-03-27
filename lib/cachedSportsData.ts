@@ -1,10 +1,18 @@
 import { getCached, CACHE_DURATIONS } from './cache-helper';
-import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings } from './sportsApi';
+import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings } from './sportsApi';
 
 export async function getCachedNBAStandings() {
   return getCached(
     'NBA:standings:current',
     fetchNBAStandings,
+    CACHE_DURATIONS.STANDINGS
+  );
+}
+
+export async function getCachedNBARankings() {
+  return getCached(
+    'NBA:rankings:current',
+    fetchNBARankings,
     CACHE_DURATIONS.STANDINGS
   );
 }

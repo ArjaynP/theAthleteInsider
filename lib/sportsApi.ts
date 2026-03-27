@@ -19,9 +19,53 @@ export async function fetchNBAStandings() {
   }
 
   const data = await response.json();
-  
-  // Extract the entries (teams) from the nested structure
-  return data.standings?.entries || [];
+  // Return full raw response — route.ts does the SportsRadar-specific mapping
+  return data;
+}
+
+export type NBARankingsConference = {
+  id: string;
+  name: string;
+  alias: string;
+  divisions: Array<{
+    id: string;
+    name: string;
+    alias: string;
+    teams: Array<{
+      id: string;
+      name: string;
+      market: string;
+      rank: {
+        conference: number;
+        division: number;
+        clinched?: string;
+      };
+    }>;
+  }>;
+};
+
+export async function fetchNBARankings(): Promise<NBARankingsConference[]> {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+
+  if (!apiKey) {
+    throw new Error('Missing SPORTSRADAR_API_KEY in environment.');
+  }
+
+  const url = `https://api.sportradar.com/nba/trial/v8/en/seasons/2025/REG/rankings.json?api_key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`NBA Rankings API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return (data.conferences ?? []) as NBARankingsConference[];
 }
 
 export type NBATeamListItem = {
