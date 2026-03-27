@@ -169,3 +169,27 @@ export async function fetchMLBSpringTrainingStandings() {
   const data = await response.json();
   return data.standings?.entries || [];
 }
+
+export async function fetchNBALeagueLeaders() {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+
+  if (!apiKey) {
+    throw new Error('Missing SPORTSRADAR_API_KEY in environment.');
+  }
+
+  const url = `https://api.sportradar.com/nba/trial/v8/en/seasons/2025/REG/leaders.json?api_key=${apiKey}`;
+
+  // Use cache: 'no-store' to skip Next.js data cache — response is ~3.76MB which
+  // exceeds the 2MB limit. Redis (getCached) handles caching instead.
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error(`NBA League Leaders API error: ${response.status}`);
+  }
+
+  return response.json();
+}

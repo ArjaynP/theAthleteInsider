@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { nbaPlayerStats, type StatCategory } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { Medal, Trophy, TrendingUp } from "lucide-react";
+import { Loader2, TrendingUp } from "lucide-react";
 import { TeamBadge } from "@/components/team-badge";
 
 type ApiTeam = {
@@ -119,33 +119,56 @@ function StatCard({ category, teamLogos }: { category: StatCategory; teamLogos: 
 
 export default function NBAStatsPage() {
   const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
+  const [playerStats, setPlayerStats] = useState<StatCategory[]>(nbaPlayerStats);
+  const [loading, setLoading] = useState(true);
+  const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
     async function fetchTeamLogos() {
       try {
         const response = await fetch("/api/teams", { cache: "no-store" });
         const data = await response.json();
-
-        if (!response.ok || !Array.isArray(data?.teams)) {
-          return;
-        }
+        if (!response.ok || !Array.isArray(data?.teams)) return;
 
         const logos = (data.teams as ApiTeam[]).reduce<Record<string, string>>((acc, team) => {
           if (!team.abbreviation) return acc;
           const abbreviation = normalizeAbbreviation(team.abbreviation);
           const logo = team.logoLight || team.logo || team.logoDark;
-          if (logo) {
-            acc[abbreviation] = logo;
-          }
+          if (logo) acc[abbreviation] = logo;
           return acc;
         }, {});
 
         setTeamLogos(logos);
       } catch {
+        // logos are non-critical
+      }
+    }
+
+    async function fetchLeaders() {
+      try {
+        const response = await fetch("/api/nba-leaders", { cache: "no-store" });
+        const data = await response.json();
+
+        if (response.ok && Array.isArray(data?.categories) && data.categories.length > 0) {
+          // Merge live categories with mock, so any category not yet returned by the API
+          // still shows something (falls back to mock).
+          const liveMap = new Map<string, StatCategory>(
+            (data.categories as StatCategory[]).map((c) => [c.id, c])
+          );
+          setPlayerStats(
+            nbaPlayerStats.map((mock) => liveMap.get(mock.id) ?? mock)
+          );
+          setIsLive(true);
+        }
+      } catch {
+        // API unavailable — keep mock data silently
+      } finally {
+        setLoading(false);
       }
     }
 
     fetchTeamLogos();
+    fetchLeaders();
   }, []);
 
   return (
@@ -164,9 +187,19 @@ export default function NBAStatsPage() {
                 <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">
                   NBA Player Stats
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  Current season league leaders
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground">
+                    Current season league leaders
+                  </p>
+                  {loading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                  ) : isLive ? (
+                    <span className="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-600">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                      Live
+                    </span>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>
@@ -174,11 +207,11 @@ export default function NBAStatsPage() {
           {/* Stats Sections */}
           <div className="space-y-16">
             {[
-              { title: "Scoring", ids: ["ppg", "3pm", "fg_pct", "3p_pct", "ft_pct"] },
-              { title: "Playmaking", ids: ["apg", "tov", "ast_to"] },
-              { title: "Defense", ids: ["bpg", "spg", "pf"] },
-              { title: "Rebounding", ids: ["rpg", "oreb", "dreb"] },
-              { title: "Playing Time", ids: ["mpg", "gp"] },
+              { title: "Scoring",     ids: ["ppg", "3pm", "fg_pct", "3p_pct", "ft_pct"] },
+              { title: "Playmaking",  ids: ["apg", "tov", "ast_to"] },
+              { title: "Defense",     ids: ["bpg", "spg", "pf"] },
+              { title: "Rebounding",  ids: ["rpg", "oreb", "dreb"] },
+              { title: "Playing Time",ids: ["mpg", "gp"] },
             ].map((section) => (
               <section key={section.title}>
                 <div className="mb-6 flex items-center gap-2 border-b border-border pb-2">
@@ -188,7 +221,7 @@ export default function NBAStatsPage() {
                 </div>
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {section.ids.map((id) => {
-                    const category = nbaPlayerStats.find((s) => s.id === id);
+                    const category = playerStats.find((s) => s.id === id);
                     if (!category) return null;
                     return <StatCard key={category.id} category={category} teamLogos={teamLogos} />;
                   })}
@@ -196,7 +229,7 @@ export default function NBAStatsPage() {
               </section>
             ))}
           </div>
-          
+
           <div className="mt-12 rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
             <TrendingUp className="mx-auto mb-4 h-8 w-8 text-primary opacity-50" />
             <h3 className="mb-2 text-lg font-bold text-foreground">More Stats Coming Soon</h3>

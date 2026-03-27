@@ -1,5 +1,8 @@
 import { redis } from '@/services/cacheService';
 
+let cacheWriteDisabled = false;
+let cacheWriteDisableReason = '';
+
 // Cache durations (in seconds)
 export const CACHE_DURATIONS = {
   LIVE_SCORES: 30,        // 30 seconds for live games
@@ -41,11 +44,22 @@ export async function getCached<T>(
     (Array.isArray(fresh) && (fresh as unknown[]).length === 0);
 
   if (!isEmpty) {
+    if (cacheWriteDisabled) {
+      return fresh;
+    }
+
     // Write failures are non-fatal — app continues without caching
     try {
       await redis.setex(key, ttl, JSON.stringify(fresh));
     } catch (writeError) {
-      console.warn(`Cache write skipped for key ${key}:`, (writeError as Error).message);
+      const message = (writeError as Error).message;
+      if (message.includes('NOPERM')) {
+        cacheWriteDisabled = true;
+        cacheWriteDisableReason = message;
+        console.warn('Cache writes disabled for this process (Redis NOPERM). Reads still work.');
+      } else {
+        console.warn(`Cache write skipped for key ${key}:`, message);
+      }
     }
   }
 
@@ -54,6 +68,11 @@ export async function getCached<T>(
 
 // Invalidate cache (useful when data updates)
 export async function invalidateCache(pattern: string) {
+  if (cacheWriteDisabled) {
+    console.warn(`Cache invalidation skipped (writes disabled): ${cacheWriteDisableReason}`);
+    return;
+  }
+
   try {
     // For exact key
     await redis.del(pattern);
