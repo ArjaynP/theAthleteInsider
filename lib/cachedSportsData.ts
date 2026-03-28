@@ -84,7 +84,7 @@ export async function getCachedMLBSportsRadarRankings() {
 
 export async function getCachedMLBTeamsList() {
   return getCached(
-    'MLB:teams:list',
+    'MLB:teams:list:v3',
     fetchMLBTeamsList,
     60 * 60 * 24
   );

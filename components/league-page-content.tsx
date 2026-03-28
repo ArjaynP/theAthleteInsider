@@ -54,7 +54,7 @@ function PowerRankingsCard({ rankings, teamLogos }: { rankings: LeagueStanding[]
         </h3>
       </div>
       <div className="flex flex-col gap-3">
-        {rankings.map((team) => {
+        {rankings.slice(0, 10).map((team) => {
           const diff = team.lastWeek - team.rank;
           const badgeLeague = team.league === "NBA" || team.league === "NFL" ? team.league : null;
           const teamLogo = teamLogos[normalizeAbbreviation(team.abbreviation)];
@@ -119,7 +119,10 @@ function MiniStandingsTable({
   conference: string;
   teamLogos: Record<string, string>;
 }) {
-  const filtered = standings.filter((s) => s.conference === conference);
+  const filtered = standings
+    .filter((s) => s.conference === conference)
+    .sort((a, b) => Number.parseFloat(b.pct || "0") - Number.parseFloat(a.pct || "0"))
+    .slice(0, 10);
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-foreground">

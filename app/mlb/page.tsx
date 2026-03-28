@@ -2,7 +2,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { LeaguePageContent } from "@/components/league-page-content";
 import { getCachedMLBTeamsList, getCachedMLBSportsRadarStandings } from "@/lib/cachedSportsData";
-import type { TeamStanding } from "@/lib/mock-data";
+import type { TeamStanding, LeagueStanding } from "@/lib/mock-data";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,24 +14,26 @@ type ApiTeam = {
   logoDark?: string;
 };
 
-// SportsRadar abbr alias fixes for MLB
-const MLB_ABBR_ALIASES: Record<string, string> = {
-  TB: "TBR",
-  KC: "KCR",
-  SD: "SDP",
-  SF: "SFG",
-  WSH: "WSN",
-  CWS: "CHW",
+// ESPN abbreviation → extra keys to store logo under (SportsRadar/mock data uses these)
+const MLB_EXTRA_ABBR_KEYS: Record<string, string> = {
+  ARI: "AZ",  // ESPN: ARI → SportsRadar: AZ
+  CHW: "CWS",   // ESPN: CHW → SportsRadar/mock: CWS
+  TBR: "TB",    // ESPN: TBR → SportsRadar: TB
+  KCR: "KC",    // ESPN: KCR → SportsRadar: KC
+  SDP: "SD",    // ESPN: SDP → SportsRadar: SD
+  SFG: "SF",    // ESPN: SFG → SportsRadar: SF
+  WSN: "WSH",   // ESPN: WSN → SportsRadar: WSH
 };
 
 function normalizeMLBAbr(value: string) {
   const upper = value.toUpperCase();
-  return MLB_ABBR_ALIASES[upper] ?? upper;
+  return MLB_EXTRA_ABBR_KEYS[upper] ?? upper;
 }
 
 export default async function MLBPage() {
   let teamLogos: Record<string, string> = {};
   let apiStandings: TeamStanding[] = [];
+  let powerRankings: LeagueStanding[] = [];
 
   try {
     const teams = await getCachedMLBTeamsList();
@@ -92,6 +94,25 @@ export default async function MLBPage() {
         }
       }
     }
+
+    powerRankings = [...apiStandings]
+      .sort((a, b) => Number.parseFloat(b.pct || "0") - Number.parseFloat(a.pct || "0"))
+      .slice(0, 10)
+      .map((t, i) => ({
+        rank: i + 1,
+        team: t.team,
+        abbreviation: t.abbreviation,
+        record: `${t.wins}-${t.losses}`,
+        lastWeek: i + 1,
+        trend: "same" as const,
+        summary: `${t.wins}-${t.losses} • ${t.conference} ${t.division}`,
+        league: "MLB" as const,
+        wins: t.wins,
+        losses: t.losses,
+        pct: t.pct,
+        conference: t.conference,
+        division: t.division,
+      }));
   } catch {
     // fall back to mock standings in LeaguePageContent
   }
@@ -104,6 +125,7 @@ export default async function MLBPage() {
           league="MLB"
           teamLogos={teamLogos}
           standingsOverride={apiStandings.length > 0 ? apiStandings : undefined}
+          rankingsOverride={powerRankings.length > 0 ? powerRankings : undefined}
           conferencesOverride={["AL", "NL"]}
         />
       </main>

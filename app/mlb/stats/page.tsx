@@ -8,6 +8,11 @@ import { cn } from "@/lib/utils";
 import { Medal, Trophy, TrendingUp } from "lucide-react";
 import { TeamBadge } from "@/components/team-badge";
 
+// ESPN abbreviation → extra keys (SportsRadar/mock may use different abbrs)
+const MLB_EXTRA_ABBR_KEYS: Record<string, string> = {
+  ARI: "AZ", CHW: "CWS", TBR: "TB", KCR: "KC", SDP: "SD", SFG: "SF", WSN: "WSH",
+};
+
 type ApiTeam = {
   abbreviation?: string;
   logo?: string;
@@ -120,8 +125,13 @@ export default function MLBStatsPage() {
           if (!res.ok || !Array.isArray(data?.teams)) return;
           const logos = (data.teams as ApiTeam[]).reduce<Record<string, string>>((acc, team) => {
             if (!team.abbreviation) return acc;
+            const abbr = team.abbreviation.toUpperCase();
             const logo = team.logoLight || team.logo || team.logoDark;
-            if (logo) acc[team.abbreviation.toUpperCase()] = logo;
+            if (logo) {
+              acc[abbr] = logo;
+              const extra = MLB_EXTRA_ABBR_KEYS[abbr];
+              if (extra) acc[extra] = logo;
+            }
             return acc;
           }, {});
           setTeamLogos(logos);
