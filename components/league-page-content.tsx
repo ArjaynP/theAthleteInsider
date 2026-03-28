@@ -20,7 +20,7 @@ import { TeamBadge } from "@/components/team-badge";
 import { ArrowUp, ArrowDown, Minus, Trophy, Calendar, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-function normalizeAbbreviation(value: string) {
+function normalizeAbbreviation(value: string, league?: "NBA" | "NFL" | "MLB") {
   const normalized = value.toUpperCase();
   const aliasMap: Record<string, string> = {
     GS: "GSW",
@@ -28,8 +28,8 @@ function normalizeAbbreviation(value: string) {
     NO: "NOP",
     SA: "SAS",
     UTAH: "UTA",
-    WSH: "WAS",
   };
+  if (league === "NBA") aliasMap.WSH = "WAS";
   return aliasMap[normalized] ?? normalized;
 }
 
@@ -44,7 +44,15 @@ interface LeaguePageContentProps {
   scoresPageHref?: string;
 }
 
-function PowerRankingsCard({ rankings, teamLogos }: { rankings: LeagueStanding[]; teamLogos: Record<string, string> }) {
+function PowerRankingsCard({
+  rankings,
+  teamLogos,
+  league,
+}: {
+  rankings: LeagueStanding[];
+  teamLogos: Record<string, string>;
+  league: "NBA" | "NFL" | "MLB";
+}) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="mb-4 flex items-center gap-2">
@@ -57,7 +65,7 @@ function PowerRankingsCard({ rankings, teamLogos }: { rankings: LeagueStanding[]
         {rankings.slice(0, 10).map((team) => {
           const diff = team.lastWeek - team.rank;
           const badgeLeague = team.league === "NBA" || team.league === "NFL" ? team.league : null;
-          const teamLogo = teamLogos[normalizeAbbreviation(team.abbreviation)];
+          const teamLogo = teamLogos[normalizeAbbreviation(team.abbreviation, league)];
           return (
             <div
               key={team.abbreviation}
@@ -114,15 +122,17 @@ function MiniStandingsTable({
   standings,
   conference,
   teamLogos,
+  league,
 }: {
   standings: TeamStanding[];
   conference: string;
   teamLogos: Record<string, string>;
+  league: "NBA" | "NFL" | "MLB";
 }) {
   const filtered = standings
     .filter((s) => s.conference === conference)
     .sort((a, b) => Number.parseFloat(b.pct || "0") - Number.parseFloat(a.pct || "0"))
-    .slice(0, 10);
+    .reverse(); // highest pct first
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-foreground">
@@ -147,34 +157,34 @@ function MiniStandingsTable({
             </tr>
           </thead>
           <tbody>
-            {filtered.map((team) => {
-              const teamLogo = teamLogos[normalizeAbbreviation(team.abbreviation)];
+            {filtered.map((team, idx) => {
+              const teamLogo = teamLogos[normalizeAbbreviation(team.abbreviation, league)];
               return (
-              <tr
-                key={team.abbreviation}
-                className="border-b border-border/50 transition-colors hover:bg-secondary/50"
-              >
-                <td className="py-2 font-bold text-foreground">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
-                      {team.rank}
-                    </span>
-                    {teamLogo ? (
-                      <img src={teamLogo} alt={`${team.abbreviation} logo`} className="h-5 w-5 object-contain" />
-                    ) : null}
-                    {team.abbreviation}
-                  </div>
-                </td>
-                <td className="py-2 text-center tabular-nums text-foreground">
-                  {team.wins}
-                </td>
-                <td className="py-2 text-center tabular-nums text-muted-foreground">
-                  {team.losses}
-                </td>
-                <td className="py-2 text-center tabular-nums text-foreground">
-                  {team.pct}
-                </td>
-              </tr>
+                <tr
+                  key={team.abbreviation}
+                  className="border-b border-border/50 transition-colors hover:bg-secondary/50"
+                >
+                  <td className="py-2 font-bold text-foreground">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        {idx + 1}
+                      </span>
+                      {teamLogo ? (
+                        <img src={teamLogo} alt={`${team.abbreviation} logo`} className="h-5 w-5 object-contain" />
+                      ) : null}
+                      {team.abbreviation}
+                    </div>
+                  </td>
+                  <td className="py-2 text-center tabular-nums text-foreground">
+                    {team.wins}
+                  </td>
+                  <td className="py-2 text-center tabular-nums text-muted-foreground">
+                    {team.losses}
+                  </td>
+                  <td className="py-2 text-center tabular-nums text-foreground">
+                    {team.pct}
+                  </td>
+                </tr>
               );
             })}
           </tbody>
@@ -306,9 +316,9 @@ export function LeaguePageContent({
           </div>
           <div className="flex items-center justify-center gap-8">
             <div className="text-center">
-              {teamLogos[normalizeAbbreviation(gameOfDay.awayTeam)] ? (
+              {teamLogos[normalizeAbbreviation(gameOfDay.awayTeam, gameOfDay.league)] ? (
                 <img
-                  src={teamLogos[normalizeAbbreviation(gameOfDay.awayTeam)]}
+                  src={teamLogos[normalizeAbbreviation(gameOfDay.awayTeam, gameOfDay.league)]}
                   alt={`${gameOfDay.awayTeam} logo`}
                   className="mx-auto mb-2 h-14 w-14 object-contain"
                 />
@@ -360,9 +370,9 @@ export function LeaguePageContent({
               )}
             </div>
             <div className="text-center">
-              {teamLogos[normalizeAbbreviation(gameOfDay.homeTeam)] ? (
+              {teamLogos[normalizeAbbreviation(gameOfDay.homeTeam, gameOfDay.league)] ? (
                 <img
-                  src={teamLogos[normalizeAbbreviation(gameOfDay.homeTeam)]}
+                  src={teamLogos[normalizeAbbreviation(gameOfDay.homeTeam, gameOfDay.league)]}
                   alt={`${gameOfDay.homeTeam} logo`}
                   className="mx-auto mb-2 h-14 w-14 object-contain"
                 />
@@ -425,6 +435,7 @@ export function LeaguePageContent({
                   standings={standings}
                   conference={conf}
                   teamLogos={teamLogos}
+                  league={league}
                 />
               ))}
             </div>
@@ -433,7 +444,7 @@ export function LeaguePageContent({
 
         {/* Sidebar */}
         <aside className="flex flex-col gap-6">
-          <PowerRankingsCard rankings={rankings} teamLogos={teamLogos} />
+          <PowerRankingsCard rankings={rankings} teamLogos={teamLogos} league={league} />
           <UpcomingGamesWidget
             leagueGames={leagueGames}
             teamLogos={teamLogos}

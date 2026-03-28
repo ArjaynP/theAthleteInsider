@@ -1,5 +1,5 @@
 import { getCached, CACHE_DURATIONS } from './cache-helper';
-import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList } from './sportsApi';
+import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore } from './sportsApi';
 
 export async function getCachedNBAStandings() {
   return getCached(
@@ -87,5 +87,21 @@ export async function getCachedMLBTeamsList() {
     'MLB:teams:list:v3',
     fetchMLBTeamsList,
     60 * 60 * 24
+  );
+}
+
+export async function getCachedMLBDailyBoxscore(year: string, month: string, day: string) {
+  return getCached(
+    `MLB:daily:boxscore:${year}-${month}-${day}`,
+    () => fetchMLBDailyBoxscore({ year, month, day }),
+    CACHE_DURATIONS.LIVE_SCORES
+  );
+}
+
+export async function getCachedMLBGameBoxscore(gameId: string) {
+  return getCached(
+    `MLB:game:boxscore:${gameId}`,
+    () => fetchMLBGameBoxscore(gameId),
+    CACHE_DURATIONS.LIVE_SCORES
   );
 }

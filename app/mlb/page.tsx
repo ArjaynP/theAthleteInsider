@@ -117,6 +117,17 @@ export default async function MLBPage() {
     // fall back to mock standings in LeaguePageContent
   }
 
+  // TEMP DEBUG: Log teamLogos keys and all team abbreviations in standings
+  if (process.env.NODE_ENV !== "production") {
+    // Print all logo keys
+    console.log("[MLB DEBUG] teamLogos keys:", Object.keys(teamLogos));
+    // Print all abbreviations in standings
+    const allAbbrs = apiStandings.map((t) => t.abbreviation);
+    console.log("[MLB DEBUG] Standings abbreviations:", allAbbrs);
+    // Print if WSH is present in both
+    console.log("[MLB DEBUG] teamLogos['WSH']:", teamLogos["WSH"]);
+    console.log("[MLB DEBUG] Standings has WSH:", allAbbrs.includes("WSH"));
+  }
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { LiveScoreCard } from "@/components/live-score-card";
-import { games } from "@/lib/mock-data";
+import type { Game } from "@/lib/mock-data";
 
 // ESPN abbreviation → extra keys (SportsRadar/mock may use different abbrs)
 const MLB_EXTRA_ABBR_KEYS: Record<string, string> = {
@@ -20,7 +20,38 @@ type ApiTeam = {
 
 export default function MLBScoresPage() {
     const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
-    const mlbGames = games.filter((g) => g.league === "MLB");
+    const [mlbGames, setMlbGames] = useState<Game[]>([]);
+
+    const fetchGames = useCallback(async () => {
+      try {
+        const res = await fetch("/api/mlb-scores", { cache: "no-store" });
+        const data = await res.json();
+        if (!res.ok || !Array.isArray(data?.games)) {
+          setMlbGames([]);
+          return;
+        }
+
+        const mapped: Game[] = (data.games as {
+          id: string;
+          homeTeam: string;
+          awayTeam: string;
+          homeScore: number;
+          awayScore: number;
+          status: "LIVE" | "FINAL" | "UPCOMING";
+          quarter?: string;
+          time?: string;
+          startTime?: string;
+          league: "MLB";
+          homeRecord: string;
+          awayRecord: string;
+        }[]).map((g) => ({ ...g, league: "MLB" as const }));
+
+        setMlbGames(mapped);
+      } catch {
+        setMlbGames([]);
+      }
+    }, []);
+
     const liveGames = mlbGames.filter((g) => g.status === "LIVE");
     const finalGames = mlbGames.filter((g) => g.status === "FINAL");
     const upcomingGames = mlbGames.filter((g) => g.status === "UPCOMING");
@@ -49,6 +80,16 @@ export default function MLBScoresPage() {
       }
       fetchLogos();
     }, []);
+
+    useEffect(() => {
+      fetchGames();
+    }, [fetchGames]);
+
+    useEffect(() => {
+      const intervalMs = liveGames.length > 0 ? 30_000 : 120_000;
+      const id = setInterval(() => fetchGames(), intervalMs);
+      return () => clearInterval(id);
+    }, [liveGames.length, fetchGames]);
 
     return (
         <div className="flex min-h-screen flex-col">

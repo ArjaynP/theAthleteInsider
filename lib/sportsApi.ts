@@ -326,3 +326,48 @@ export async function fetchMLBSportsRadarRankings() {
   if (!response.ok) throw new Error(`MLB SportsRadar Rankings API error: ${response.status}`);
   return response.json();
 }
+
+function getSportsRadarHost() {
+  return process.env.SPORTSRADAR_HOST ?? 'https://api.sportradar.com';
+}
+
+function getSportsRadarAccessLevel() {
+  return process.env.SPORTSRADAR_ACCESS_LEVEL ?? 'trial';
+}
+
+export async function fetchMLBDailyBoxscore(date: { year: string; month: string; day: string }) {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const host = getSportsRadarHost();
+  const accessLevel = getSportsRadarAccessLevel();
+  const { year, month, day } = date;
+  const url = `${host}/mlb/${accessLevel}/v8/en/games/${year}/${month}/${day}/boxscore.json?api_key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`MLB Daily Boxscore API error: ${response.status}`);
+  return response.json();
+}
+
+export async function fetchMLBGameBoxscore(gameId: string) {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const host = getSportsRadarHost();
+  const accessLevel = getSportsRadarAccessLevel();
+  const url = `${host}/mlb/${accessLevel}/v8/en/games/${gameId}/boxscore.json?api_key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`MLB Game Boxscore API error: ${response.status}`);
+  return response.json();
+}

@@ -7,7 +7,7 @@ interface LiveScoreCardProps {
   teamLogos?: Record<string, string>;
 }
 
-function normalizeAbbreviation(value: string) {
+function normalizeAbbreviation(value: string, league?: "NBA" | "NFL" | "MLB") {
   const normalized = value.toUpperCase();
   const aliasMap: Record<string, string> = {
     GS: "GSW",
@@ -15,8 +15,8 @@ function normalizeAbbreviation(value: string) {
     NO: "NOP",
     SA: "SAS",
     UTAH: "UTA",
-    WSH: "WAS",
   };
+  if (league === "NBA") aliasMap.WSH = "WAS";
   return aliasMap[normalized] ?? normalized;
 }
 
@@ -25,8 +25,12 @@ export function LiveScoreCard({ game, teamLogos }: LiveScoreCardProps) {
   const isFinal = game.status === "FINAL";
   const liveStatusText = [game.quarter, game.time].filter(Boolean).join(" ").trim() || "LIVE";
   const badgeLeague = game.league === "NBA" || game.league === "NFL" || game.league === "MLB" ? game.league : null;
-  const awayLogo = (badgeLeague === "NBA" || badgeLeague === "MLB") ? teamLogos?.[normalizeAbbreviation(game.awayTeam)] : undefined;
-  const homeLogo = (badgeLeague === "NBA" || badgeLeague === "MLB") ? teamLogos?.[normalizeAbbreviation(game.homeTeam)] : undefined;
+  const awayLogo = (badgeLeague === "NBA" || badgeLeague === "MLB")
+    ? teamLogos?.[normalizeAbbreviation(game.awayTeam, game.league)]
+    : undefined;
+  const homeLogo = (badgeLeague === "NBA" || badgeLeague === "MLB")
+    ? teamLogos?.[normalizeAbbreviation(game.homeTeam, game.league)]
+    : undefined;
 
   return (
     <div
