@@ -20,10 +20,70 @@ function normalizeAbbreviation(value: string, league?: "NBA" | "NFL" | "MLB") {
   return aliasMap[normalized] ?? normalized;
 }
 
+function formatInningTicker(value?: string) {
+  if (!value) return "-";
+  const raw = value.trim().toUpperCase();
+  const match = raw.match(/^(TOP|BOT)\s+(\d{1,2})$/);
+  if (!match) return raw;
+  const half = match[1] === "TOP" ? "▲" : "▼";
+  const inning = Number(match[2]);
+  const suffix = inning === 1 ? "ST" : inning === 2 ? "ND" : inning === 3 ? "RD" : "TH";
+  return `${half} ${inning}${suffix}`;
+}
+
+function LiveMlbDetails({ game }: { game: Game }) {
+  const balls = typeof game.balls === "number" ? game.balls : "-";
+  const strikes = typeof game.strikes === "number" ? game.strikes : "-";
+  const bases = game.bases ?? { first: false, second: false, third: false };
+  const outsLabel = typeof game.outs === "number" ? `${game.outs} OUT${game.outs === 1 ? "" : "S"}` : "- OUT";
+
+  return (
+    <div className="mt-3 overflow-hidden rounded-md border border-border/60 bg-secondary/20">
+      <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+        <div className="min-w-0">
+          <p className="truncate text-[10px] font-bold uppercase text-foreground">
+            {game.currentPitcher ?? "PITCHER TBD"}
+          </p>
+          <p className="truncate text-[10px] text-muted-foreground">
+            {game.currentBatter ?? "BATTER TBD"}
+          </p>
+        </div>
+        <div className="relative h-6 w-6 flex-shrink-0">
+          <span
+            className={cn(
+              "absolute left-2 top-0 h-3 w-3 rotate-45 border",
+              bases.second ? "border-amber-400 bg-amber-400" : "border-border bg-transparent"
+            )}
+          />
+          <span
+            className={cn(
+              "absolute left-3 top-2 h-3 w-3 rotate-45 border",
+              bases.first ? "border-amber-400 bg-amber-400" : "border-border bg-transparent"
+            )}
+          />
+          <span
+            className={cn(
+              "absolute left-1 top-2 h-3 w-3 rotate-45 border",
+              bases.third ? "border-amber-400 bg-amber-400" : "border-border bg-transparent"
+            )}
+          />
+        </div>
+      </div>
+      <div className="flex items-center justify-between border-t border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-bold uppercase text-foreground">
+        <span>{formatInningTicker(game.quarter)}</span>
+        <span>{balls}-{strikes}</span>
+        <span>{outsLabel}</span>
+      </div>
+    </div>
+  );
+}
+
 export function LiveScoreCard({ game, teamLogos }: LiveScoreCardProps) {
   const isLive = game.status === "LIVE";
   const isFinal = game.status === "FINAL";
-  const liveStatusText = [game.quarter, game.time].filter(Boolean).join(" ").trim() || "LIVE";
+  const liveStatusText = game.league === "MLB"
+    ? ["LIVE", game.quarter].filter(Boolean).join(" • ").trim()
+    : [game.quarter, game.time].filter(Boolean).join(" ").trim() || "LIVE";
   const badgeLeague = game.league === "NBA" || game.league === "NFL" || game.league === "MLB" ? game.league : null;
   const awayLogo = (badgeLeague === "NBA" || badgeLeague === "MLB")
     ? teamLogos?.[normalizeAbbreviation(game.awayTeam, game.league)]
@@ -133,6 +193,8 @@ export function LiveScoreCard({ game, teamLogos }: LiveScoreCardProps) {
           </span>
         </div>
       </div>
+
+      {isLive && game.league === "MLB" && <LiveMlbDetails game={game} />}
     </div>
   );
 }

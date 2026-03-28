@@ -156,6 +156,16 @@ export interface Game {
   league: "NBA" | "NFL" | "MLB";
   homeRecord: string;
   awayRecord: string;
+  currentPitcher?: string;
+  currentBatter?: string;
+  outs?: number;
+  balls?: number;
+  strikes?: number;
+  bases?: {
+    first: boolean;
+    second: boolean;
+    third: boolean;
+  };
 }
 
 export const games: Game[] = [

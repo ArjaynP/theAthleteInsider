@@ -371,3 +371,22 @@ export async function fetchMLBGameBoxscore(gameId: string) {
   if (!response.ok) throw new Error(`MLB Game Boxscore API error: ${response.status}`);
   return response.json();
 }
+
+export async function fetchMLBDailySchedule(date: { year: string; month: string; day: string }) {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const host = getSportsRadarHost();
+  const accessLevel = getSportsRadarAccessLevel();
+  const { year, month, day } = date;
+  const url = `${host}/mlb/${accessLevel}/v8/en/games/${year}/${month}/${day}/schedule.json?api_key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`MLB Daily Schedule API error: ${response.status}`);
+  return response.json();
+}
