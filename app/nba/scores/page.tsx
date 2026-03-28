@@ -13,6 +13,21 @@ function toDateString(d: Date): string {
   return d.toISOString().slice(0, 10); // YYYY-MM-DD
 }
 
+function getEasternDateString(now = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+
+  const year = parts.find((p) => p.type === "year")?.value;
+  const month = parts.find((p) => p.type === "month")?.value;
+  const day = parts.find((p) => p.type === "day")?.value;
+
+  return `${year}-${month}-${day}`;
+}
+
 function dateFromString(s: string): Date {
   const [y, m, d] = s.split("-").map(Number);
   return new Date(y, m - 1, d);
@@ -54,7 +69,7 @@ function normalizeAbbreviation(value: string) {
 // ─── component ─────────────────────────────────────────────────────────────
 
 export default function NBAScoresPage() {
-  const today = toDateString(new Date());
+  const today = getEasternDateString();
   const [selectedDate, setSelectedDate] = useState<string>(today);
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);

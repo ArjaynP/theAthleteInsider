@@ -23,6 +23,7 @@ function normalizeAbbreviation(value: string) {
 export function LiveScoreCard({ game, teamLogos }: LiveScoreCardProps) {
   const isLive = game.status === "LIVE";
   const isFinal = game.status === "FINAL";
+  const liveStatusText = [game.quarter, game.time].filter(Boolean).join(" ").trim() || "LIVE";
   const badgeLeague = game.league === "NBA" || game.league === "NFL" || game.league === "MLB" ? game.league : null;
   const awayLogo = badgeLeague === "NBA" ? teamLogos?.[normalizeAbbreviation(game.awayTeam)] : undefined;
   const homeLogo = badgeLeague === "NBA" ? teamLogos?.[normalizeAbbreviation(game.homeTeam)] : undefined;
@@ -46,7 +47,7 @@ export function LiveScoreCard({ game, teamLogos }: LiveScoreCardProps) {
                 : "bg-primary/20 text-primary"
           )}
         >
-          {isLive ? `${game.quarter} ${game.time}` : game.status === "UPCOMING" ? game.startTime : game.status}
+          {isLive ? liveStatusText : game.status === "UPCOMING" ? game.startTime : game.status}
         </span>
         {isLive && (
           <span className="relative flex h-2 w-2">

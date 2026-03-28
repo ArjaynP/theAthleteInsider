@@ -74,6 +74,62 @@ function formatLocalTime(isoString: string): string {
   }
 }
 
+function getEasternDateString(now = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+
+  const year = parts.find((p) => p.type === "year")?.value;
+  const month = parts.find((p) => p.type === "month")?.value;
+  const day = parts.find((p) => p.type === "day")?.value;
+
+  return `${year}-${month}-${day}`;
+}
+
+function formatQuarter(value: unknown): string | undefined {
+  if (value == null) return undefined;
+  const raw = String(value).trim();
+  if (!raw) return undefined;
+  if (/^q\d+$/i.test(raw)) return raw.toUpperCase();
+  if (/^\d+$/.test(raw)) return `Q${raw}`;
+  return raw.toUpperCase();
+}
+
+async function fetchLiveSummary(
+  gameId: string,
+  apiKey: string
+): Promise<{ homeScore?: number; awayScore?: number; quarter?: string; time?: string }> {
+  const summaryUrl = `https://api.sportradar.com/nba/trial/v8/en/games/${gameId}/summary.json?api_key=${apiKey}`;
+  const summaryRes = await fetch(summaryUrl, {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+
+  if (!summaryRes.ok) return {};
+
+  const summary = (await summaryRes.json()) as Record<string, any>;
+  const game = summary?.game ?? summary;
+
+  const homeScore =
+    game?.home?.points ??
+    game?.home?.scoring ??
+    game?.home_points;
+  const awayScore =
+    game?.away?.points ??
+    game?.away?.scoring ??
+    game?.away_points;
+
+  return {
+    homeScore: typeof homeScore === "number" ? homeScore : undefined,
+    awayScore: typeof awayScore === "number" ? awayScore : undefined,
+    quarter: formatQuarter(game?.quarter ?? game?.period),
+    time: typeof game?.clock === "string" ? game.clock : undefined,
+  };
+}
+
 function normalizeAbbreviation(value: string) {
   const normalized = value.toUpperCase();
   const aliasMap: Record<string, string> = {
@@ -200,7 +256,7 @@ export default async function NBAPage() {
   try {
     const apiKey = process.env.SPORTSRADAR_API_KEY;
     if (apiKey) {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = getEasternDateString();
       const [year, month, day] = today.split("-");
       const url = `https://api.sportradar.com/nba/trial/v8/en/games/${year}/${month}/${day}/schedule.json?api_key=${apiKey}`;
 
@@ -225,7 +281,7 @@ export default async function NBAPage() {
           }>;
         };
 
-        apiGames = (raw.games ?? []).map((g) => {
+        const baseGames = (raw.games ?? []).map((g) => {
           const srStatus = String(g.status ?? "").toLowerCase();
           let status: Game["status"] = "UPCOMING";
           if (srStatus === "closed" || srStatus === "complete") status = "FINAL";
@@ -241,7 +297,7 @@ export default async function NBAPage() {
             homeScore: g.home_points ?? 0,
             awayScore: g.away_points ?? 0,
             status,
-            quarter: g.quarter ? `Q${g.quarter}` : g.period ? `Q${g.period}` : undefined,
+            quarter: formatQuarter(g.quarter ?? g.period),
             time: g.clock,
             startTime: formatLocalTime(String(g.scheduled ?? "")),
             league: "NBA",
@@ -250,7 +306,33 @@ export default async function NBAPage() {
           } satisfies Game;
         });
 
+        apiGames = await Promise.all(
+          baseGames.map(async (game) => {
+            if (game.status !== "LIVE") return game;
+
+            try {
+              const summary = await fetchLiveSummary(game.id, apiKey);
+              return {
+                ...game,
+                homeScore: summary.homeScore ?? game.homeScore,
+                awayScore: summary.awayScore ?? game.awayScore,
+                quarter: summary.quarter ?? game.quarter,
+                time: summary.time ?? game.time,
+              };
+            } catch {
+              return game;
+            }
+          })
+        );
+
+        const atlVsBos = apiGames.find(
+          (g) =>
+            (g.awayTeam === "ATL" && g.homeTeam === "BOS") ||
+            (g.awayTeam === "BOS" && g.homeTeam === "ATL")
+        );
+
         featuredGame =
+          atlVsBos ??
           apiGames.find((g) => g.status === "LIVE") ??
           apiGames.find((g) => g.status === "UPCOMING") ??
           apiGames[0];
