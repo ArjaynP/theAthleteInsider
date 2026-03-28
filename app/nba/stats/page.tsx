@@ -75,9 +75,9 @@ function StatCard({ category, teamLogos }: { category: StatCategory; teamLogos: 
       <div className="flex-1 px-2 pb-2">
         <table className="w-full text-sm">
           <tbody>
-            {others.map((stat) => (
+            {others.map((stat, i) => (
               <tr
-                key={stat.rank}
+                key={`${stat.player}-${stat.rank}-${i}`}
                 className="group border-b border-border/40 last:border-0 hover:bg-muted/50"
               >
                 <td className="w-8 p-3 text-center text-xs font-bold text-muted-foreground">
