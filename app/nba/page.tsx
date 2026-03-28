@@ -4,6 +4,9 @@ import { LeaguePageContent } from "@/components/league-page-content";
 import { getCachedNBATeamsList, getCachedNBAStandings } from "@/lib/cachedSportsData";
 import type { Game, LeagueStanding, TeamStanding } from "@/lib/mock-data";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type ApiTeam = {
   abbreviation?: string;
   logo?: string;
@@ -352,7 +355,7 @@ export default async function NBAPage() {
           standingsOverride={apiStandings.length > 0 ? apiStandings : undefined}
           rankingsOverride={apiRankings.slice(0, 10).length > 0 ? apiRankings.slice(0, 10) : undefined}
           conferencesOverride={["East", "West"]}
-          gamesOverride={apiGames.length > 0 ? apiGames : undefined}
+          gamesOverride={apiGames}
           featuredGameOverride={featuredGame}
           scoresPageHref="/nba/scores"
         />
