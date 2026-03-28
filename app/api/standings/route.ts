@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCachedNBAStandings, getCachedNBARankings, getCachedNFLStandings, getCachedMLBStandings, getCachedMLBSpringTrainingStandings } from '@/lib/cachedSportsData';
+import { getCachedNBAStandings, getCachedNBARankings, getCachedNFLStandings, getCachedMLBStandings, getCachedMLBSpringTrainingStandings, getCachedMLBSportsRadarStandings, getCachedMLBSportsRadarRankings } from '@/lib/cachedSportsData';
 
 // ─── Clinch computation ────────────────────────────────────────────────────
 // Priority: division (5) > conference (4) > playoff_berth (3) > play_in (2) > eliminated (1)
@@ -84,6 +84,111 @@ const NBA_TEAM_ABBR: Record<string, string> = {
   'Portland Trail Blazers': 'POR', 'Sacramento Kings': 'SAC', 'San Antonio Spurs': 'SAS',
   'Toronto Raptors': 'TOR', 'Utah Jazz': 'UTA', 'Washington Wizards': 'WAS',
 };
+
+// ─── MLB ESPN fallback helpers ────────────────────────────────────────────────
+const MLB_TEAM_INFO: Record<string, { conference: string; division: string }> = {
+  BAL: { conference: 'AL', division: 'East' }, BOS: { conference: 'AL', division: 'East' },
+  NYY: { conference: 'AL', division: 'East' }, TB:  { conference: 'AL', division: 'East' },
+  TOR: { conference: 'AL', division: 'East' },
+  CWS: { conference: 'AL', division: 'Central' }, CLE: { conference: 'AL', division: 'Central' },
+  DET: { conference: 'AL', division: 'Central' }, KC:  { conference: 'AL', division: 'Central' },
+  MIN: { conference: 'AL', division: 'Central' },
+  HOU: { conference: 'AL', division: 'West' }, LAA: { conference: 'AL', division: 'West' },
+  OAK: { conference: 'AL', division: 'West' }, ATH: { conference: 'AL', division: 'West' },
+  SEA: { conference: 'AL', division: 'West' }, TEX: { conference: 'AL', division: 'West' },
+  ATL: { conference: 'NL', division: 'East' }, MIA: { conference: 'NL', division: 'East' },
+  NYM: { conference: 'NL', division: 'East' }, PHI: { conference: 'NL', division: 'East' },
+  WSH: { conference: 'NL', division: 'East' },
+  CHC: { conference: 'NL', division: 'Central' }, CIN: { conference: 'NL', division: 'Central' },
+  MIL: { conference: 'NL', division: 'Central' }, PIT: { conference: 'NL', division: 'Central' },
+  STL: { conference: 'NL', division: 'Central' },
+  ARI: { conference: 'NL', division: 'West' }, COL: { conference: 'NL', division: 'West' },
+  LAD: { conference: 'NL', division: 'West' }, SD:  { conference: 'NL', division: 'West' },
+  SF:  { conference: 'NL', division: 'West' },
+};
+
+type EspnStat = { type?: string; value?: number; displayValue?: string; summary?: string };
+type EspnStanding = { team: { displayName: string; abbreviation: string }; stats: EspnStat[] };
+
+function espnVal(stats: EspnStat[], type: string, fb = 0) { return stats.find(s => s.type === type)?.value ?? fb; }
+function espnDisp(stats: EspnStat[], type: string, fb = '-') { return stats.find(s => s.type === type)?.displayValue ?? fb; }
+function espnRec(stats: EspnStat[], type: string) { return stats.find(s => s.type === type)?.summary ?? '-'; }
+
+function buildMLBTeamStandingFromESPN(entry: EspnStanding) {
+  const abbr = entry.team.abbreviation?.toUpperCase() ?? '';
+  const info = MLB_TEAM_INFO[abbr] ?? { conference: 'AL', division: 'East' };
+  const wins = Math.round(espnVal(entry.stats, 'wins'));
+  const losses = Math.round(espnVal(entry.stats, 'losses'));
+  return {
+    rank: Math.round(espnVal(entry.stats, 'playoffseed', 99)),
+    team: entry.team.displayName,
+    abbreviation: abbr,
+    wins,
+    losses,
+    pct: espnDisp(entry.stats, 'winpercent', '.000'),
+    gb: espnDisp(entry.stats, 'gamesbehind', '-'),
+    streak: espnDisp(entry.stats, 'streak', '-'),
+    conference: info.conference,
+    division: info.division,
+    league: 'MLB' as const,
+    home: espnRec(entry.stats, 'home'),
+    away: espnRec(entry.stats, 'road'),
+    last10: espnRec(entry.stats, 'lasttengames'),
+    rs: espnDisp(entry.stats, 'runsscored', '-'),
+    ra: espnDisp(entry.stats, 'runsallowed', '-'),
+    diff: espnDisp(entry.stats, 'rundifferential', '-'),
+    conferenceRecord: espnRec(entry.stats, 'vsleague'),
+    divisionRecord: espnRec(entry.stats, 'vsdivision'),
+  };
+}
+
+// ─── SportsRadar MLB Standings parser ────────────────────────────────────────
+function parseSportsRadarMLBStandings(raw: Record<string, unknown>) {
+  const teams: ReturnType<typeof buildMLBTeamStandingFromESPN>[] = [];
+  const leagues: any[] = (raw as any)?.league?.season?.leagues ?? [];
+
+  for (const league of leagues) {
+    const leagueAlias: string = (league.alias ?? '').toUpperCase(); // "AL" or "NL"
+    for (const division of league.divisions ?? []) {
+      const divisionName: string = division.name ?? ''; // "East", "Central", "West"
+      for (const t of division.teams ?? []) {
+        const wins: number = t.win ?? t.wins ?? 0;
+        const losses: number = t.loss ?? t.losses ?? 0;
+        const winP: number = t.win_p ?? t.win_pct ?? (wins + losses > 0 ? wins / (wins + losses) : 0);
+        const gb = t.games_back === 0 ? '-' : t.games_back != null ? String(t.games_back) : '-';
+        const streak = t.streak ? `${t.streak.kind === 'win' ? 'W' : 'L'}${t.streak.length}` : '-';
+        const rec = (type: string) => {
+          const r = (t.records ?? []).find((x: any) => x.record_type === type);
+          return r ? `${r.win}-${r.loss}` : '-';
+        };
+        const runDiff: number | undefined = t.run_diff ?? (t.runs_scored != null && t.runs_allowed != null ? t.runs_scored - t.runs_allowed : undefined);
+        teams.push({
+          rank: t.rank?.division ?? 99,
+          team: `${t.market} ${t.name}`.trim(),
+          abbreviation: (t.abbr ?? '').toUpperCase(),
+          wins,
+          losses,
+          pct: winP.toFixed(3),
+          gb,
+          streak,
+          conference: leagueAlias,
+          division: divisionName,
+          league: 'MLB' as const,
+          home: rec('home'),
+          away: rec('road'),
+          last10: rec('last_10'),
+          rs: t.runs_scored != null ? String(t.runs_scored) : '-',
+          ra: t.runs_allowed != null ? String(t.runs_allowed) : '-',
+          diff: runDiff != null ? (runDiff >= 0 ? `+${runDiff}` : String(runDiff)) : '-',
+          conferenceRecord: rec('league'),
+          divisionRecord: rec('division'),
+        });
+      }
+    }
+  }
+  return teams;
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -184,11 +289,43 @@ export async function GET(request: Request) {
         return NextResponse.json({ teams });
       }
       case 'MLB': {
-        const teams = await getCachedMLBStandings();
-        return NextResponse.json({ teams });
+        // Try SportsRadar first; fall back to ESPN if it fails
+        const [srStandings, srRankings] = await Promise.allSettled([
+          getCachedMLBSportsRadarStandings(),
+          getCachedMLBSportsRadarRankings(),
+        ]);
+
+        let teams: ReturnType<typeof parseSportsRadarMLBStandings>;
+        const clinched: Record<string, string> = {};
+
+        if (srStandings.status === 'fulfilled') {
+          teams = parseSportsRadarMLBStandings(srStandings.value as Record<string, unknown>);
+
+          // Merge clinched status from Rankings response
+          if (srRankings.status === 'fulfilled') {
+            for (const lg of (srRankings.value as any)?.league?.season?.leagues ?? []) {
+              for (const div of lg.divisions ?? []) {
+                for (const t of div.teams ?? []) {
+                  if (t.rank?.clinched) {
+                    clinched[`${t.market} ${t.name}`.trim()] = t.rank.clinched;
+                  }
+                }
+              }
+            }
+          } else {
+            console.warn('MLB SportsRadar Rankings unavailable:', srRankings.reason?.message);
+          }
+        } else {
+          console.warn('MLB SportsRadar Standings failed, falling back to ESPN:', srStandings.reason?.message);
+          const espnRaw = await getCachedMLBStandings() as EspnStanding[];
+          teams = espnRaw.map(buildMLBTeamStandingFromESPN);
+        }
+
+        return NextResponse.json({ teams, clinched });
       }
       case 'MLB_SPRING': {
-        const teams = await getCachedMLBSpringTrainingStandings();
+        const espnRaw = await getCachedMLBSpringTrainingStandings() as EspnStanding[];
+        const teams = espnRaw.map(buildMLBTeamStandingFromESPN);
         return NextResponse.json({ teams });
       }
       default:

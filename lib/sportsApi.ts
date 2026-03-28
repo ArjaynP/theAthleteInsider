@@ -116,6 +116,45 @@ export async function fetchNBATeamsList(): Promise<NBATeamListItem[]> {
   });
 }
 
+function parseESPNTeamEntries(entries: any[]): NBATeamListItem[] {
+  return entries.map((entry: any) => {
+    const team = entry?.team ?? entry;
+    const logos: any[] = Array.isArray(team?.logos) ? team.logos : [];
+
+    const defaultLogo =
+      logos.find((l) => Array.isArray(l?.rel) && l.rel.includes('default') && !l.rel.includes('scoreboard'))?.href ??
+      logos[0]?.href;
+
+    const darkLogo =
+      logos.find((l) => Array.isArray(l?.rel) && l.rel.includes('dark') && !l.rel.includes('scoreboard'))?.href ??
+      defaultLogo;
+
+    return {
+      id: team?.id,
+      name: team?.displayName ?? team?.name,
+      abbreviation: team?.abbreviation,
+      logo: defaultLogo,
+      logoLight: defaultLogo,
+      logoDark: darkLogo,
+    } satisfies NBATeamListItem;
+  });
+}
+
+export async function fetchMLBTeamsList(): Promise<NBATeamListItem[]> {
+  const response = await fetch(
+    'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams',
+    { method: 'GET', headers: { Accept: 'application/json' }, next: { revalidate: 86400 } }
+  );
+
+  if (!response.ok) {
+    throw new Error(`MLB Teams API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const teamEntries: any[] = data?.sports?.[0]?.leagues?.[0]?.teams ?? [];
+  return parseESPNTeamEntries(teamEntries);
+}
+
 export async function fetchNFLStandings() {
   const url =
     'https://site.api.espn.com/apis/v2/sports/football/nfl/standings?season=2025';
@@ -257,4 +296,33 @@ export async function fetchNBAPlayerHeadshots(): Promise<Record<string, string>>
   }
 
   return map;
+}
+
+export async function fetchMLBSportsRadarStandings() {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const url = `https://api.sportradar.com/mlb/trial/v8/en/seasons/2026/REG/standings.json?api_key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`MLB SportsRadar Standings API error: ${response.status}`);
+  return response.json();
+}
+
+export async function fetchMLBSportsRadarRankings() {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const url = `https://api.sportradar.com/mlb/trial/v8/en/seasons/2026/REG/rankings.json?api_key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
+
+  if (!response.ok) throw new Error(`MLB SportsRadar Rankings API error: ${response.status}`);
+  return response.json();
 }

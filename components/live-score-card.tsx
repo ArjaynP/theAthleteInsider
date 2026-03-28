@@ -25,8 +25,8 @@ export function LiveScoreCard({ game, teamLogos }: LiveScoreCardProps) {
   const isFinal = game.status === "FINAL";
   const liveStatusText = [game.quarter, game.time].filter(Boolean).join(" ").trim() || "LIVE";
   const badgeLeague = game.league === "NBA" || game.league === "NFL" || game.league === "MLB" ? game.league : null;
-  const awayLogo = badgeLeague === "NBA" ? teamLogos?.[normalizeAbbreviation(game.awayTeam)] : undefined;
-  const homeLogo = badgeLeague === "NBA" ? teamLogos?.[normalizeAbbreviation(game.homeTeam)] : undefined;
+  const awayLogo = (badgeLeague === "NBA" || badgeLeague === "MLB") ? teamLogos?.[normalizeAbbreviation(game.awayTeam)] : undefined;
+  const homeLogo = (badgeLeague === "NBA" || badgeLeague === "MLB") ? teamLogos?.[normalizeAbbreviation(game.homeTeam)] : undefined;
 
   return (
     <div

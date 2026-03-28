@@ -1,15 +1,44 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { LiveScoreCard } from "@/components/live-score-card";
 import { games } from "@/lib/mock-data";
 
+type ApiTeam = {
+  abbreviation?: string;
+  logo?: string;
+  logoLight?: string;
+  logoDark?: string;
+};
+
 export default function MLBScoresPage() {
+    const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
     const mlbGames = games.filter((g) => g.league === "MLB");
     const liveGames = mlbGames.filter((g) => g.status === "LIVE");
     const finalGames = mlbGames.filter((g) => g.status === "FINAL");
     const upcomingGames = mlbGames.filter((g) => g.status === "UPCOMING");
+
+    useEffect(() => {
+      async function fetchLogos() {
+        try {
+          const res = await fetch("/api/mlb-teams");
+          const data = await res.json();
+          if (!res.ok || !Array.isArray(data?.teams)) return;
+          const logos = (data.teams as ApiTeam[]).reduce<Record<string, string>>((acc, team) => {
+            if (!team.abbreviation) return acc;
+            const logo = team.logoLight || team.logo || team.logoDark;
+            if (logo) acc[team.abbreviation.toUpperCase()] = logo;
+            return acc;
+          }, {});
+          setTeamLogos(logos);
+        } catch {
+          // logos non-critical
+        }
+      }
+      fetchLogos();
+    }, []);
 
     return (
         <div className="flex min-h-screen flex-col">
@@ -46,7 +75,7 @@ export default function MLBScoresPage() {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {liveGames.map((game) => (
-                    <LiveScoreCard key={game.id} game={game} />
+                    <LiveScoreCard key={game.id} game={game} teamLogos={teamLogos} />
                     ))}
                 </div>
                 </section>
@@ -63,7 +92,7 @@ export default function MLBScoresPage() {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {finalGames.map((game) => (
-                    <LiveScoreCard key={game.id} game={game} />
+                    <LiveScoreCard key={game.id} game={game} teamLogos={teamLogos} />
                     ))}
                 </div>
                 </section>
@@ -80,7 +109,7 @@ export default function MLBScoresPage() {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {upcomingGames.map((game) => (
-                    <LiveScoreCard key={game.id} game={game} />
+                    <LiveScoreCard key={game.id} game={game} teamLogos={teamLogos} />
                     ))}
                 </div>
                 </section>

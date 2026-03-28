@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { mlbPlayerStats, type StatCategory } from "@/lib/mock-data";
@@ -8,7 +8,14 @@ import { cn } from "@/lib/utils";
 import { Medal, Trophy, TrendingUp } from "lucide-react";
 import { TeamBadge } from "@/components/team-badge";
 
-function StatCard({ category }: { category: StatCategory }) {
+type ApiTeam = {
+  abbreviation?: string;
+  logo?: string;
+  logoLight?: string;
+  logoDark?: string;
+};
+
+function StatCard({ category, teamLogos }: { category: StatCategory; teamLogos: Record<string, string> }) {
   const topPlayer = category.leaders[0];
   const others = category.leaders.slice(1);
 
@@ -41,7 +48,16 @@ function StatCard({ category }: { category: StatCategory }) {
           </div>
           <p className="font-bold text-foreground">{topPlayer.player}</p>
           <div className="mt-1 flex items-center gap-2">
-            <TeamBadge abbreviation={topPlayer.team} league="MLB" size="sm" />
+            {teamLogos[topPlayer.team.toUpperCase()] ? (
+              <img
+                src={teamLogos[topPlayer.team.toUpperCase()]}
+                alt={topPlayer.team}
+                className="h-5 w-5 object-contain"
+              />
+            ) : (
+              <TeamBadge abbreviation={topPlayer.team} league="MLB" size="sm" />
+            )}
+            <span className="text-xs font-bold text-muted-foreground">{topPlayer.team}</span>
           </div>
         </div>
       </div>
@@ -51,8 +67,8 @@ function StatCard({ category }: { category: StatCategory }) {
         <table className="w-full text-sm">
           <tbody>
             {others.map((stat) => (
-              <tr 
-                key={stat.rank} 
+              <tr
+                key={stat.rank}
                 className="group border-b border-border/40 last:border-0 hover:bg-muted/50"
               >
                 <td className="w-8 p-3 text-center text-xs font-bold text-muted-foreground">
@@ -61,7 +77,15 @@ function StatCard({ category }: { category: StatCategory }) {
                 <td className="p-3">
                   <div className="font-bold text-foreground">{stat.player}</div>
                   <div className="mt-1 flex items-center gap-2 text-[10px] text-muted-foreground">
-                    <TeamBadge abbreviation={stat.team} league="MLB" size="sm" />
+                    {teamLogos[stat.team.toUpperCase()] ? (
+                      <img
+                        src={teamLogos[stat.team.toUpperCase()]}
+                        alt={stat.team}
+                        className="h-4 w-4 object-contain"
+                      />
+                    ) : (
+                      <TeamBadge abbreviation={stat.team} league="MLB" size="sm" />
+                    )}
                     <span>{stat.team}</span>
                   </div>
                 </td>
@@ -86,6 +110,27 @@ function StatCard({ category }: { category: StatCategory }) {
 
 export default function MLBStatsPage() {
     const [activeTab, setActiveTab] = useState<"hitting" | "pitching">("hitting");
+    const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+      async function fetchLogos() {
+        try {
+          const res = await fetch("/api/mlb-teams");
+          const data = await res.json();
+          if (!res.ok || !Array.isArray(data?.teams)) return;
+          const logos = (data.teams as ApiTeam[]).reduce<Record<string, string>>((acc, team) => {
+            if (!team.abbreviation) return acc;
+            const logo = team.logoLight || team.logo || team.logoDark;
+            if (logo) acc[team.abbreviation.toUpperCase()] = logo;
+            return acc;
+          }, {});
+          setTeamLogos(logos);
+        } catch {
+          // logos non-critical
+        }
+      }
+      fetchLogos();
+    }, []);
 
     const hittingStats = [
       "runs",
@@ -163,7 +208,7 @@ export default function MLBStatsPage() {
                 {hittingStats.map((id) => {
                     const category = mlbPlayerStats.find((s) => s.id === id);
                     if (!category) return null;
-                    return <StatCard key={category.id} category={category} />;
+                    return <StatCard key={category.id} category={category} teamLogos={teamLogos} />;
                 })}
                 </div>
             ) : (
@@ -179,7 +224,7 @@ export default function MLBStatsPage() {
                         {section.ids.map((id) => {
                         const category = mlbPlayerStats.find((s) => s.id === id);
                         if (!category) return null;
-                        return <StatCard key={category.id} category={category} />;
+                        return <StatCard key={category.id} category={category} teamLogos={teamLogos} />;
                         })}
                     </div>
                     </section>

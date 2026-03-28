@@ -8,108 +8,17 @@ import { cn } from "@/lib/utils";
 import { ArrowUpDown } from "lucide-react";
 import { TeamBadge } from "@/components/team-badge";
 
+type ApiTeam = {
+  abbreviation?: string;
+  logo?: string;
+  logoLight?: string;
+  logoDark?: string;
+};
+
 type SortKey = "wins" | "losses" | "pct" | "team";
 type SeasonView = "regular" | "spring";
 
-type ApiStat = {
-  type?: string;
-  name?: string;
-  value?: number;
-  displayValue?: string;
-  summary?: string;
-};
-
-type ApiStanding = {
-  team: {
-    displayName: string;
-    abbreviation: string;
-  };
-  stats: ApiStat[];
-};
-
-const MLB_TEAM_INFO: Record<string, { conference: string; division: string }> = {
-  // AL East
-  BAL: { conference: "AL", division: "East" },
-  BOS: { conference: "AL", division: "East" },
-  NYY: { conference: "AL", division: "East" },
-  TB: { conference: "AL", division: "East" },
-  TOR: { conference: "AL", division: "East" },
-  // AL Central
-  CWS: { conference: "AL", division: "Central" },
-  CLE: { conference: "AL", division: "Central" },
-  DET: { conference: "AL", division: "Central" },
-  KC: { conference: "AL", division: "Central" },
-  MIN: { conference: "AL", division: "Central" },
-  // AL West
-  HOU: { conference: "AL", division: "West" },
-  LAA: { conference: "AL", division: "West" },
-  OAK: { conference: "AL", division: "West" },
-  ATH: { conference: "AL", division: "West" },
-  SEA: { conference: "AL", division: "West" },
-  TEX: { conference: "AL", division: "West" },
-  // NL East
-  ATL: { conference: "NL", division: "East" },
-  MIA: { conference: "NL", division: "East" },
-  NYM: { conference: "NL", division: "East" },
-  PHI: { conference: "NL", division: "East" },
-  WSH: { conference: "NL", division: "East" },
-  // NL Central
-  CHC: { conference: "NL", division: "Central" },
-  CIN: { conference: "NL", division: "Central" },
-  MIL: { conference: "NL", division: "Central" },
-  PIT: { conference: "NL", division: "Central" },
-  STL: { conference: "NL", division: "Central" },
-  // NL West
-  ARI: { conference: "NL", division: "West" },
-  COL: { conference: "NL", division: "West" },
-  LAD: { conference: "NL", division: "West" },
-  SD: { conference: "NL", division: "West" },
-  SF: { conference: "NL", division: "West" },
-};
-
 const MLB_DIVISIONS = ["East", "Central", "West"] as const;
-
-function statDisplay(stats: ApiStat[], type: string, fallback = "-") {
-  return stats.find((s) => s.type === type)?.displayValue ?? fallback;
-}
-
-function statValue(stats: ApiStat[], type: string, fallback = 0) {
-  return stats.find((s) => s.type === type)?.value ?? fallback;
-}
-
-function toRecordPair(stats: ApiStat[], type: string) {
-  return stats.find((s) => s.type === type)?.summary ?? "-";
-}
-
-function buildTeamStanding(entry: ApiStanding): TeamStanding {
-  const abbreviation = entry.team.abbreviation?.toUpperCase() ?? "";
-  const info = MLB_TEAM_INFO[abbreviation] ?? { conference: "AL", division: "East" };
-  const wins = Math.round(statValue(entry.stats, "wins"));
-  const losses = Math.round(statValue(entry.stats, "losses"));
-  const seed = Math.round(statValue(entry.stats, "playoffseed", 99));
-
-  return {
-    rank: seed,
-    team: entry.team.displayName,
-    abbreviation,
-    wins,
-    losses,
-    pct: statDisplay(entry.stats, "winpercent", ".000"),
-    gb: statDisplay(entry.stats, "gamesbehind", "-"),
-    streak: statDisplay(entry.stats, "streak", "-"),
-    conference: info.conference,
-    division: info.division,
-    league: "MLB",
-    home: toRecordPair(entry.stats, "home"),
-    away: toRecordPair(entry.stats, "road"),
-    last10: toRecordPair(entry.stats, "lasttengames"),
-    rs: statDisplay(entry.stats, "runsscored", "-"),
-    ra: statDisplay(entry.stats, "runsallowed", "-"),
-    diff: statDisplay(entry.stats, "rundifferential", "-"),
-    conferenceRecord: toRecordPair(entry.stats, "vsleague"),
-    divisionRecord: toRecordPair(entry.stats, "vsdivision"),
-  };
-}
 
 const GRAPEFRUIT_TEAMS = new Set([
   "Baltimore Orioles",
@@ -173,9 +82,11 @@ function getRemainingTeams(teams: TeamStanding[]) {
 function TeamStandingsRows({
   teams,
   startRank,
+  teamLogos = {},
 }: {
   teams: TeamStanding[];
   startRank: number;
+  teamLogos?: Record<string, string>;
 }) {
   return (
     <>
@@ -189,7 +100,15 @@ function TeamStandingsRows({
           </td>
           <td className="px-5 py-3">
             <div className="flex items-center gap-3">
-              <TeamBadge abbreviation={team.abbreviation} league="MLB" size="md" />
+              {teamLogos[team.abbreviation?.toUpperCase() ?? ""] ? (
+                <img
+                  src={teamLogos[team.abbreviation?.toUpperCase() ?? ""]}
+                  alt={team.team}
+                  className="h-8 w-8 object-contain"
+                />
+              ) : (
+                <TeamBadge abbreviation={team.abbreviation} league="MLB" size="md" />
+              )}
               <div className="min-w-0">
                 <p className="whitespace-nowrap font-bold text-foreground">{team.team}</p>
                 <p className="text-[10px] text-muted-foreground">{team.division}</p>
@@ -289,10 +208,12 @@ function StandingsTable({
   standings,
   title,
   showMlbPostseasonLayout = false,
+  teamLogos = {},
 }: {
   standings: TeamStanding[];
   title: string;
   showMlbPostseasonLayout?: boolean;
+  teamLogos?: Record<string, string>;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("wins");
   const [sortAsc, setSortAsc] = useState(false);
@@ -332,22 +253,22 @@ function StandingsTable({
                     Division Leaders
                   </td>
                 </tr>
-                <TeamStandingsRows teams={getDivisionLeaders(sorted)} startRank={1} />
+                <TeamStandingsRows teams={getDivisionLeaders(sorted)} startRank={1} teamLogos={teamLogos} />
                 <tr className="bg-secondary/10">
                   <td colSpan={13} className="px-5 py-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
                     Wild Card
                   </td>
                 </tr>
-                <TeamStandingsRows teams={getWildCards(sorted)} startRank={4} />
+                <TeamStandingsRows teams={getWildCards(sorted)} startRank={4} teamLogos={teamLogos} />
                 <tr className="bg-secondary/5">
                   <td colSpan={13} className="px-5 py-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
                     Remaining Teams
                   </td>
                 </tr>
-                <TeamStandingsRows teams={getRemainingTeams(sorted)} startRank={7} />
+                <TeamStandingsRows teams={getRemainingTeams(sorted)} startRank={7} teamLogos={teamLogos} />
               </>
             ) : (
-              <TeamStandingsRows teams={sorted} startRank={1} />
+              <TeamStandingsRows teams={sorted} startRank={1} teamLogos={teamLogos} />
             )}
           </tbody>
         </table>
@@ -364,6 +285,7 @@ export default function MLBStandingsPage() {
   const [springStandings, setSpringStandings] = useState<TeamStanding[]>([]);
   const [springLoading, setSpringLoading] = useState(false);
   const [springError, setSpringError] = useState<string | null>(null);
+  const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
   const hasFetchedSpring = useRef(false);
 
   const grapefruitStandings = springStandings.filter((s) => GRAPEFRUIT_TEAMS.has(s.team));
@@ -386,8 +308,7 @@ export default function MLBStandingsPage() {
           throw new Error("Unexpected standings format from API");
         }
 
-        const mapped = (data.teams as ApiStanding[])
-          .map(buildTeamStanding)
+        const mapped = (data.teams as TeamStanding[])
           .sort((a, b) => {
             const aPct = Number.parseFloat(a.pct || "0");
             const bPct = Number.parseFloat(b.pct || "0");
@@ -405,6 +326,26 @@ export default function MLBStandingsPage() {
     }
 
     fetchStandings();
+  }, []);
+
+  useEffect(() => {
+    async function fetchLogos() {
+      try {
+        const res = await fetch("/api/mlb-teams");
+        const data = await res.json();
+        if (!res.ok || !Array.isArray(data?.teams)) return;
+        const logos = (data.teams as ApiTeam[]).reduce<Record<string, string>>((acc, team) => {
+          if (!team.abbreviation) return acc;
+          const logo = team.logoLight || team.logo || team.logoDark;
+          if (logo) acc[team.abbreviation.toUpperCase()] = logo;
+          return acc;
+        }, {});
+        setTeamLogos(logos);
+      } catch {
+        // logos non-critical
+      }
+    }
+    fetchLogos();
   }, []);
 
   useEffect(() => {
@@ -427,8 +368,7 @@ export default function MLBStandingsPage() {
           throw new Error("Unexpected standings format from API");
         }
 
-        const mapped = (data.teams as ApiStanding[])
-          .map(buildTeamStanding)
+        const mapped = (data.teams as TeamStanding[])
           .sort((a, b) => {
             const aPct = Number.parseFloat(a.pct || "0");
             const bPct = Number.parseFloat(b.pct || "0");
@@ -520,11 +460,13 @@ export default function MLBStandingsPage() {
                       standings={alStandings}
                       title="American League"
                       showMlbPostseasonLayout
+                      teamLogos={teamLogos}
                     />
                     <StandingsTable
                       standings={nlStandings}
                       title="National League"
                       showMlbPostseasonLayout
+                      teamLogos={teamLogos}
                     />
                   </div>
 
@@ -536,26 +478,32 @@ export default function MLBStandingsPage() {
                       <StandingsTable
                         standings={standings.filter((s) => s.division === "East" && s.conference === "AL")}
                         title="AL East"
+                        teamLogos={teamLogos}
                       />
                       <StandingsTable
                         standings={standings.filter((s) => s.division === "Central" && s.conference === "AL")}
                         title="AL Central"
+                        teamLogos={teamLogos}
                       />
                       <StandingsTable
                         standings={standings.filter((s) => s.division === "West" && s.conference === "AL")}
                         title="AL West"
+                        teamLogos={teamLogos}
                       />
                       <StandingsTable
                         standings={standings.filter((s) => s.division === "East" && s.conference === "NL")}
                         title="NL East"
+                        teamLogos={teamLogos}
                       />
                       <StandingsTable
                         standings={standings.filter((s) => s.division === "Central" && s.conference === "NL")}
                         title="NL Central"
+                        teamLogos={teamLogos}
                       />
                       <StandingsTable
                         standings={standings.filter((s) => s.division === "West" && s.conference === "NL")}
                         title="NL West"
+                        teamLogos={teamLogos}
                       />
                     </div>
                   </div>
@@ -582,8 +530,8 @@ export default function MLBStandingsPage() {
 
               {!springLoading && !springError && (
                 <div className="mb-12 grid gap-6 lg:grid-cols-2">
-                  <StandingsTable standings={grapefruitStandings} title="Grapefruit League" />
-                  <StandingsTable standings={cactusStandings} title="Cactus League" />
+                  <StandingsTable standings={grapefruitStandings} title="Grapefruit League" teamLogos={teamLogos} />
+                  <StandingsTable standings={cactusStandings} title="Cactus League" teamLogos={teamLogos} />
                 </div>
               )}
             </>
