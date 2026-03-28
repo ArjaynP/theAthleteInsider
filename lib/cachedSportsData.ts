@@ -1,5 +1,5 @@
 import { getCached, CACHE_DURATIONS } from './cache-helper';
-import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders } from './sportsApi';
+import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots } from './sportsApi';
 
 export async function getCachedNBAStandings() {
   return getCached(
@@ -56,4 +56,12 @@ export async function getCachedNBALeagueLeaders() {
     fetchNBALeagueLeaders,
     CACHE_DURATIONS.PLAYER_STATS
   );
+}
+
+export async function getCachedNBAPlayerHeadshots(): Promise<Record<string, string>> {
+  return getCached(
+    'NBA:players:headshots:v2', // v2 = diacritic-normalized keys
+    fetchNBAPlayerHeadshots,
+    60 * 60 * 24 // 24 hours — rosters change rarely mid-season
+  ) as Promise<Record<string, string>>;
 }

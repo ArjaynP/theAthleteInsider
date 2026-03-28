@@ -28,10 +28,19 @@ function normalizeAbbreviation(value: string) {
   return aliasMap[normalized] ?? normalized;
 }
 
-function StatCard({ category, teamLogos }: { category: StatCategory; teamLogos: Record<string, string> }) {
+// Strip diacritics and lowercase — must match the key format used in fetchNBAPlayerHeadshots.
+function playerKey(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function StatCard({ category, teamLogos, playerHeadshots }: { category: StatCategory; teamLogos: Record<string, string>; playerHeadshots: Record<string, string> }) {
   const topPlayer = category.leaders[0];
   const others = category.leaders.slice(1);
   const topTeamLogo = teamLogos[normalizeAbbreviation(topPlayer.team)];
+  const topHeadshot = playerHeadshots[playerKey(topPlayer.player)];
 
   return (
     <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm transition-all hover:shadow-md">
@@ -48,7 +57,15 @@ function StatCard({ category, teamLogos }: { category: StatCategory; teamLogos: 
       {/* Top Player */}
       <div className="flex bg-gradient-to-b from-card to-background p-6">
         <div className="relative mr-4 h-16 w-16 flex-shrink-0">
-          <div className="flex h-full w-full items-center justify-center rounded-full bg-primary/20 text-xl font-bold text-primary">
+          {topHeadshot ? (
+            <img
+              src={topHeadshot}
+              alt={topPlayer.player}
+              className="h-16 w-16 rounded-full object-cover object-top"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement | null)?.removeAttribute('hidden'); }}
+            />
+          ) : null}
+          <div className={cn("flex h-full w-full items-center justify-center rounded-full bg-primary/20 text-xl font-bold text-primary", topHeadshot ? "hidden" : "")}>
             {topPlayer.player.charAt(0)}
           </div>
           <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber text-xs font-bold text-amber-900 shadow-sm">
@@ -75,7 +92,9 @@ function StatCard({ category, teamLogos }: { category: StatCategory; teamLogos: 
       <div className="flex-1 px-2 pb-2">
         <table className="w-full text-sm">
           <tbody>
-            {others.map((stat, i) => (
+            {others.map((stat, i) => {
+              const rowHeadshot = playerHeadshots[playerKey(stat.player)];
+              return (
               <tr
                 key={`${stat.player}-${stat.rank}-${i}`}
                 className="group border-b border-border/40 last:border-0 hover:bg-muted/50"
@@ -84,8 +103,22 @@ function StatCard({ category, teamLogos }: { category: StatCategory; teamLogos: 
                   {stat.rank}
                 </td>
                 <td className="p-3">
+                  <div className="flex items-center gap-2">
+                    {rowHeadshot ? (
+                      <img
+                        src={rowHeadshot}
+                        alt={stat.player}
+                        className="h-7 w-7 flex-shrink-0 rounded-full object-cover object-top"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : (
+                      <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                        {stat.player.charAt(0)}
+                      </div>
+                    )}
+                    <div>
                   <div className="font-bold text-foreground">{stat.player}</div>
-                  <div className="mt-1 flex items-center gap-2 text-[10px] text-muted-foreground">
+                  <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
                     {teamLogos[normalizeAbbreviation(stat.team)] ? (
                       <img
                         src={teamLogos[normalizeAbbreviation(stat.team)]}
@@ -97,12 +130,15 @@ function StatCard({ category, teamLogos }: { category: StatCategory; teamLogos: 
                     )}
                     <span>{stat.team}</span>
                   </div>
+                    </div>
+                  </div>
                 </td>
                 <td className="p-3 text-right font-black tabular-nums text-foreground group-hover:text-primary transition-colors">
                   {stat.value}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -119,6 +155,7 @@ function StatCard({ category, teamLogos }: { category: StatCategory; teamLogos: 
 
 export default function NBAStatsPage() {
   const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
+  const [playerHeadshots, setPlayerHeadshots] = useState<Record<string, string>>({});
   const [playerStats, setPlayerStats] = useState<StatCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLive, setIsLive] = useState(false);
@@ -144,6 +181,18 @@ export default function NBAStatsPage() {
       }
     }
 
+    async function fetchPlayerHeadshots() {
+      try {
+        const response = await fetch("/api/nba-players");
+        const data = await response.json();
+        if (response.ok && data?.headshots) {
+          setPlayerHeadshots(data.headshots as Record<string, string>);
+        }
+      } catch {
+        // headshots are non-critical
+      }
+    }
+
     async function fetchLeaders() {
       try {
         const response = await fetch("/api/nba-leaders", { cache: "no-store" });
@@ -161,6 +210,7 @@ export default function NBAStatsPage() {
     }
 
     fetchTeamLogos();
+    fetchPlayerHeadshots();
     fetchLeaders();
   }, []);
 
@@ -226,7 +276,7 @@ export default function NBAStatsPage() {
                     {section.ids.map((id) => {
                       const category = playerStats.find((s) => s.id === id);
                       if (!category) return null;
-                      return <StatCard key={category.id} category={category} teamLogos={teamLogos} />;
+                      return <StatCard key={category.id} category={category} teamLogos={teamLogos} playerHeadshots={playerHeadshots} />;
                     })}
                   </div>
                 </section>

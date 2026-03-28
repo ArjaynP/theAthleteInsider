@@ -193,3 +193,68 @@ export async function fetchNBALeagueLeaders() {
 
   return response.json();
 }
+
+/**
+ * Fetches every active NBA player's headshot URL from ESPN by pulling all 30
+ * team rosters in parallel.  Returns a map keyed by lower-cased display name
+ * so callers can do a fast case-insensitive lookup.
+ *
+ * Headshot pattern: https://a.espncdn.com/i/headshots/nba/players/full/{id}.png
+ */
+export async function fetchNBAPlayerHeadshots(): Promise<Record<string, string>> {
+  // Reuse the teams list we already cache elsewhere.
+  const teams = await fetchNBATeamsList();
+  const teamIds = teams.map((t) => t.id).filter(Boolean) as (string | number)[];
+
+  const rosterResponses = await Promise.allSettled(
+    teamIds.map((id) =>
+      fetch(
+        `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${id}/roster`,
+        { headers: { Accept: 'application/json' }, next: { revalidate: 86400 } }
+      ).then((r) => (r.ok ? r.json() : Promise.reject(new Error(`Roster ${id}: ${r.status}`))))
+    )
+  );
+
+  const map: Record<string, string> = {};
+
+  // Normalize a name to a consistent lookup key: lowercase + strip diacritics.
+  // This ensures "Luka Dončić" (SportsRadar) matches "Luka Doncic" (ESPN) and vice versa.
+  function nameKey(name: string): string {
+    return name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  }
+
+  for (const result of rosterResponses) {
+    if (result.status !== 'fulfilled') continue;
+    const data = result.value as Record<string, unknown>;
+
+    // ESPN returns athletes either as flat array or grouped by position
+    const topLevel = Array.isArray(data.athletes) ? (data.athletes as any[]) : [];
+
+    for (const entry of topLevel) {
+      // Position-group shape: { position: string, items: [...] }
+      const players: any[] = Array.isArray(entry.items) ? entry.items : [entry];
+
+      for (const player of players) {
+        if (!player?.id || !player?.displayName) continue;
+
+        const headshotUrl: string =
+          (typeof player.headshot === 'string'
+            ? player.headshot
+            : (player.headshot as any)?.href) ??
+          `https://a.espncdn.com/i/headshots/nba/players/full/${player.id}.png`;
+
+        map[nameKey(player.displayName as string)] = headshotUrl;
+
+        // Also index by fullName when it differs (e.g. "Nicolas Claxton" vs "Nic Claxton")
+        if (player.fullName && player.fullName !== player.displayName) {
+          map[nameKey(player.fullName as string)] = headshotUrl;
+        }
+      }
+    }
+  }
+
+  return map;
+}

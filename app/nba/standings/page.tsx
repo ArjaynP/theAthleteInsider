@@ -304,7 +304,7 @@ function StandingsTable({
                       className={cn(
                         "rounded px-2 py-0.5 text-xs font-bold",
                         team.streak.startsWith("W")
-                          ? "bg-accent/20 text-accent"
+                          ? "bg-green-500/20 text-green-500"
                           : "bg-destructive/20 text-destructive"
                       )}
                     >
@@ -397,7 +397,7 @@ function LeagueRankings({
                     <span
                       className={cn(
                         "rounded px-2 py-0.5 text-xs font-bold",
-                        team.streak.startsWith("W") ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"
+                        team.streak.startsWith("W") ? "bg-green-500/20 text-green-500" : "bg-destructive/20 text-destructive"
                       )}
                     >
                       {team.streak}

@@ -1,6 +1,76 @@
 import { NextResponse } from 'next/server';
 import { getCachedNBAStandings, getCachedNBARankings, getCachedNFLStandings, getCachedMLBStandings, getCachedMLBSpringTrainingStandings } from '@/lib/cachedSportsData';
 
+// ─── Clinch computation ────────────────────────────────────────────────────
+// Priority: division (5) > conference (4) > playoff_berth (3) > play_in (2) > eliminated (1)
+const CLINCH_PRIORITY: Record<string, number> = {
+  eliminated: 1, play_in: 2, playoff_berth: 3, conference: 4, division: 5,
+};
+const NBA_GAMES = 82;
+
+function setIfHigher(map: Record<string, string>, key: string, status: string) {
+  if ((CLINCH_PRIORITY[status] ?? 0) > (CLINCH_PRIORITY[map[key]] ?? 0)) {
+    map[key] = status;
+  }
+}
+
+function computeClinchedFromStandings(
+  teams: Array<{ team: string; wins: number; losses: number; conference: string; division: string }>
+): Record<string, string> {
+  const result: Record<string, string> = {};
+  const byDivision: Record<string, typeof teams> = {};
+  const byConference: Record<string, typeof teams> = {};
+
+  for (const t of teams) {
+    const dk = `${t.conference}::${t.division}`;
+    (byDivision[dk] ??= []).push(t);
+    (byConference[t.conference] ??= []).push(t);
+  }
+
+  // Division clinch: leader.wins > 82 - second_place.losses
+  for (const divTeams of Object.values(byDivision)) {
+    const sorted = [...divTeams].sort((a, b) => b.wins - a.wins || a.losses - b.losses);
+    if (sorted.length < 2) continue;
+    const [leader, second] = sorted;
+    if (leader.wins > NBA_GAMES - second.losses) {
+      setIfHigher(result, leader.team, 'division');
+    }
+  }
+
+  // Conference-level: playoff berth (top 6), play-in (7–10), elimination (11+)
+  for (const confTeams of Object.values(byConference)) {
+    const sorted = [...confTeams].sort((a, b) => b.wins - a.wins || a.losses - b.losses);
+    const seventh  = sorted[6];   // 0-indexed = 7th place
+    const tenth    = sorted[9];   // 0-indexed = 10th place
+    const eleventh = sorted[10];  // 0-indexed = 11th place
+
+    for (let i = 0; i < sorted.length; i++) {
+      const team = sorted[i];
+
+      if (i <= 5 && seventh) {
+        // Top-6: clinch playoff berth when guaranteed above 7th
+        if (team.wins > NBA_GAMES - seventh.losses) {
+          setIfHigher(result, team.team, 'playoff_berth');
+        }
+      } else if (i >= 6 && i <= 9 && eleventh) {
+        // 7–10: clinch play-in spot when guaranteed above 11th
+        if (team.wins > NBA_GAMES - eleventh.losses) {
+          setIfHigher(result, team.team, 'play_in');
+        }
+      } else if (i >= 10 && tenth) {
+        // 11+: eliminated when max wins can't reach 10th
+        const maxWins = team.wins + (NBA_GAMES - team.wins - team.losses);
+        if (maxWins < tenth.wins) {
+          setIfHigher(result, team.team, 'eliminated');
+        }
+      }
+    }
+  }
+
+  return result;
+}
+// ──────────────────────────────────────────────────────────────────────────
+
 // Market + Name → abbreviation for SportsRadar NBA teams (no alias field in standings response)
 const NBA_TEAM_ABBR: Record<string, string> = {
   'Atlanta Hawks': 'ATL', 'Boston Celtics': 'BOS', 'Brooklyn Nets': 'BKN',
@@ -88,7 +158,26 @@ export async function GET(request: Request) {
           }
         }
 
-        return NextResponse.json({ teams, clinched });
+        // Compute clinch statuses mathematically from standings data
+        const computed = computeClinchedFromStandings(
+          teams.map(t => ({
+            team: t.team as string,
+            wins: t.wins as number,
+            losses: t.losses as number,
+            conference: t.conference as string,
+            division: t.division as string,
+          }))
+        );
+
+        // Merge: computed is the baseline; API-provided data wins if it reports higher priority
+        const finalClinched: Record<string, string> = { ...computed };
+        for (const [key, status] of Object.entries(clinched)) {
+          if ((CLINCH_PRIORITY[status] ?? 0) > (CLINCH_PRIORITY[finalClinched[key]] ?? 0)) {
+            finalClinched[key] = status;
+          }
+        }
+
+        return NextResponse.json({ teams, clinched: finalClinched });
       }
       case 'NFL': {
         const teams = await getCachedNFLStandings();
