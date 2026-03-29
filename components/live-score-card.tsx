@@ -81,8 +81,9 @@ function LiveMlbDetails({ game }: { game: Game }) {
 export function LiveScoreCard({ game, teamLogos }: LiveScoreCardProps) {
   const isLive = game.status === "LIVE";
   const isFinal = game.status === "FINAL";
+  const mlbLiveInningText = game.quarter ? formatInningTicker(game.quarter) : undefined;
   const liveStatusText = game.league === "MLB"
-    ? ["LIVE", game.quarter].filter(Boolean).join(" • ").trim()
+    ? ["LIVE", mlbLiveInningText].filter(Boolean).join(" • ").trim()
     : [game.quarter, game.time].filter(Boolean).join(" ").trim() || "LIVE";
   const badgeLeague = game.league === "NBA" || game.league === "NFL" || game.league === "MLB" ? game.league : null;
   const awayLogo = (badgeLeague === "NBA" || badgeLeague === "MLB")

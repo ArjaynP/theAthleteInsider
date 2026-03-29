@@ -6,6 +6,8 @@ type RawTeam = {
   runs?: number;
   win?: number;
   loss?: number;
+  events?: unknown[];
+  [key: string]: unknown;
 };
 
 type RawGame = {
@@ -25,6 +27,7 @@ type RawGame = {
   };
   home?: RawTeam;
   away?: RawTeam;
+  [key: string]: unknown;
 };
 
 type RawScheduleGame = {
@@ -98,7 +101,8 @@ function formatLocalTime(isoString: string): string {
 
 function formatInning(half?: string, inning?: number): string | undefined {
   if (!inning || !half) return undefined;
-  const halfLabel = half === 'T' ? 'TOP' : half === 'B' ? 'BOT' : undefined;
+  const normalizedHalf = normalizeInningHalf(half);
+  const halfLabel = normalizedHalf === 'T' ? 'TOP' : normalizedHalf === 'B' ? 'BOT' : undefined;
   if (!halfLabel) return undefined;
   return `${halfLabel} ${inning}`;
 }
@@ -119,18 +123,101 @@ function getEasternDateString(now = new Date()): string {
 }
 
 function normalizeRawGame(raw: RawGame): RawGame {
-  if (raw.game) {
-    return {
-      id: raw.game.id ?? raw.id,
-      status: raw.game.status ?? raw.status,
-      scheduled: raw.game.scheduled ?? raw.scheduled,
-      inning: raw.game.inning ?? raw.inning,
-      inning_half: raw.game.inning_half ?? raw.inning_half,
-      home: raw.game.home ?? raw.home,
-      away: raw.game.away ?? raw.away,
+  const nestedGame = raw.game && typeof raw.game === 'object'
+    ? raw.game
+    : undefined;
+
+  if (nestedGame) {
+    const merged: RawGame = {
+      ...(raw as Record<string, unknown>),
+      ...(nestedGame as Record<string, unknown>),
     };
+    merged.id = nestedGame.id ?? raw.id;
+    merged.status = nestedGame.status ?? raw.status;
+    merged.scheduled = nestedGame.scheduled ?? raw.scheduled;
+    merged.inning = nestedGame.inning ?? raw.inning;
+    merged.inning_half = nestedGame.inning_half ?? raw.inning_half;
+    merged.home = nestedGame.home ?? raw.home;
+    merged.away = nestedGame.away ?? raw.away;
+    return merged;
   }
   return raw;
+}
+
+function asObject(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : undefined;
+}
+
+function normalizeInningHalf(value: unknown): 'T' | 'B' | undefined {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.trim().toUpperCase();
+  if (normalized === 'T' || normalized === 'TOP') return 'T';
+  if (normalized === 'B' || normalized === 'BOT' || normalized === 'BOTTOM') return 'B';
+  return undefined;
+}
+
+function collectEvents(src: Record<string, unknown>) {
+  const allEvents: Record<string, unknown>[] = [];
+  const pushEvents = (value: unknown) => {
+    if (!Array.isArray(value)) return;
+    for (const item of value) {
+      const event = asObject(item);
+      if (event) allEvents.push(event);
+    }
+  };
+
+  pushEvents(src.events);
+  pushEvents(asObject(src.home)?.events);
+  pushEvents(asObject(src.away)?.events);
+
+  return allEvents;
+}
+
+function selectCurrentEvent(
+  events: Array<Record<string, unknown>>,
+  inning?: number,
+  inningHalf?: 'T' | 'B'
+) {
+  let latestMatch: Record<string, unknown> | undefined;
+  for (const event of events) {
+    const eventInning = toNumber(event.inning);
+    const eventHalf = normalizeInningHalf(event.inning_half ?? event.half_inning);
+    const inningMatch = inning === undefined || eventInning === inning;
+    const halfMatch = inningHalf === undefined || eventHalf === inningHalf;
+    if (inningMatch && halfMatch) latestMatch = event;
+  }
+  if (latestMatch) return latestMatch;
+  return events.length > 0 ? events[events.length - 1] : undefined;
+}
+
+function buildPlayerNameIndex(value: unknown) {
+  const namesById = new Map<string, string>();
+  const seen = new Set<unknown>();
+
+  const visit = (node: unknown, depth: number) => {
+    if (depth > 6 || !node || typeof node !== 'object' || seen.has(node)) return;
+    seen.add(node);
+
+    if (Array.isArray(node)) {
+      for (const child of node) visit(child, depth + 1);
+      return;
+    }
+
+    const obj = node as Record<string, unknown>;
+    const id = typeof obj.id === 'string' ? obj.id : undefined;
+    const name = playerName(obj);
+    if (id && name && !namesById.has(id)) namesById.set(id, name);
+
+    for (const child of Object.values(obj)) {
+      if (!child || typeof child !== 'object') continue;
+      visit(child, depth + 1);
+    }
+  };
+
+  visit(value, 0);
+  return namesById;
 }
 
 function toNumber(value: unknown): number | undefined {
@@ -167,16 +254,24 @@ function extractBasesFromRunners(value: unknown) {
 }
 
 function extractLiveDetails(value: unknown) {
-  const src = (value && typeof value === 'object') ? value as Record<string, unknown> : {};
-  const situation = (src.situation && typeof src.situation === 'object')
-    ? src.situation as Record<string, unknown>
-    : {};
-  const atBat = (src.at_bat && typeof src.at_bat === 'object')
-    ? src.at_bat as Record<string, unknown>
-    : {};
-  const count = (atBat.count && typeof atBat.count === 'object')
-    ? atBat.count as Record<string, unknown>
-    : {};
+  const src = asObject(value) ?? {};
+  const situation = asObject(src.situation) ?? {};
+  const atBat = asObject(src.at_bat) ?? {};
+  const count = asObject(atBat.count) ?? {};
+  const inning =
+    toNumber(src.inning) ??
+    toNumber(situation.inning) ??
+    toNumber(atBat.inning);
+  const inningHalf =
+    normalizeInningHalf(src.inning_half ?? src.half_inning) ??
+    normalizeInningHalf(situation.inning_half ?? situation.half_inning) ??
+    normalizeInningHalf(atBat.inning_half ?? atBat.half_inning);
+
+  const events = collectEvents(src);
+  const currentEvent = selectCurrentEvent(events, inning, inningHalf);
+  const namesById = buildPlayerNameIndex(src);
+  const eventPitcherId = typeof currentEvent?.pitcher_id === 'string' ? currentEvent.pitcher_id : undefined;
+  const eventHitterId = typeof currentEvent?.hitter_id === 'string' ? currentEvent.hitter_id : undefined;
 
   const outs =
     toNumber(src.outs) ??
@@ -195,19 +290,31 @@ function extractLiveDetails(value: unknown) {
     playerName(src.current_pitcher) ??
     playerName(situation.pitcher) ??
     playerName(src.pitcher) ??
-    playerName((src.defense as Record<string, unknown> | undefined)?.pitcher);
+    playerName(asObject(src.defense)?.pitcher) ??
+    playerName(currentEvent?.pitcher) ??
+    (eventPitcherId ? namesById.get(eventPitcherId) : undefined);
   const currentBatter =
     playerName(src.current_batter) ??
     playerName(atBat.hitter) ??
     playerName(situation.hitter) ??
-    playerName((src.offense as Record<string, unknown> | undefined)?.batter);
+    playerName(asObject(src.offense)?.batter) ??
+    playerName(currentEvent?.hitter) ??
+    (eventHitterId ? namesById.get(eventHitterId) : undefined);
+
+  const situationBases = asObject(situation.bases) ?? {};
+  const atBatBases = asObject(atBat.bases) ?? {};
 
   const basesFromFlags = {
-    first: Boolean(src.on_first ?? situation.on_first),
-    second: Boolean(src.on_second ?? situation.on_second),
-    third: Boolean(src.on_third ?? situation.on_third),
+    first: Boolean(src.on_first ?? situation.on_first ?? situationBases.first ?? atBatBases.first),
+    second: Boolean(src.on_second ?? situation.on_second ?? situationBases.second ?? atBatBases.second),
+    third: Boolean(src.on_third ?? situation.on_third ?? situationBases.third ?? atBatBases.third),
   };
-  const runnerBases = extractBasesFromRunners(src.runners ?? situation.runners ?? atBat.runners);
+  const runnerBases = extractBasesFromRunners(
+    src.runners ??
+    situation.runners ??
+    atBat.runners ??
+    currentEvent?.runners
+  );
   const bases = {
     first: basesFromFlags.first || runnerBases.first,
     second: basesFromFlags.second || runnerBases.second,
@@ -220,6 +327,8 @@ function extractLiveDetails(value: unknown) {
     outs,
     balls,
     strikes,
+    inning,
+    inning_half: inningHalf,
     bases,
   };
 }
@@ -253,8 +362,8 @@ function mapScheduleGame(g: RawScheduleGame): MLBScoreGame {
 }
 
 function mapBoxscoreGame(g: RawGame): MLBScoreGame {
-  const home = g.home as RawTeam;
-  const away = g.away as RawTeam;
+  const home = (g.home ?? {}) as RawTeam;
+  const away = (g.away ?? {}) as RawTeam;
   const status = toMlbStatus(String(g.status ?? ''));
   const liveDetails = extractLiveDetails(g as RawGame & Record<string, unknown>);
   const homeRecord = (typeof home.win === 'number' && typeof home.loss === 'number')
@@ -271,7 +380,12 @@ function mapBoxscoreGame(g: RawGame): MLBScoreGame {
     homeScore: typeof home.runs === 'number' ? home.runs : 0,
     awayScore: typeof away.runs === 'number' ? away.runs : 0,
     status,
-    quarter: status === 'LIVE' ? formatInning(g.inning_half, g.inning) : undefined,
+    quarter: status === 'LIVE'
+      ? (
+        formatInning(liveDetails.inning_half, liveDetails.inning) ??
+        formatInning(g.inning_half, g.inning)
+      )
+      : undefined,
     time: undefined,
     startTime: formatLocalTime(String(g.scheduled ?? '')),
     league: 'MLB',
@@ -290,17 +404,31 @@ async function enhanceLiveGame(game: MLBScoreGame): Promise<MLBScoreGame> {
   if (game.status !== 'LIVE') return game;
 
   try {
-    const boxscore = (await getCachedMLBGameBoxscore(game.id)) as { game?: RawGame & Record<string, unknown> };
-    const liveGame = normalizeRawGame((boxscore?.game ?? {}) as RawGame);
-    const liveDetails = extractLiveDetails(boxscore?.game);
+    const boxscore = (await getCachedMLBGameBoxscore(game.id)) as { game?: RawGame & Record<string, unknown> } | RawGame;
+    const boxscoreObj = asObject(boxscore) ?? {};
+    const normalizedSource = normalizeRawGame(
+      (asObject(boxscoreObj.game)
+        ? boxscoreObj
+        : { game: boxscoreObj }) as RawGame
+    );
+    const liveGame = normalizedSource;
+    const liveDetails = extractLiveDetails(normalizedSource);
     const home = liveGame.home ?? {};
     const away = liveGame.away ?? {};
+    const status = toMlbStatus(String(liveGame.status ?? game.status));
 
     return {
       ...game,
+      status,
       homeScore: typeof home.runs === 'number' ? home.runs : game.homeScore,
       awayScore: typeof away.runs === 'number' ? away.runs : game.awayScore,
-      quarter: formatInning(liveGame.inning_half, liveGame.inning) ?? game.quarter,
+      quarter: status === 'LIVE'
+        ? (
+          formatInning(liveDetails.inning_half, liveDetails.inning) ??
+          formatInning(liveGame.inning_half, liveGame.inning) ??
+          game.quarter
+        )
+        : undefined,
       currentPitcher: liveDetails.currentPitcher ?? game.currentPitcher,
       currentBatter: liveDetails.currentBatter ?? game.currentBatter,
       outs: liveDetails.outs ?? game.outs,
@@ -355,9 +483,16 @@ export async function GET(request: Request) {
           awayScore: overlay.awayScore,
           status: overlay.status,
           quarter: overlay.quarter,
+          time: overlay.time,
           startTime: base.startTime || overlay.startTime,
           homeRecord: base.homeRecord || overlay.homeRecord,
           awayRecord: base.awayRecord || overlay.awayRecord,
+          currentPitcher: overlay.currentPitcher,
+          currentBatter: overlay.currentBatter,
+          outs: overlay.outs,
+          balls: overlay.balls,
+          strikes: overlay.strikes,
+          bases: overlay.bases,
         };
       })
       : boxscoreGames;
