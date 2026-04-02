@@ -83,6 +83,8 @@ function rawEntryToGame(g: RawMLBGameEntry): Game {
     awayRecord: (typeof away.win === 'number' && typeof away.loss === 'number') ? `${away.win}-${away.loss}` : '',
   };
 }
+
+export default async function MLBPage() {
   let teamLogos: Record<string, string> = {};
   let apiStandings: TeamStanding[] = [];
   let powerRankings: LeagueStanding[] = [];
