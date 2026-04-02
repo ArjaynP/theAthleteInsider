@@ -131,8 +131,7 @@ function MiniStandingsTable({
 }) {
   const filtered = standings
     .filter((s) => s.conference === conference)
-    .sort((a, b) => Number.parseFloat(b.pct || "0") - Number.parseFloat(a.pct || "0"))
-    .reverse(); // highest pct first
+    .sort((a, b) => Number.parseFloat(b.pct || "0") - Number.parseFloat(a.pct || "0"));
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-foreground">
@@ -203,18 +202,25 @@ function UpcomingGamesWidget({
   teamLogos: Record<string, string>;
   scoresPageHref: string;
 }) {
-  const upcoming = leagueGames.filter((g) => g.status === "UPCOMING");
   const live = leagueGames.filter((g) => g.status === "LIVE");
-  const activeGames = [...live, ...upcoming].slice(0, 4);
+  const upcoming = leagueGames.filter((g) => g.status === "UPCOMING");
+  const final = leagueGames.filter((g) => g.status === "FINAL");
+  const activeGames = [...live, ...upcoming, ...final].slice(0, 4);
 
   if (activeGames.length === 0) return null;
+
+  const widgetTitle = live.length > 0
+    ? "Live & Upcoming"
+    : upcoming.length > 0
+    ? "Upcoming Games"
+    : "Today's Games";
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="mb-4 flex items-center gap-2">
         <Calendar className="h-5 w-5 text-primary" />
         <h3 className="text-lg font-black uppercase text-foreground">
-          {live.length > 0 ? "Live & Upcoming" : "Upcoming Games"}
+          {widgetTitle}
         </h3>
       </div>
       <div className="flex flex-col gap-3">

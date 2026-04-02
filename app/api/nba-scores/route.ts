@@ -48,6 +48,12 @@ function formatQuarter(value: unknown): string | undefined {
   return raw.toUpperCase();
 }
 
+function toScheduledTimestamp(value: unknown): number {
+  if (typeof value !== 'string' || !value.trim()) return Number.POSITIVE_INFINITY;
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp;
+}
+
 async function fetchLiveSummary(
   gameId: string,
   apiKey: string
@@ -125,7 +131,7 @@ export async function GET(request: Request) {
 
   const rawGames = (raw.games as Array<Record<string, unknown>>) ?? [];
 
-  const baseGames: NBAScoreGame[] = rawGames.map((g) => {
+  const baseGames = rawGames.map((g) => {
     const srStatus = String(g.status || '').toLowerCase();
     let status: NBAScoreGame['status'] = 'UPCOMING';
     if (srStatus === 'closed' || srStatus === 'complete') status = 'FINAL';
@@ -147,24 +153,32 @@ export async function GET(request: Request) {
     const startTime = formatLocalTime(String(g.scheduled ?? ''));
 
     return {
-      id: String(g.id),
-      homeTeam: homeAlias,
-      awayTeam: awayAlias,
-      homeScore,
-      awayScore,
-      status,
-      quarter,
-      time: clock,
-      startTime,
-      league: 'NBA',
-      // records not available on schedule endpoint – show empty
-      homeRecord: '',
-      awayRecord: '',
+      scheduledAt: toScheduledTimestamp(g.scheduled),
+      game: {
+        id: String(g.id),
+        homeTeam: homeAlias,
+        awayTeam: awayAlias,
+        homeScore,
+        awayScore,
+        status,
+        quarter,
+        time: clock,
+        startTime,
+        league: 'NBA' as const,
+        // records not available on schedule endpoint – show empty
+        homeRecord: '',
+        awayRecord: '',
+      },
     };
   });
 
-  const games = await Promise.all(
-    baseGames.map(async (game) => {
+  baseGames.sort((a, b) => {
+    if (a.scheduledAt !== b.scheduledAt) return a.scheduledAt - b.scheduledAt;
+    return a.game.id.localeCompare(b.game.id);
+  });
+
+  const games: NBAScoreGame[] = await Promise.all(
+    baseGames.map(async ({ game }) => {
       if (game.status !== 'LIVE') return game;
 
       try {

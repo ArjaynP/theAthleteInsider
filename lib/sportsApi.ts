@@ -390,3 +390,21 @@ export async function fetchMLBDailySchedule(date: { year: string; month: string;
   if (!response.ok) throw new Error(`MLB Daily Schedule API error: ${response.status}`);
   return response.json();
 }
+
+export async function fetchMLBSeasonalStatsByTeam(teamId: string, year: number): Promise<unknown> {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const host = getSportsRadarHost();
+  const accessLevel = getSportsRadarAccessLevel();
+  const url = `${host}/mlb/${accessLevel}/v8/en/seasons/${year}/REG/teams/${teamId}/statistics.json?api_key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`MLB Seasonal Stats API error: ${response.status} (team ${teamId})`);
+  return response.json();
+}

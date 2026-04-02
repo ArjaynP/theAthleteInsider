@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { mlbPlayerStats, type StatCategory } from "@/lib/mock-data";
+import type { StatCategory } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { Medal, Trophy, TrendingUp } from "lucide-react";
+import { Loader2, TrendingUp } from "lucide-react";
 import { TeamBadge } from "@/components/team-badge";
 
 // ESPN abbreviation → extra keys (SportsRadar/mock may use different abbrs)
@@ -116,6 +116,8 @@ function StatCard({ category, teamLogos }: { category: StatCategory; teamLogos: 
 export default function MLBStatsPage() {
     const [activeTab, setActiveTab] = useState<"hitting" | "pitching">("hitting");
     const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
+    const [statsCategories, setStatsCategories] = useState<StatCategory[]>([]);
+    const [statsLoading, setStatsLoading] = useState(true);
 
     useEffect(() => {
       async function fetchLogos() {
@@ -140,6 +142,24 @@ export default function MLBStatsPage() {
         }
       }
       fetchLogos();
+    }, []);
+
+    useEffect(() => {
+      async function fetchStats() {
+        try {
+          const res = await fetch('/api/mlb-leaders');
+          if (!res.ok) return;
+          const data = await res.json();
+          if (Array.isArray(data?.categories)) {
+            setStatsCategories(data.categories as StatCategory[]);
+          }
+        } catch {
+          // stats non-critical
+        } finally {
+          setStatsLoading(false);
+        }
+      }
+      fetchStats();
     }, []);
 
     const hittingStats = [
@@ -180,6 +200,11 @@ export default function MLBStatsPage() {
                     <p className="text-sm text-muted-foreground">
                     Current season league leaders
                     </p>
+                    {statsLoading && (
+                      <span className="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <Loader2 className="h-3 w-3 animate-spin" /> Loading stats…
+                      </span>
+                    )}
                 </div>
                 </div>
             </div>
@@ -213,10 +238,14 @@ export default function MLBStatsPage() {
             </div>
 
             {/* Stats Grid */}
-            {activeTab === "hitting" ? (
+            {statsLoading ? (
+                <div className="flex min-h-[300px] items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : activeTab === "hitting" ? (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {hittingStats.map((id) => {
-                    const category = mlbPlayerStats.find((s) => s.id === id);
+                    const category = statsCategories.find((s) => s.id === id);
                     if (!category) return null;
                     return <StatCard key={category.id} category={category} teamLogos={teamLogos} />;
                 })}
@@ -232,7 +261,7 @@ export default function MLBStatsPage() {
                     </div>
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {section.ids.map((id) => {
-                        const category = mlbPlayerStats.find((s) => s.id === id);
+                        const category = statsCategories.find((s) => s.id === id);
                         if (!category) return null;
                         return <StatCard key={category.id} category={category} teamLogos={teamLogos} />;
                         })}

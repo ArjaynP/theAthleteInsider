@@ -400,6 +400,12 @@ function mapBoxscoreGame(g: RawGame): MLBScoreGame {
   };
 }
 
+function toScheduledTimestamp(value: unknown): number {
+  if (typeof value !== 'string' || !value.trim()) return Number.POSITIVE_INFINITY;
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp;
+}
+
 async function enhanceLiveGame(game: MLBScoreGame): Promise<MLBScoreGame> {
   if (game.status !== 'LIVE') return game;
 
@@ -465,9 +471,11 @@ export async function GET(request: Request) {
       .filter((g) => g?.id && g?.home && g?.away)
       .map(mapScheduleGame);
 
-    const boxscoreGames: MLBScoreGame[] = (
+    const normalizedBoxscoreRawGames = (
       (boxscoreRaw?.league?.games ?? []).map((item) => normalizeRawGame((item?.game ?? item) as RawGame))
-    ).concat((boxscoreRaw?.games ?? []).map((g) => normalizeRawGame(g)))
+    ).concat((boxscoreRaw?.games ?? []).map((g) => normalizeRawGame(g)));
+
+    const boxscoreGames: MLBScoreGame[] = normalizedBoxscoreRawGames
       .filter((g) => g?.id && g?.home && g?.away)
       .map(mapBoxscoreGame);
 
@@ -496,6 +504,25 @@ export async function GET(request: Request) {
         };
       })
       : boxscoreGames;
+
+    const scheduledAtById = new Map<string, number>();
+    for (const game of scheduleRaw?.games ?? []) {
+      if (!game?.id) continue;
+      scheduledAtById.set(String(game.id), toScheduledTimestamp(game.scheduled));
+    }
+    for (const game of normalizedBoxscoreRawGames) {
+      if (!game?.id) continue;
+      const id = String(game.id);
+      if (scheduledAtById.has(id)) continue;
+      scheduledAtById.set(id, toScheduledTimestamp(game.scheduled));
+    }
+
+    merged.sort((a, b) => {
+      const aScheduledAt = scheduledAtById.get(a.id) ?? Number.POSITIVE_INFINITY;
+      const bScheduledAt = scheduledAtById.get(b.id) ?? Number.POSITIVE_INFINITY;
+      if (aScheduledAt !== bScheduledAt) return aScheduledAt - bScheduledAt;
+      return a.id.localeCompare(b.id);
+    });
 
     const games = await Promise.all(merged.map(enhanceLiveGame));
 
