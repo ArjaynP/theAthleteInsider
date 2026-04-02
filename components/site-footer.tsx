@@ -6,7 +6,7 @@ const footerLinks = [
     title: "Leagues",
     links: [
       { label: "NBA", href: "/nba" },
-      { label: "NFL", href: "/nfl" },
+      { label: "MLB", href: "/mlb" },
       { label: "Scores", href: "/scores" },
     ],
   },
@@ -49,7 +49,7 @@ export function SiteFooter() {
               </div>
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Your premium source for NBA & NFL news, scores, analysis, and
+              Your premium source for NBA & MLB news, scores, analysis, and
               community-driven sports content.
             </p>
           </div>

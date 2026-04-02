@@ -30,18 +30,6 @@ const navItems = [
     ],
   },
   {
-    label: "NFL",
-    href: "/nfl",
-    icon: Trophy,
-    children: [
-      { label: "News & Analysis", href: "/nfl" },
-      { label: "Scores", href: "/nfl/scores" },
-      { label: "Standings", href: "/nfl/standings" },
-      { label: "Playoffs", href: "/nfl/playoffs" },
-      { label: "Player Stats", href: "/nfl/stats" },
-    ],
-  },
-  {
     label: "MLB",
     href: "/mlb",
     icon: Trophy,
