@@ -40,6 +40,18 @@ const navItems = [
       { label: "Player Stats", href: "/mlb/stats" },
     ],
   },
+  {
+    label: "UCL",
+    href: "/ucl",
+    icon: Trophy,
+    children: [
+      { label: "News & Analysis", href: "/ucl" },
+      { label: "Scores", href: "/ucl/scores" },
+      { label: "Standings", href: "/ucl/standings" },
+      { label: "Knockout Phase", href: "/ucl/knockout" },
+      { label: "Player Stats", href: "/ucl/stats" },
+    ],
+  },
   { label: "Scores", href: "/scores", icon: BarChart3 },
   { label: "Community", href: "/community", icon: Users },
   { label: "Betting", href: "/betting", icon: TrendingUp },

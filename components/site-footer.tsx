@@ -7,6 +7,7 @@ const footerLinks = [
     links: [
       { label: "NBA", href: "/nba" },
       { label: "MLB", href: "/mlb" },
+      { label: "UCL", href: "/ucl" },
       { label: "Scores", href: "/scores" },
     ],
   },
