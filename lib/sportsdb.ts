@@ -153,6 +153,7 @@ const SR_TO_ESPN: Record<string, string> = {
   'Villarreal CF': 'Villarreal',
   'FC Kairat Almaty': 'Kairat Almaty',
   // Short / canonical names used by standings & scores pages
+  // Only entries that differ from the SR full names already mapped above
   'Liverpool': 'Liverpool',
   'Barcelona': 'Barcelona',
   'Arsenal': 'Arsenal',
@@ -169,6 +170,8 @@ const SR_TO_ESPN: Record<string, string> = {
   'Marseille': 'Marseille',
   'Galatasaray': 'Galatasaray',
   'Olympiacos': 'Olympiacos',
+  'AC Milan': 'AC Milan',
+  'Celtic': 'Celtic',
 };
 
 async function fetchESPNUCLLogos(): Promise<Record<string, string>> {
