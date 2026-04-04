@@ -23,6 +23,7 @@ export interface BracketTie {
 }
 
 export interface UCLBracketData {
+  koPO: BracketTie[];
   r16: BracketTie[];
   qf: BracketTie[];
   sf: BracketTie[];
@@ -45,14 +46,14 @@ function TeamRow({
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 px-2 py-1",
+        "flex items-center gap-2 px-3 py-2",
         isWinner && "bg-primary/10",
         !isWinner && !isTbd && "opacity-60"
       )}
     >
       <div
         className={cn(
-          "flex h-5 w-9 shrink-0 items-center justify-center rounded text-[8px] font-black",
+          "flex h-6 w-11 shrink-0 items-center justify-center rounded text-[10px] font-black",
           isTbd
             ? "border border-border/50 bg-muted text-muted-foreground"
             : "bg-secondary text-foreground"
@@ -62,7 +63,7 @@ function TeamRow({
       </div>
       <span
         className={cn(
-          "flex-1 truncate text-[11px] font-bold leading-none",
+          "flex-1 truncate text-[13px] font-bold leading-none",
           isTbd
             ? "text-muted-foreground"
             : isWinner
@@ -75,7 +76,7 @@ function TeamRow({
       {!isTbd && (
         <span
           className={cn(
-            "shrink-0 w-4 text-right text-[11px] font-black tabular-nums",
+            "shrink-0 w-5 text-right text-[13px] font-black tabular-nums",
             isWinner ? "text-primary" : "text-muted-foreground"
           )}
         >
@@ -123,7 +124,7 @@ function TieCard({
     >
       {/* Leg scores header */}
       {!isFinal && (tie.leg1 || tie.leg2) && (
-        <div className="flex items-center justify-between border-b border-border/40 bg-muted/30 px-2 py-0.5 text-[9px] font-bold text-muted-foreground">
+        <div className="flex items-center justify-between border-b border-border/40 bg-muted/30 px-3 py-1 text-[10px] font-bold text-muted-foreground">
           {tie.leg1 && <span>Leg 1 · {tie.leg1}</span>}
           {tie.leg2 && <span>Leg 2 · {tie.leg2}</span>}
         </div>
@@ -148,8 +149,8 @@ function TieCard({
 
 // ── Bracket column ─────────────────────────────────────────────────────────────
 
-const COL_WIDTH = 190;
-const FINAL_COL_WIDTH = 180;
+const COL_WIDTH = 260;
+const FINAL_COL_WIDTH = 240;
 
 function BracketColumn({
   label,
@@ -169,14 +170,14 @@ function BracketColumn({
     >
       <p
         className={cn(
-          "mb-3 text-[9px] font-black uppercase tracking-widest text-muted-foreground",
+          "mb-4 text-[11px] font-black uppercase tracking-widest text-muted-foreground",
           alignLabel === "center" && "text-center",
           alignLabel === "right" && "text-right"
         )}
       >
         {label}
       </p>
-      <div className="flex flex-1 flex-col justify-around gap-3">
+      <div className="flex flex-1 flex-col justify-around gap-4">
         {ties.map((tie, i) => (
           <TieCard key={tie?.id ?? `tbd-${i}`} tie={tie} isFinal={isFinal} />
         ))}
@@ -186,9 +187,8 @@ function BracketColumn({
 }
 
 // ── Connector lines ─────────────────────────────────────────────────────────
-// Joins `count` ties on the wide side to `count/2` on the narrow side.
-
-function Connectors({
+// SplitConnectors: joins `count` ties 2:1 into the next round.
+function SplitConnectors({
   count,
   direction,
 }: {
@@ -197,7 +197,7 @@ function Connectors({
 }) {
   const pairs = Math.ceil(count / 2);
   return (
-    <div className="relative shrink-0" style={{ width: 24 }} aria-hidden>
+    <div className="relative shrink-0" style={{ width: 40 }} aria-hidden>
       <svg
         className="absolute inset-0 h-full w-full overflow-visible"
         preserveAspectRatio="none"
@@ -210,18 +210,30 @@ function Connectors({
           const inX = direction === "right" ? "0%" : "100%";
           const outX = direction === "right" ? "100%" : "0%";
           return (
-            <g
-              key={i}
-              stroke="currentColor"
-              strokeWidth="1"
-              fill="none"
-              className="text-border"
-            >
+            <g key={i} stroke="currentColor" strokeWidth="1" fill="none" className="text-border">
               <line x1={inX} y1={`${topY}%`} x2="50%" y2={`${topY}%`} />
               <line x1="50%" y1={`${topY}%`} x2="50%" y2={`${botY}%`} />
               <line x1={inX} y1={`${botY}%`} x2="50%" y2={`${botY}%`} />
               <line x1="50%" y1={`${midY}%`} x2={outX} y2={`${midY}%`} />
             </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// StraightConnectors: 1:1 pass-through lines (KO Playoffs → R16).
+function StraightConnectors({ count }: { count: number }) {
+  return (
+    <div className="relative shrink-0" style={{ width: 28 }} aria-hidden>
+      <svg className="absolute inset-0 h-full w-full overflow-visible" preserveAspectRatio="none">
+        {Array.from({ length: count }).map((_, i) => {
+          const segH = 100 / count;
+          const midY = i * segH + segH / 2;
+          return (
+            <line key={i} stroke="currentColor" strokeWidth="1" className="text-border"
+              x1="0%" y1={`${midY}%`} x2="100%" y2={`${midY}%`} />
           );
         })}
       </svg>
@@ -257,49 +269,34 @@ export function UCLKnockoutBracketView({
   data: UCLBracketData;
   className?: string;
 }) {
-  const r16L = data.r16.slice(0, 4);
-  const r16R = data.r16.slice(4, 8);
-  const qfL = data.qf.slice(0, 2);
-  const qfR = data.qf.slice(2, 4);
-  const sfL = data.sf.slice(0, 1);
-  const sfR = data.sf.slice(1, 2);
-
-  // Pad arrays to expected lengths with nulls so layout is stable
   const pad = <T,>(arr: T[], len: number): (T | null)[] => [
     ...arr,
     ...Array(Math.max(0, len - arr.length)).fill(null),
   ];
 
   return (
-    <div className={cn("w-full overflow-x-auto rounded-xl border border-border bg-card p-4", className)}>
-      <div className="flex min-w-max items-stretch gap-0 pb-2">
+    <div className={cn("w-full overflow-x-auto rounded-xl border border-border bg-card p-6", className)}>
+      <div className="flex min-w-max items-stretch gap-0 pb-2" style={{ minHeight: 900 }}>
 
-        {/* Left half */}
-        <BracketColumn label="Round of 16" ties={pad(r16L, 4)} />
-        <Connectors count={4} direction="right" />
-        <BracketColumn label="Quarter-Finals" ties={pad(qfL, 2)} />
-        <Connectors count={2} direction="right" />
-        <BracketColumn label="Semi-Finals" ties={pad(sfL, 1)} />
-        <Connectors count={1} direction="right" />
+        <BracketColumn label="KO Playoffs" ties={pad(data.koPO, 8)} />
+        <SplitConnectors count={8} direction="right" />
+        <BracketColumn label="Round of 16" ties={pad(data.r16, 8)} />
+        <SplitConnectors count={8} direction="right" />
+        <BracketColumn label="Quarter-Finals" ties={pad(data.qf, 4)} />
+        <SplitConnectors count={4} direction="right" />
+        <BracketColumn label="Semi-Finals" ties={pad(data.sf, 2)} />
+        <SplitConnectors count={2} direction="right" />
 
-        {/* Centre: Final */}
-        <div className="flex flex-col items-center" style={{ width: FINAL_COL_WIDTH }}>
-          <p className="mb-3 text-center text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+        {/* Final */}
+        <div className="flex flex-col" style={{ width: FINAL_COL_WIDTH }}>
+          <p className="mb-4 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
             Final · May 30
           </p>
-          <div className="flex flex-1 flex-col items-center justify-center gap-4">
+          <div className="flex flex-1 flex-col justify-center gap-4">
             <TieCard tie={data.final} isFinal />
             <TrophyIcon />
           </div>
         </div>
-
-        {/* Right half */}
-        <Connectors count={1} direction="left" />
-        <BracketColumn label="Semi-Finals" ties={pad(sfR, 1)} alignLabel="right" />
-        <Connectors count={2} direction="left" />
-        <BracketColumn label="Quarter-Finals" ties={pad(qfR, 2)} alignLabel="right" />
-        <Connectors count={4} direction="left" />
-        <BracketColumn label="Round of 16" ties={pad(r16R, 4)} alignLabel="right" />
 
       </div>
     </div>

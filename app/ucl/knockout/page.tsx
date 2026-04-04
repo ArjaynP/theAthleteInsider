@@ -46,6 +46,7 @@ export default function UCLKnockoutPage() {
           {/* Round labels strip */}
           <div className="mb-6 flex flex-wrap gap-3">
             {[
+              { label: "KO Playoffs", desc: "Feb 17–18 / Feb 24–25" },
               { label: "Round of 16", desc: "Mar 10–11 / Mar 17–18" },
               { label: "Quarter-Finals", desc: "Apr 7–8 / Apr 14–15" },
               { label: "Semi-Finals", desc: "Apr 28–29 / May 5–6" },

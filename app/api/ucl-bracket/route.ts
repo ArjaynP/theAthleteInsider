@@ -124,6 +124,9 @@ export async function GET() {
     const schedules: SRScheduleItem[] = raw.schedules ?? [];
 
     const byRound: Record<string, SRScheduleItem[]> = {
+      // Only Feb-Mar 2026 playoff_round games are the UCL Knockout Playoffs.
+      // August 2025 playoff_round games are qualification rounds — exclude them.
+      playoff_round: [],
       round_of_16: [],
       quarterfinal: [],
       semifinal: [],
@@ -132,13 +135,17 @@ export async function GET() {
 
     for (const item of schedules) {
       const rnd = item.sport_event?.sport_event_context?.round?.name ?? '';
-      if (byRound[rnd]) byRound[rnd].push(item);
+      if (!(rnd in byRound)) continue;
+      // Skip pre-season qualification playoff_round games (Aug 2025)
+      if (rnd === 'playoff_round' && item.sport_event.start_time < '2026') continue;
+      byRound[rnd].push(item);
     }
 
-    const r16Ties = buildTies(byRound.round_of_16).map(formatTie);
-    const qfTies = buildTies(byRound.quarterfinal).map(formatTie);
-    const sfTies = buildTies(byRound.semifinal).map(formatTie);
-    
+    const koPOTies = buildTies(byRound.playoff_round).map(formatTie);
+    const r16Ties  = buildTies(byRound.round_of_16).map(formatTie);
+    const qfTies   = buildTies(byRound.quarterfinal).map(formatTie);
+    const sfTies   = buildTies(byRound.semifinal).map(formatTie);
+
     // Final is a single game
     const finalItems = byRound.final;
     const finalTie = finalItems.length > 0 ? (() => {
@@ -159,7 +166,7 @@ export async function GET() {
       };
     })() : null;
 
-    return NextResponse.json({ r16: r16Ties, qf: qfTies, sf: sfTies, final: finalTie });
+    return NextResponse.json({ koPO: koPOTies, r16: r16Ties, qf: qfTies, sf: sfTies, final: finalTie });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: 'Failed to fetch UCL bracket', details: message }, { status: 500 });
