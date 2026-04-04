@@ -37,16 +37,29 @@ export const uclStandings: UCLTeamStanding[] = [
 // ── Player Stat Leaders ────────────────────────────────────────────────────────
 
 export const uclPlayerStats: UCLStatCategory[] = [
+  // ── Attacking ──────────────────────────────────────────────────────────────
   {
     id: 'goals',
     label: 'Goals',
     abbreviation: 'G',
     leaders: [
-      { rank: 1, player: 'Harry Kane',       team: 'BAY', value: 8 },
-      { rank: 2, player: 'Erling Haaland',   team: 'MCI', value: 7 },
-      { rank: 3, player: 'Kylian Mbappé',    team: 'RMA', value: 6 },
-      { rank: 4, player: 'Lautaro Martínez', team: 'INT', value: 6 },
-      { rank: 5, player: 'Mohamed Salah',    team: 'LIV', value: 5 },
+      { rank: 1, player: 'Harry Kane',        team: 'BAY', value: 8 },
+      { rank: 2, player: 'Erling Haaland',    team: 'MCI', value: 7 },
+      { rank: 3, player: 'Kylian Mbappé',     team: 'RMA', value: 6 },
+      { rank: 4, player: 'Lautaro Martínez',  team: 'INT', value: 6 },
+      { rank: 5, player: 'Mohamed Salah',     team: 'LIV', value: 5 },
+    ],
+  },
+  {
+    id: 'attempts',
+    label: 'Attempts',
+    abbreviation: 'ATT',
+    leaders: [
+      { rank: 1, player: 'Erling Haaland',    team: 'MCI', value: 38 },
+      { rank: 2, player: 'Harry Kane',        team: 'BAY', value: 35 },
+      { rank: 3, player: 'Kylian Mbappé',     team: 'RMA', value: 31 },
+      { rank: 4, player: 'Lautaro Martínez',  team: 'INT', value: 28 },
+      { rank: 5, player: 'Bukayo Saka',       team: 'ARS', value: 26 },
     ],
   },
   {
@@ -54,47 +67,36 @@ export const uclPlayerStats: UCLStatCategory[] = [
     label: 'Assists',
     abbreviation: 'A',
     leaders: [
-      { rank: 1, player: 'Kevin De Bruyne', team: 'MCI', value: 6 },
-      { rank: 2, player: 'Pedri',           team: 'BAR', value: 5 },
-      { rank: 3, player: 'Bukayo Saka',     team: 'ARS', value: 5 },
-      { rank: 4, player: 'Trent Alexander-Arnold', team: 'RMA', value: 4 },
-      { rank: 5, player: 'Raphinha',        team: 'BAR', value: 4 },
+      { rank: 1, player: 'Kevin De Bruyne',         team: 'MCI', value: 6 },
+      { rank: 2, player: 'Pedri',                   team: 'BAR', value: 5 },
+      { rank: 3, player: 'Bukayo Saka',             team: 'ARS', value: 5 },
+      { rank: 4, player: 'Trent Alexander-Arnold',  team: 'RMA', value: 4 },
+      { rank: 5, player: 'Raphinha',                team: 'BAR', value: 4 },
+    ],
+  },
+  // ── Passing ───────────────────────────────────────────────────────────────
+  {
+    id: 'passing_accuracy',
+    label: 'Passing Accuracy',
+    abbreviation: 'PA%',
+    leaders: [
+      { rank: 1, player: 'Pedri',           team: 'BAR', value: 94 },
+      { rank: 2, player: 'Rodri',           team: 'MCI', value: 93 },
+      { rank: 3, player: 'Granit Xhaka',    team: 'LEV', value: 92 },
+      { rank: 4, player: 'Nicolo Barella',  team: 'INT', value: 91 },
+      { rank: 5, player: 'Declan Rice',     team: 'ARS', value: 90 },
     ],
   },
   {
-    id: 'goal_contributions',
-    label: 'Goal Contributions',
-    abbreviation: 'G+A',
+    id: 'crossing_accuracy',
+    label: 'Crossing Accuracy',
+    abbreviation: 'CRS%',
     leaders: [
-      { rank: 1, player: 'Kevin De Bruyne', team: 'MCI', value: 9 },
-      { rank: 2, player: 'Harry Kane',      team: 'BAY', value: 9 },
-      { rank: 3, player: 'Bukayo Saka',     team: 'ARS', value: 8 },
-      { rank: 4, player: 'Mohamed Salah',   team: 'LIV', value: 8 },
-      { rank: 5, player: 'Pedri',           team: 'BAR', value: 7 },
-    ],
-  },
-  {
-    id: 'shots_on_target',
-    label: 'Shots on Target',
-    abbreviation: 'SOT',
-    leaders: [
-      { rank: 1, player: 'Erling Haaland',   team: 'MCI', value: 22 },
-      { rank: 2, player: 'Harry Kane',       team: 'BAY', value: 20 },
-      { rank: 3, player: 'Kylian Mbappé',    team: 'RMA', value: 18 },
-      { rank: 4, player: 'Lautaro Martínez', team: 'INT', value: 17 },
-      { rank: 5, player: 'Ollie Watkins',    team: 'AVL', value: 15 },
-    ],
-  },
-  {
-    id: 'clean_sheets',
-    label: 'Clean Sheets',
-    abbreviation: 'CS',
-    leaders: [
-      { rank: 1, player: 'Alisson Becker',  team: 'LIV', value: 5 },
-      { rank: 2, player: 'André Onana',     team: 'INT', value: 4 },
-      { rank: 3, player: 'David Raya',      team: 'ARS', value: 4 },
-      { rank: 4, player: 'Emiliano Martínez', team: 'AVL', value: 3 },
-      { rank: 5, player: 'Jan Oblak',       team: 'ATM', value: 3 },
+      { rank: 1, player: 'Bukayo Saka',       team: 'ARS', value: 42 },
+      { rank: 2, player: 'Raphinha',          team: 'BAR', value: 39 },
+      { rank: 3, player: 'Kevin De Bruyne',   team: 'MCI', value: 37 },
+      { rank: 4, player: 'Leroy Sané',        team: 'BAY', value: 35 },
+      { rank: 5, player: 'Mohamed Salah',     team: 'LIV', value: 33 },
     ],
   },
   {
@@ -107,6 +109,117 @@ export const uclPlayerStats: UCLStatCategory[] = [
       { rank: 3, player: 'Granit Xhaka',    team: 'LEV', value: 375 },
       { rank: 4, player: 'Declan Rice',     team: 'ARS', value: 362 },
       { rank: 5, player: 'Nicolo Barella',  team: 'INT', value: 341 },
+    ],
+  },
+  // ── Defending ─────────────────────────────────────────────────────────────
+  {
+    id: 'balls_recovered',
+    label: 'Balls Recovered',
+    abbreviation: 'REC',
+    leaders: [
+      { rank: 1, player: 'Declan Rice',       team: 'ARS', value: 52 },
+      { rank: 2, player: 'Rodri',             team: 'MCI', value: 49 },
+      { rank: 3, player: 'Granit Xhaka',      team: 'LEV', value: 45 },
+      { rank: 4, player: 'Nicolo Barella',    team: 'INT', value: 43 },
+      { rank: 5, player: 'Aurélien Tchouaméni', team: 'RMA', value: 41 },
+    ],
+  },
+  {
+    id: 'tackles',
+    label: 'Tackles',
+    abbreviation: 'TKL',
+    leaders: [
+      { rank: 1, player: 'Declan Rice',         team: 'ARS', value: 28 },
+      { rank: 2, player: 'Rodri',               team: 'MCI', value: 25 },
+      { rank: 3, player: 'Aurélien Tchouaméni', team: 'RMA', value: 23 },
+      { rank: 4, player: 'Granit Xhaka',        team: 'LEV', value: 21 },
+      { rank: 5, player: 'Sofyan Amrabat',      team: 'BAR', value: 20 },
+    ],
+  },
+  {
+    id: 'tackles_won',
+    label: 'Tackles Won',
+    abbreviation: 'TKW',
+    leaders: [
+      { rank: 1, player: 'Declan Rice',         team: 'ARS', value: 22 },
+      { rank: 2, player: 'Rodri',               team: 'MCI', value: 19 },
+      { rank: 3, player: 'Aurélien Tchouaméni', team: 'RMA', value: 18 },
+      { rank: 4, player: 'Granit Xhaka',        team: 'LEV', value: 17 },
+      { rank: 5, player: 'Sofyan Amrabat',      team: 'BAR', value: 16 },
+    ],
+  },
+  // ── Goalkeeping ───────────────────────────────────────────────────────────
+  {
+    id: 'saves',
+    label: 'Saves',
+    abbreviation: 'SV',
+    leaders: [
+      { rank: 1, player: 'Jan Oblak',           team: 'ATM', value: 31 },
+      { rank: 2, player: 'Emiliano Martínez',   team: 'AVL', value: 28 },
+      { rank: 3, player: 'André Onana',         team: 'INT', value: 25 },
+      { rank: 4, player: 'David Raya',          team: 'ARS', value: 23 },
+      { rank: 5, player: 'Alisson Becker',      team: 'LIV', value: 19 },
+    ],
+  },
+  {
+    id: 'goals_conceded',
+    label: 'Goals Conceded',
+    abbreviation: 'GC',
+    leaders: [
+      { rank: 1, player: 'Alisson Becker',      team: 'LIV', value: 4 },
+      { rank: 2, player: 'David Raya',          team: 'ARS', value: 5 },
+      { rank: 3, player: 'André Onana',         team: 'INT', value: 6 },
+      { rank: 4, player: 'Jan Oblak',           team: 'ATM', value: 7 },
+      { rank: 5, player: 'Emiliano Martínez',   team: 'AVL', value: 8 },
+    ],
+  },
+  {
+    id: 'saves_from_penalties',
+    label: 'Saves from Penalties',
+    abbreviation: 'PSV',
+    leaders: [
+      { rank: 1, player: 'Jan Oblak',           team: 'ATM', value: 2 },
+      { rank: 2, player: 'Emiliano Martínez',   team: 'AVL', value: 2 },
+      { rank: 3, player: 'David Raya',          team: 'ARS', value: 1 },
+      { rank: 4, player: 'Alisson Becker',      team: 'LIV', value: 1 },
+      { rank: 5, player: 'André Onana',         team: 'INT', value: 1 },
+    ],
+  },
+  {
+    id: 'clean_sheets',
+    label: 'Clean Sheets',
+    abbreviation: 'CS',
+    leaders: [
+      { rank: 1, player: 'Alisson Becker',      team: 'LIV', value: 5 },
+      { rank: 2, player: 'André Onana',         team: 'INT', value: 4 },
+      { rank: 3, player: 'David Raya',          team: 'ARS', value: 4 },
+      { rank: 4, player: 'Emiliano Martínez',   team: 'AVL', value: 3 },
+      { rank: 5, player: 'Jan Oblak',           team: 'ATM', value: 3 },
+    ],
+  },
+  // ── Discipline ────────────────────────────────────────────────────────────
+  {
+    id: 'yellow_cards',
+    label: 'Yellow Cards',
+    abbreviation: 'YC',
+    leaders: [
+      { rank: 1, player: 'Granit Xhaka',          team: 'LEV', value: 4 },
+      { rank: 2, player: 'Declan Rice',            team: 'ARS', value: 3 },
+      { rank: 3, player: 'Aurélien Tchouaméni',    team: 'RMA', value: 3 },
+      { rank: 4, player: 'Nicolo Barella',         team: 'INT', value: 3 },
+      { rank: 5, player: 'Rodri',                  team: 'MCI', value: 3 },
+    ],
+  },
+  {
+    id: 'red_cards',
+    label: 'Red Cards',
+    abbreviation: 'RC',
+    leaders: [
+      { rank: 1, player: 'Wout Faes',             team: 'LEV', value: 1 },
+      { rank: 2, player: 'Stefan de Vrij',        team: 'INT', value: 1 },
+      { rank: 3, player: 'Edmond Tapsoba',        team: 'LEV', value: 1 },
+      { rank: 4, player: 'Nuno Mendes',           team: 'PSG', value: 1 },
+      { rank: 5, player: 'Jan Vertonghen',        team: 'BEN', value: 1 },
     ],
   },
 ];
@@ -264,4 +377,6 @@ export const UCL_ABBREV_TO_NAME: Record<string, string> = {
   MCI: 'Manchester City',
   JUV: 'Juventus',
   DOR: 'Borussia Dortmund',
+  PSG: 'Paris Saint-Germain',
+  BEN: 'Benfica',
 };
