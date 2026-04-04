@@ -31,17 +31,39 @@ function formatInningTicker(value?: string) {
   return `${half} ${inning}${suffix}`;
 }
 
+/** Returns just the ordinal label (e.g. "7TH") without the arrow, for split rendering */
+function formatInningOrdinal(value?: string): string | undefined {
+  if (!value) return undefined;
+  const raw = value.trim().toUpperCase();
+  const match = raw.match(/^(TOP|BOT)\s+(\d{1,2})$/);
+  if (!match) return undefined;
+  const inning = Number(match[2]);
+  const suffix = inning === 1 ? "ST" : inning === 2 ? "ND" : inning === 3 ? "RD" : "TH";
+  return `${inning}${suffix}`;
+}
+
 function LiveMlbDetails({ game }: { game: Game }) {
   const balls = typeof game.balls === "number" ? game.balls : 0;
   const strikes = typeof game.strikes === "number" ? game.strikes : 0;
   const outs = typeof game.outs === "number" ? game.outs : 0;
   const bases = game.bases ?? { first: false, second: false, third: false };
 
+  const isTop = game.quarter?.trim().toUpperCase().startsWith("TOP");
+  const isBot = game.quarter?.trim().toUpperCase().startsWith("BOT");
+  const ordinal = formatInningOrdinal(game.quarter);
+
   return (
     <div className="mt-3 overflow-hidden rounded-md border border-border/60 bg-secondary/20">
       {/* Inning ticker */}
-      <div className="border-b border-border/60 bg-secondary/40 px-2 py-1 text-center text-[10px] font-bold uppercase tracking-widest text-foreground">
-        {formatInningTicker(game.quarter)}
+      <div className="border-b border-border/60 bg-secondary/40 px-2 py-1 flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-widest text-foreground">
+        {ordinal ? (
+          <>
+            <span className="text-[12px] leading-none">{isTop ? "▲" : isBot ? "▼" : ""}</span>
+            <span>{ordinal}</span>
+          </>
+        ) : (
+          <span>{formatInningTicker(game.quarter)}</span>
+        )}
       </div>
 
       {/* Diamond · Outs · Count */}
@@ -110,6 +132,11 @@ export function LiveScoreCard({ game, teamLogos }: LiveScoreCardProps) {
     ? teamLogos?.[normalizeAbbreviation(game.homeTeam, game.league)]
     : undefined;
 
+  // Determine the half-inning arrow character for rendering
+  const inningIsTop = game.quarter?.trim().toUpperCase().startsWith("TOP");
+  const inningIsBot = game.quarter?.trim().toUpperCase().startsWith("BOT");
+  const inningOrdinal = formatInningOrdinal(game.quarter);
+
   return (
     <div
       className={cn(
@@ -119,18 +146,32 @@ export function LiveScoreCard({ game, teamLogos }: LiveScoreCardProps) {
     >
       {/* Status bar */}
       <div className="mb-3 flex items-center justify-between">
-        <span
-          className={cn(
-            "rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest",
-            isLive
-              ? "bg-accent text-accent-foreground"
-              : isFinal
-                ? "bg-secondary text-secondary-foreground"
-                : "bg-primary/20 text-primary"
-          )}
-        >
-          {isLive ? liveStatusText : game.status === "UPCOMING" ? game.startTime : game.status}
-        </span>
+        {isLive && game.league === "MLB" && mlbLiveInningText ? (
+          /* MLB live: styled pill with LIVE · ▲/▼ Nth */
+          <span className="inline-flex items-center gap-1 rounded bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-accent-foreground">
+            <span>LIVE</span>
+            <span className="opacity-60">•</span>
+            {(inningIsTop || inningIsBot) && (
+              <span className="text-[11px] leading-none">
+                {inningIsTop ? "▲" : "▼"}
+              </span>
+            )}
+            <span>{inningOrdinal ?? mlbLiveInningText.replace(/^[▲▼]\s*/, "")}</span>
+          </span>
+        ) : (
+          <span
+            className={cn(
+              "rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest",
+              isLive
+                ? "bg-accent text-accent-foreground"
+                : isFinal
+                  ? "bg-secondary text-secondary-foreground"
+                  : "bg-primary/20 text-primary"
+            )}
+          >
+            {isLive ? liveStatusText : game.status === "UPCOMING" ? game.startTime : game.status}
+          </span>
+        )}
         {isLive && (
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />

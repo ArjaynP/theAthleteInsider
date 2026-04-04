@@ -43,9 +43,27 @@ type RawMLBGameEntry = {
   id?: string | number;
   status?: string;
   scheduled?: string;
+  inning?: number;
+  inning_half?: string;
+  half_inning?: string;
   home?: RawMLBTeamEntry;
   away?: RawMLBTeamEntry;
 };
+
+function normalizeMLBInningHalf(value?: string): 'T' | 'B' | undefined {
+  if (!value) return undefined;
+  const v = value.trim().toUpperCase();
+  if (v === 'T' || v === 'TOP') return 'T';
+  if (v === 'B' || v === 'BOT' || v === 'BOTTOM') return 'B';
+  return undefined;
+}
+
+function formatMLBInning(inning?: number, half?: string): string | undefined {
+  if (!inning || !half) return undefined;
+  const h = normalizeMLBInningHalf(half);
+  if (!h) return undefined;
+  return `${h === 'T' ? 'TOP' : 'BOT'} ${inning}`;
+}
 
 function toMLBGameStatus(v: string): 'LIVE' | 'FINAL' | 'UPCOMING' {
   const s = (v ?? '').toLowerCase();
@@ -70,13 +88,16 @@ function fmtMLBTime(iso: string): string {
 function rawEntryToGame(g: RawMLBGameEntry): Game {
   const home = g.home ?? {};
   const away = g.away ?? {};
+  const status = toMLBGameStatus(String(g.status ?? ''));
+  const inningHalf = g.inning_half ?? g.half_inning;
   return {
     id: String(g.id ?? ''),
     homeTeam: normalizeMLBAbr(String(home.abbr ?? '')),
     awayTeam: normalizeMLBAbr(String(away.abbr ?? '')),
     homeScore: typeof home.runs === 'number' ? home.runs : 0,
     awayScore: typeof away.runs === 'number' ? away.runs : 0,
-    status: toMLBGameStatus(String(g.status ?? '')),
+    status,
+    quarter: status === 'LIVE' ? formatMLBInning(g.inning, inningHalf) : undefined,
     startTime: fmtMLBTime(String(g.scheduled ?? '')),
     league: 'MLB',
     homeRecord: (typeof home.win === 'number' && typeof home.loss === 'number') ? `${home.win}-${home.loss}` : '',
@@ -197,7 +218,7 @@ export default async function MLBPage() {
       ...(boxscoreData.games ?? []),
     ].filter((g) => g?.id);
 
-    // Overlay boxscore scores/status onto schedule entries
+    // Overlay boxscore scores/status/inning onto schedule entries
     const boxById = new Map<string, RawMLBGameEntry>(rawBoxGames.map((g) => [String(g.id), g]));
     const merged: RawMLBGameEntry[] = (rawScheduleGames.length > 0 ? rawScheduleGames : rawBoxGames).map((base) => {
       const box = boxById.get(String(base.id));
@@ -205,6 +226,8 @@ export default async function MLBPage() {
       return {
         ...base,
         status: box.status ?? base.status,
+        inning: box.inning ?? base.inning,
+        inning_half: box.inning_half ?? box.half_inning ?? base.inning_half,
         home: { ...base.home, runs: box.home?.runs ?? 0 },
         away: { ...base.away, runs: box.away?.runs ?? 0 },
       };

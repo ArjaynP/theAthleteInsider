@@ -258,14 +258,26 @@ function extractLiveDetails(value: unknown) {
   const situation = asObject(src.situation) ?? {};
   const atBat = asObject(src.at_bat) ?? {};
   const count = asObject(atBat.count) ?? {};
+  // Some SportsRadar responses nest live state under linescore or game_detail
+  const linescore = asObject(src.linescore) ?? {};
+  const gameDetail = asObject(src.game_detail) ?? {};
+  const currentInning = asObject(linescore.current_inning) ?? {};
+
   const inning =
     toNumber(src.inning) ??
     toNumber(situation.inning) ??
-    toNumber(atBat.inning);
+    toNumber(atBat.inning) ??
+    toNumber(linescore.inning) ??
+    toNumber(currentInning.number) ??
+    toNumber(gameDetail.inning);
+
   const inningHalf =
     normalizeInningHalf(src.inning_half ?? src.half_inning) ??
     normalizeInningHalf(situation.inning_half ?? situation.half_inning) ??
-    normalizeInningHalf(atBat.inning_half ?? atBat.half_inning);
+    normalizeInningHalf(atBat.inning_half ?? atBat.half_inning) ??
+    normalizeInningHalf(linescore.inning_half ?? linescore.half_inning) ??
+    normalizeInningHalf(currentInning.half ?? currentInning.inning_half) ??
+    normalizeInningHalf(gameDetail.inning_half ?? gameDetail.half_inning);
 
   const events = collectEvents(src);
   const currentEvent = selectCurrentEvent(events, inning, inningHalf);
