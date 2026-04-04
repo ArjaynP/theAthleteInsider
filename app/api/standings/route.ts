@@ -134,15 +134,19 @@ function buildMLBTeamStandingFromESPN(entry: EspnStanding) {
     home: espnRec(entry.stats, 'home'),
     away: espnRec(entry.stats, 'road'),
     last10: espnRec(entry.stats, 'lasttengames'),
-    rs: espnDisp(entry.stats, 'runsscored', '-'),
-    ra: espnDisp(entry.stats, 'runsallowed', '-'),
-    diff: espnDisp(entry.stats, 'rundifferential', '-'),
+    rs: espnDisp(entry.stats, 'pointsfor', '-'),
+    ra: espnDisp(entry.stats, 'pointsagainst', '-'),
+    diff: espnDisp(entry.stats, 'pointdifferential', '-'),
     conferenceRecord: espnRec(entry.stats, 'vsleague'),
     divisionRecord: espnRec(entry.stats, 'vsdivision'),
   };
 }
 
 // ─── SportsRadar MLB Standings parser ────────────────────────────────────────
+// SportsRadar MLB v8 trial returns flat fields — no records[] array, no run totals.
+// Actual team keys: home_win, home_loss, away_win, away_loss,
+//   last_10_won, last_10_lost, streak (string e.g. "W3"), win_p, games_back,
+//   rank.division, win, loss, abbr, market, name.
 function parseSportsRadarMLBStandings(raw: Record<string, unknown>) {
   const teams: ReturnType<typeof buildMLBTeamStandingFromESPN>[] = [];
   const leagues: any[] = (raw as any)?.league?.season?.leagues ?? [];
@@ -152,16 +156,15 @@ function parseSportsRadarMLBStandings(raw: Record<string, unknown>) {
     for (const division of league.divisions ?? []) {
       const divisionName: string = division.name ?? ''; // "East", "Central", "West"
       for (const t of division.teams ?? []) {
-        const wins: number = t.win ?? t.wins ?? 0;
-        const losses: number = t.loss ?? t.losses ?? 0;
-        const winP: number = t.win_p ?? t.win_pct ?? (wins + losses > 0 ? wins / (wins + losses) : 0);
+        const wins: number = t.win ?? 0;
+        const losses: number = t.loss ?? 0;
+        const winP: number = t.win_p ?? (wins + losses > 0 ? wins / (wins + losses) : 0);
         const gb = t.games_back === 0 ? '-' : t.games_back != null ? String(t.games_back) : '-';
-        const streak = t.streak ? `${t.streak.kind === 'win' ? 'W' : 'L'}${t.streak.length}` : '-';
-        const rec = (type: string) => {
-          const r = (t.records ?? []).find((x: any) => x.record_type === type);
-          return r ? `${r.win}-${r.loss}` : '-';
-        };
-        const runDiff: number | undefined = t.run_diff ?? (t.runs_scored != null && t.runs_allowed != null ? t.runs_scored - t.runs_allowed : undefined);
+        // streak is already a plain string like "W3" or "L2"
+        const streak = typeof t.streak === 'string' ? t.streak : '-';
+        const homeRec = (t.home_win != null && t.home_loss != null) ? `${t.home_win}-${t.home_loss}` : '-';
+        const awayRec = (t.away_win != null && t.away_loss != null) ? `${t.away_win}-${t.away_loss}` : '-';
+        const last10Rec = (t.last_10_won != null && t.last_10_lost != null) ? `${t.last_10_won}-${t.last_10_lost}` : '-';
         teams.push({
           rank: t.rank?.division ?? 99,
           team: `${t.market} ${t.name}`.trim(),
@@ -174,14 +177,15 @@ function parseSportsRadarMLBStandings(raw: Record<string, unknown>) {
           conference: leagueAlias,
           division: divisionName,
           league: 'MLB' as const,
-          home: rec('home'),
-          away: rec('road'),
-          last10: rec('last_10'),
-          rs: t.runs_scored != null ? String(t.runs_scored) : '-',
-          ra: t.runs_allowed != null ? String(t.runs_allowed) : '-',
-          diff: runDiff != null ? (runDiff >= 0 ? `+${runDiff}` : String(runDiff)) : '-',
-          conferenceRecord: rec('league'),
-          divisionRecord: rec('division'),
+          home: homeRec,
+          away: awayRec,
+          last10: last10Rec,
+          // RS/RA/Diff not available from SportsRadar trial — will be merged from ESPN
+          rs: '-',
+          ra: '-',
+          diff: '-',
+          conferenceRecord: '-',
+          divisionRecord: '-',
         });
       }
     }
@@ -289,10 +293,11 @@ export async function GET(request: Request) {
         return NextResponse.json({ teams });
       }
       case 'MLB': {
-        // Try SportsRadar first; fall back to ESPN if it fails
-        const [srStandings, srRankings] = await Promise.allSettled([
+        // Fetch SportsRadar (primary) and ESPN (for RS/RA/Diff) in parallel
+        const [srStandings, srRankings, espnRaw] = await Promise.allSettled([
           getCachedMLBSportsRadarStandings(),
           getCachedMLBSportsRadarRankings(),
+          getCachedMLBStandings() as Promise<EspnStanding[]>,
         ]);
 
         let teams: ReturnType<typeof parseSportsRadarMLBStandings>;
@@ -300,6 +305,20 @@ export async function GET(request: Request) {
 
         if (srStandings.status === 'fulfilled') {
           teams = parseSportsRadarMLBStandings(srStandings.value as Record<string, unknown>);
+
+          // Merge RS/RA/Diff from ESPN (SportsRadar trial API doesn't include run totals)
+          if (espnRaw.status === 'fulfilled' && Array.isArray(espnRaw.value)) {
+            const espnMap = new Map<string, ReturnType<typeof buildMLBTeamStandingFromESPN>>();
+            for (const e of espnRaw.value) {
+              const t = buildMLBTeamStandingFromESPN(e);
+              espnMap.set(t.abbreviation, t);
+            }
+            teams = teams.map(t => {
+              const e = espnMap.get(t.abbreviation);
+              if (!e) return t;
+              return { ...t, rs: e.rs, ra: e.ra, diff: e.diff };
+            });
+          }
 
           // Merge clinched status from Rankings response
           if (srRankings.status === 'fulfilled') {
@@ -317,8 +336,10 @@ export async function GET(request: Request) {
           }
         } else {
           console.warn('MLB SportsRadar Standings failed, falling back to ESPN:', srStandings.reason?.message);
-          const espnRaw = await getCachedMLBStandings() as EspnStanding[];
-          teams = espnRaw.map(buildMLBTeamStandingFromESPN);
+          const raw = espnRaw.status === 'fulfilled' && Array.isArray(espnRaw.value)
+            ? espnRaw.value
+            : await getCachedMLBStandings() as EspnStanding[];
+          teams = raw.map(buildMLBTeamStandingFromESPN);
         }
 
         return NextResponse.json({ teams, clinched });

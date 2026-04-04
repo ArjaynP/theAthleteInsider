@@ -175,7 +175,7 @@ export async function fetchNFLStandings() {
 
 export async function fetchMLBStandings() {
   const url =
-    'https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings?season=2025';
+    'https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings?season=2026';
 
   const response = await fetch(url, {
     method: 'GET',
@@ -188,6 +188,17 @@ export async function fetchMLBStandings() {
   }
 
   const data = await response.json();
+
+  // 2026+ endpoint returns a children[] structure (one per league)
+  if (Array.isArray(data.children)) {
+    const entries: unknown[] = [];
+    for (const child of data.children) {
+      const childEntries = child?.standings?.entries;
+      if (Array.isArray(childEntries)) entries.push(...childEntries);
+    }
+    return entries;
+  }
+
   return data.standings?.entries || [];
 }
 

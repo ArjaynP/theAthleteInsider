@@ -32,47 +32,64 @@ function formatInningTicker(value?: string) {
 }
 
 function LiveMlbDetails({ game }: { game: Game }) {
-  const balls = typeof game.balls === "number" ? game.balls : "-";
-  const strikes = typeof game.strikes === "number" ? game.strikes : "-";
+  const balls = typeof game.balls === "number" ? game.balls : 0;
+  const strikes = typeof game.strikes === "number" ? game.strikes : 0;
+  const outs = typeof game.outs === "number" ? game.outs : 0;
   const bases = game.bases ?? { first: false, second: false, third: false };
-  const outsLabel = typeof game.outs === "number" ? `${game.outs} OUT${game.outs === 1 ? "" : "S"}` : "- OUT";
 
   return (
     <div className="mt-3 overflow-hidden rounded-md border border-border/60 bg-secondary/20">
-      <div className="flex items-center justify-between gap-2 px-2 py-1.5">
-        <div className="min-w-0">
-          <p className="truncate text-[10px] font-bold uppercase text-foreground">
-            {game.currentPitcher ?? "PITCHER TBD"}
-          </p>
-          <p className="truncate text-[10px] text-muted-foreground">
-            {game.currentBatter ?? "BATTER TBD"}
-          </p>
-        </div>
-        <div className="relative h-6 w-6 flex-shrink-0">
-          <span
-            className={cn(
-              "absolute left-2 top-0 h-3 w-3 rotate-45 border",
-              bases.second ? "border-amber-400 bg-amber-400" : "border-border bg-transparent"
-            )}
-          />
-          <span
-            className={cn(
-              "absolute left-3 top-2 h-3 w-3 rotate-45 border",
-              bases.first ? "border-amber-400 bg-amber-400" : "border-border bg-transparent"
-            )}
-          />
-          <span
-            className={cn(
-              "absolute left-1 top-2 h-3 w-3 rotate-45 border",
-              bases.third ? "border-amber-400 bg-amber-400" : "border-border bg-transparent"
-            )}
-          />
-        </div>
+      {/* Inning ticker */}
+      <div className="border-b border-border/60 bg-secondary/40 px-2 py-1 text-center text-[10px] font-bold uppercase tracking-widest text-foreground">
+        {formatInningTicker(game.quarter)}
       </div>
-      <div className="flex items-center justify-between border-t border-border/60 bg-secondary/40 px-2 py-1 text-[10px] font-bold uppercase text-foreground">
-        <span>{formatInningTicker(game.quarter)}</span>
-        <span>{balls}-{strikes}</span>
-        <span>{outsLabel}</span>
+
+      {/* Diamond · Outs · Count */}
+      <div className="flex items-center justify-around px-3 py-2.5">
+
+        {/* Baseball diamond — 2nd top, 3rd bottom-left, 1st bottom-right */}
+        <div className="relative h-8 w-10 flex-shrink-0">
+          {/* 2nd base – top center */}
+          <span className={cn(
+            "absolute left-1/2 top-0 h-4 w-4 -translate-x-1/2 rotate-45 border",
+            bases.second ? "border-amber-400 bg-amber-400" : "border-border/70 bg-muted/20"
+          )} />
+          {/* 3rd base – bottom-left */}
+          <span className={cn(
+            "absolute bottom-0 left-0 h-4 w-4 rotate-45 border",
+            bases.third ? "border-amber-400 bg-amber-400" : "border-border/70 bg-muted/20"
+          )} />
+          {/* 1st base – bottom-right */}
+          <span className={cn(
+            "absolute bottom-0 right-0 h-4 w-4 rotate-45 border",
+            bases.first ? "border-amber-400 bg-amber-400" : "border-border/70 bg-muted/20"
+          )} />
+        </div>
+
+        {/* Outs */}
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">OUT</span>
+          <div className="flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className={cn(
+                  "h-2.5 w-2.5 rounded-full border",
+                  i < outs
+                    ? "border-foreground bg-foreground"
+                    : "border-border bg-transparent"
+                )}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Count */}
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">COUNT</span>
+          <span className="text-sm font-black tabular-nums text-foreground">{balls} – {strikes}</span>
+        </div>
+
       </div>
     </div>
   );
