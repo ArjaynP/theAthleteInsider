@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -8,6 +9,7 @@ export interface BracketTeam {
   id: string;
   name: string;
   abbreviation: string;
+  logoUrl?: string | null;
 }
 
 export interface BracketTie {
@@ -31,55 +33,39 @@ export interface UCLBracketData {
 }
 
 // ── Team row ──────────────────────────────────────────────────────────────────
-
-function TeamRow({
-  team,
-  agg,
-  isWinner,
-  isTbd,
-}: {
-  team: BracketTeam;
-  agg: number | null;
-  isWinner: boolean;
-  isTbd: boolean;
+function TeamRow({ team, agg, isWinner, isTbd }: {
+  team: BracketTeam; agg: number | null; isWinner: boolean; isTbd: boolean;
+  logos?: Record<string, string | null>;
 }) {
   return (
-    <div
-      className={cn(
-        "flex items-center gap-2 px-3 py-2",
-        isWinner && "bg-primary/10",
-        !isWinner && !isTbd && "opacity-60"
-      )}
-    >
-      <div
-        className={cn(
-          "flex h-6 w-11 shrink-0 items-center justify-center rounded text-[10px] font-black",
-          isTbd
-            ? "border border-border/50 bg-muted text-muted-foreground"
-            : "bg-secondary text-foreground"
+    <div className={cn(
+      "flex items-center gap-2 px-3 py-2",
+      isWinner && "bg-primary/10",
+      !isWinner && !isTbd && "opacity-60"
+    )}>
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded overflow-hidden bg-muted">
+        {!isTbd && team.logoUrl ? (
+          <Image src={team.logoUrl} alt={team.name} width={28} height={28} className="object-contain" />
+        ) : (
+          <span className={cn(
+            "text-[8px] font-black",
+            isTbd ? "text-muted-foreground" : "text-foreground"
+          )}>
+            {isTbd ? "?" : team.abbreviation.slice(0, 3)}
+          </span>
         )}
-      >
-        {isTbd ? "TBD" : team.abbreviation.slice(0, 3)}
       </div>
-      <span
-        className={cn(
-          "flex-1 truncate text-[13px] font-bold leading-none",
-          isTbd
-            ? "text-muted-foreground"
-            : isWinner
-            ? "text-primary"
-            : "text-foreground"
-        )}
-      >
+      <span className={cn(
+        "flex-1 truncate text-[13px] font-bold leading-none",
+        isTbd ? "text-muted-foreground" : isWinner ? "text-primary" : "text-foreground"
+      )}>
         {isTbd ? "TBD" : team.name}
       </span>
       {!isTbd && (
-        <span
-          className={cn(
-            "shrink-0 w-5 text-right text-[13px] font-black tabular-nums",
-            isWinner ? "text-primary" : "text-muted-foreground"
-          )}
-        >
+        <span className={cn(
+          "shrink-0 w-5 text-right text-[13px] font-black tabular-nums",
+          isWinner ? "text-primary" : "text-muted-foreground"
+        )}>
           {agg ?? "–"}
         </span>
       )}
@@ -97,6 +83,7 @@ function TieCard({
   tie: BracketTie | null;
   isFinal?: boolean;
   className?: string;
+  logos?: Record<string, string | null>;
 }) {
   if (!tie) {
     return (
@@ -110,7 +97,6 @@ function TieCard({
   const homeTbd = tie.homeTeam.abbreviation === "TBD" || tie.homeTeam.name === "TBD";
   const awayTbd = tie.awayTeam.abbreviation === "TBD" || tie.awayTeam.name === "TBD";
   const isTbd = homeTbd || awayTbd;
-
   const homeWins = tie.status === "completed" && tie.winnerId === tie.homeTeam.id;
   const awayWins = tie.status === "completed" && tie.winnerId === tie.awayTeam.id;
 
@@ -161,6 +147,7 @@ function BracketColumn({
   label: string;
   ties: (BracketTie | null)[];
   isFinal?: boolean;
+  logos?: Record<string, string | null>;
   alignLabel?: "left" | "right" | "center";
 }) {
   return (
@@ -267,6 +254,7 @@ export function UCLKnockoutBracketView({
   className,
 }: {
   data: UCLBracketData;
+  logos?: Record<string, string | null>;
   className?: string;
 }) {
   const pad = <T,>(arr: T[], len: number): (T | null)[] => [

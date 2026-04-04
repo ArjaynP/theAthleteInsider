@@ -241,3 +241,27 @@ export const uclKnockoutBracket: UCLKnockoutBracket = {
     venue: 'Allianz Arena, Munich',
   },
 };
+
+// ── Abbreviation → Full name (for TheSportsDB logo lookups) ──────────────────
+export const UCL_ABBREV_TO_NAME: Record<string, string> = {
+  LIV: 'Liverpool',
+  RMA: 'Real Madrid',
+  INT: 'Inter Milan',
+  BAR: 'Barcelona',
+  ATM: 'Atletico Madrid',
+  ARS: 'Arsenal',
+  LEV: 'Bayer Leverkusen',
+  BEN: 'Benfica',
+  MIL: 'AC Milan',
+  AVL: 'Aston Villa',
+  ATA: 'Atalanta',
+  PSV: 'PSV Eindhoven',
+  MON: 'AS Monaco',
+  SPO: 'Sporting CP',
+  BRU: 'Club Brugge',
+  CEL: 'Celtic',
+  BAY: 'Bayern Munich',
+  MCI: 'Manchester City',
+  JUV: 'Juventus',
+  DOR: 'Borussia Dortmund',
+};

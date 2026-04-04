@@ -7,11 +7,11 @@ import Image from "next/image";
 import { Loader2, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { UCLStatCategory } from "@/lib/ucl-types";
-import { uclPlayerStats } from "@/lib/ucl-data";
+import { uclPlayerStats, UCL_ABBREV_TO_NAME } from "@/lib/ucl-data";
 
 // ── Stat card (same pattern as NBA / MLB stats pages) ─────────────────────────
 
-function StatCard({ category }: { category: UCLStatCategory }) {
+function StatCard({ category, logos }: { category: UCLStatCategory; logos: Record<string, string | null> }) {
   const topPlayer = category.leaders[0];
   const others = category.leaders.slice(1);
 
@@ -43,7 +43,16 @@ function StatCard({ category }: { category: UCLStatCategory }) {
             <span className="text-xs font-bold uppercase text-muted-foreground">{category.abbreviation}</span>
           </div>
           <p className="font-bold text-foreground">{topPlayer.player}</p>
-          <p className="text-xs font-bold text-muted-foreground">{topPlayer.team}</p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            {(() => {
+              const fullName = UCL_ABBREV_TO_NAME[topPlayer.team] ?? topPlayer.team;
+              const logo = logos[fullName];
+              return logo ? (
+                <Image src={logo} alt={fullName} width={16} height={16} className="h-4 w-4 object-contain" />
+              ) : null;
+            })()}
+            <p className="text-xs font-bold text-muted-foreground">{topPlayer.team}</p>
+          </div>
         </div>
       </div>
 
@@ -56,7 +65,16 @@ function StatCard({ category }: { category: UCLStatCategory }) {
                 <td className="w-8 p-3 text-center text-xs font-bold text-muted-foreground">{stat.rank}</td>
                 <td className="p-3">
                   <div className="font-bold text-foreground">{stat.player}</div>
-                  <div className="text-[10px] text-muted-foreground">{stat.team}</div>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    {(() => {
+                      const fullName = UCL_ABBREV_TO_NAME[stat.team] ?? stat.team;
+                      const logo = logos[fullName];
+                      return logo ? (
+                        <Image src={logo} alt={fullName} width={14} height={14} className="h-3.5 w-3.5 object-contain" />
+                      ) : null;
+                    })()}
+                    <div className="text-[10px] text-muted-foreground">{stat.team}</div>
+                  </div>
                 </td>
                 <td className="p-3 text-right font-black tabular-nums text-foreground transition-colors group-hover:text-primary">
                   {stat.value}
@@ -76,12 +94,31 @@ export default function UCLStatsPage() {
   // TODO: Replace with API fetch when provider is integrated.
   // Pattern: fetch("/api/ucl-leaders") returning { categories: UCLStatCategory[] }
   const [categories, setCategories] = useState<UCLStatCategory[]>([]);
+  const [logos, setLogos] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       setCategories(uclPlayerStats);
       setLoading(false);
+      // Fetch logos for all teams referenced in stat leaders
+      const abbrevs = [
+        ...new Set(uclPlayerStats.flatMap((cat) => cat.leaders.map((l) => l.team))),
+      ];
+      const names = abbrevs.map((a) => UCL_ABBREV_TO_NAME[a] ?? a);
+      try {
+        const res = await fetch("/api/ucl-logos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ names }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setLogos(data.logos ?? {});
+        }
+      } catch {
+        // logos remain empty; team abbreviations shown as fallback
+      }
     }, 300);
     return () => clearTimeout(timer);
   }, []);
@@ -114,7 +151,7 @@ export default function UCLStatsPage() {
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((cat) => (
-                <StatCard key={cat.id} category={cat} />
+                <StatCard key={cat.id} category={cat} logos={logos} />
               ))}
             </div>
           )}

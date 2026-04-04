@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCached, CACHE_DURATIONS } from '@/lib/cache-helper';
 import { fetchUCLSchedule } from '@/lib/sportsApi';
+import { getTeamLogos } from '@/lib/sportsdb';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -166,7 +167,32 @@ export async function GET() {
       };
     })() : null;
 
-    return NextResponse.json({ koPO: koPOTies, r16: r16Ties, qf: qfTies, sf: sfTies, final: finalTie });
+    // Collect all unique team names (excluding TBD) and fetch logos
+    const allTies = [...koPOTies, ...r16Ties, ...qfTies, ...sfTies, ...(finalTie ? [finalTie] : [])];
+    const teamNames = [
+      ...new Set(
+        allTies.flatMap((t) => [t.homeTeam.name, t.awayTeam.name]).filter((n) => n && n !== 'TBD')
+      ),
+    ];
+    const logos = teamNames.length > 0 ? await getTeamLogos(teamNames) : {};
+
+    // Inject logoUrl into every team object
+    function withLogo<T extends { name: string }>(team: T): T & { logoUrl: string | null } {
+      return { ...team, logoUrl: logos[team.name] ?? null };
+    }
+    const enrichTie = (tie: ReturnType<typeof formatTie>) => ({
+      ...tie,
+      homeTeam: withLogo(tie.homeTeam),
+      awayTeam: withLogo(tie.awayTeam),
+    });
+
+    return NextResponse.json({
+      koPO: koPOTies.map(enrichTie),
+      r16:  r16Ties.map(enrichTie),
+      qf:   qfTies.map(enrichTie),
+      sf:   sfTies.map(enrichTie),
+      final: finalTie ? enrichTie(finalTie) : null,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: 'Failed to fetch UCL bracket', details: message }, { status: 500 });

@@ -41,7 +41,7 @@ function sectionColor(rank: number) {
   return "border-l-destructive/50";
 }
 
-function StandingsTable({ teams }: { teams: UCLTeamStanding[] }) {
+function StandingsTable({ teams, logos }: { teams: UCLTeamStanding[]; logos: Record<string, string | null> }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-border bg-card">
       <table className="w-full text-sm">
@@ -76,8 +76,12 @@ function StandingsTable({ teams }: { teams: UCLTeamStanding[] }) {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 items-center justify-center rounded bg-primary/10 text-[9px] font-black text-primary">
-                        {team.abbreviation}
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded bg-muted">
+                        {logos[team.team] ? (
+                          <Image src={logos[team.team]!} alt={team.team} width={28} height={28} className="object-contain" />
+                        ) : (
+                          <span className="text-[9px] font-black text-primary">{team.abbreviation}</span>
+                        )}
                       </div>
                       <span className="font-bold text-foreground">{team.team}</span>
                     </div>
@@ -113,6 +117,7 @@ function StandingsTable({ teams }: { teams: UCLTeamStanding[] }) {
 
 export default function UCLStandingsPage() {
   const [standings, setStandings] = useState<UCLTeamStanding[]>([]);
+  const [logos, setLogos] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -146,6 +151,18 @@ export default function UCLStandingsPage() {
         }));
 
         setStandings(mapped);
+
+        // Fetch logos for all teams
+        const names = mapped.map((t) => t.team);
+        const logoRes = await fetch("/api/ucl-logos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ names }),
+        });
+        if (logoRes.ok) {
+          const logoData = await logoRes.json();
+          setLogos(logoData.logos ?? {});
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch standings");
       } finally {
@@ -206,7 +223,7 @@ export default function UCLStandingsPage() {
               <p className="mt-1 text-sm text-muted-foreground">{error}</p>
             </div>
           ) : (
-            <StandingsTable teams={standings} />
+            <StandingsTable teams={standings} logos={logos} />
           )}
         </div>
       </main>

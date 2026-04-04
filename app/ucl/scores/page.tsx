@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Loader2, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { UCLMatch } from "@/lib/ucl-types";
-import { uclMatches } from "@/lib/ucl-data";
+import { uclMatches, UCL_ABBREV_TO_NAME } from "@/lib/ucl-data";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -35,10 +35,15 @@ function statusBadge(status: UCLMatch["status"]) {
   );
 }
 
-function MatchCard({ match }: { match: UCLMatch }) {
+function MatchCard({ match, logos }: { match: UCLMatch; logos: Record<string, string | null> }) {
   const isUpcoming = match.status === "UPCOMING";
   const isFinal = match.status === "FINAL";
   const isLive = match.status === "LIVE";
+
+  const homeName = UCL_ABBREV_TO_NAME[match.homeTeam] ?? match.homeTeam;
+  const awayName = UCL_ABBREV_TO_NAME[match.awayTeam] ?? match.awayTeam;
+  const homeLogo = logos[homeName];
+  const awayLogo = logos[awayName];
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md">
@@ -54,10 +59,14 @@ function MatchCard({ match }: { match: UCLMatch }) {
       <div className="flex items-center gap-3">
         {/* Away team */}
         <div className="flex flex-1 flex-col items-center gap-1">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-xs font-black text-primary">
-            {match.awayTeam}
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-muted">
+            {awayLogo ? (
+              <Image src={awayLogo} alt={awayName} width={40} height={40} className="object-contain" />
+            ) : (
+              <span className="text-xs font-black text-primary">{match.awayTeam}</span>
+            )}
           </div>
-          <span className="text-xs font-bold text-foreground">{match.awayTeam}</span>
+          <span className="text-xs font-bold text-foreground">{awayName}</span>
         </div>
 
         {/* Score / time */}
@@ -86,10 +95,14 @@ function MatchCard({ match }: { match: UCLMatch }) {
 
         {/* Home team */}
         <div className="flex flex-1 flex-col items-center gap-1">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-xs font-black text-primary">
-            {match.homeTeam}
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-muted">
+            {homeLogo ? (
+              <Image src={homeLogo} alt={homeName} width={40} height={40} className="object-contain" />
+            ) : (
+              <span className="text-xs font-black text-primary">{match.homeTeam}</span>
+            )}
           </div>
-          <span className="text-xs font-bold text-foreground">{match.homeTeam}</span>
+          <span className="text-xs font-bold text-foreground">{homeName}</span>
         </div>
       </div>
 
@@ -107,13 +120,36 @@ export default function UCLScoresPage() {
   // TODO: Replace mock data with API fetch when provider is integrated.
   // Pattern: fetch("/api/ucl-scores?date=YYYY-MM-DD") returning { matches: UCLMatch[] }
   const [matches, setMatches] = useState<UCLMatch[]>([]);
+  const [logos, setLogos] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Simulated async load — swap this for a real fetch call to /api/ucl-scores
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       setMatches(uclMatches);
       setLoading(false);
+      // Fetch logos for all unique teams
+      const names = [
+        ...new Set(
+          uclMatches.flatMap((m) => [
+            UCL_ABBREV_TO_NAME[m.homeTeam] ?? m.homeTeam,
+            UCL_ABBREV_TO_NAME[m.awayTeam] ?? m.awayTeam,
+          ])
+        ),
+      ];
+      try {
+        const res = await fetch("/api/ucl-logos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ names }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setLogos(data.logos ?? {});
+        }
+      } catch {
+        // logos remain empty; abbreviations shown as fallback
+      }
     }, 400);
     return () => clearTimeout(timer);
   }, []);
@@ -168,7 +204,7 @@ export default function UCLScoresPage() {
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {roundMatches.map((m) => (
-                      <MatchCard key={m.id} match={m} />
+                      <MatchCard key={m.id} match={m} logos={logos} />
                     ))}
                   </div>
                 </section>
