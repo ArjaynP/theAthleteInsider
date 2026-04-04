@@ -108,3 +108,90 @@ export async function getTeamLogos(srNames: string[]): Promise<Record<string, st
   }
   return result;
 }
+
+// ── ESPN UCL Team Logos ────────────────────────────────────────────────────────
+
+const ESPN_UCL_URL = 'https://site.api.espn.com/apis/site/v2/sports/soccer/UEFA.Champions/teams';
+
+// SportsRadar team name → ESPN displayName
+const SR_TO_ESPN: Record<string, string> = {
+  // SportsRadar full names
+  'Arsenal FC': 'Arsenal',
+  'Bayern Munich': 'Bayern Munich',
+  'Liverpool FC': 'Liverpool',
+  'Tottenham Hotspur': 'Tottenham Hotspur',
+  'FC Barcelona': 'Barcelona',
+  'Chelsea FC': 'Chelsea',
+  'Sporting CP': 'Sporting CP',
+  'Manchester City': 'Manchester City',
+  'Real Madrid': 'Real Madrid',
+  'Inter Milano': 'Internazionale',
+  'Paris Saint-Germain': 'Paris Saint-Germain',
+  'Newcastle United': 'Newcastle United',
+  'Juventus Turin': 'Juventus',
+  'Atletico Madrid': 'Atlético Madrid',
+  'Atalanta BC': 'Atalanta',
+  'Bayer Leverkusen': 'Bayer Leverkusen',
+  'Borussia Dortmund': 'Borussia Dortmund',
+  'Olympiacos Piraeus': 'Olympiacos',
+  'Club Brugge': 'Club Brugge',
+  'Galatasaray Istanbul': 'Galatasaray',
+  'AS Monaco': 'AS Monaco',
+  'Qarabag FK': 'FK Qarabag',
+  'Bodoe/Glimt': 'Bodo/Glimt',
+  'SL Benfica': 'Benfica',
+  'Olympique Marseille': 'Marseille',
+  'Pafos FC': 'Pafos',
+  'Union Saint-Gilloise': 'Union St.-Gilloise',
+  'PSV Eindhoven': 'PSV Eindhoven',
+  'Athletic Bilbao': 'Athletic Club',
+  'SSC Napoli': 'Napoli',
+  'FC Copenhagen': 'F.C. København',
+  'Ajax Amsterdam': 'Ajax Amsterdam',
+  'Eintracht Frankfurt': 'Eintracht Frankfurt',
+  'Slavia Prague': 'Slavia Prague',
+  'Villarreal CF': 'Villarreal',
+  'FC Kairat Almaty': 'Kairat Almaty',
+  // Short / canonical names used by standings & scores pages
+  'Liverpool': 'Liverpool',
+  'Barcelona': 'Barcelona',
+  'Arsenal': 'Arsenal',
+  'Chelsea': 'Chelsea',
+  'Inter Milan': 'Internazionale',
+  'Aston Villa': 'Aston Villa',
+  'PSV': 'PSV Eindhoven',
+  'Atalanta': 'Atalanta',
+  'Benfica': 'Benfica',
+  'Monaco': 'AS Monaco',
+  'Juventus': 'Juventus',
+  'Napoli': 'Napoli',
+  'Ajax': 'Ajax Amsterdam',
+  'Marseille': 'Marseille',
+  'Galatasaray': 'Galatasaray',
+  'Olympiacos': 'Olympiacos',
+};
+
+async function fetchESPNUCLLogos(): Promise<Record<string, string>> {
+  const res = await fetch(ESPN_UCL_URL, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`ESPN API error: ${res.status}`);
+  const data = await res.json();
+  const teams: { team: { displayName: string; logos?: { href: string }[] } }[] =
+    data?.sports?.[0]?.leagues?.[0]?.teams ?? [];
+  const map: Record<string, string> = {};
+  for (const { team } of teams) {
+    const logo = team.logos?.[0]?.href;
+    if (logo) map[team.displayName] = logo;
+  }
+  return map;
+}
+
+/** Fetches logos for UCL teams by SportsRadar name from the ESPN API. Cached for 7 days. */
+export async function getUCLTeamLogos(srNames: string[]): Promise<Record<string, string | null>> {
+  const espnMap = await getCached('espn:ucl:logos', fetchESPNUCLLogos, SEVEN_DAYS);
+  return Object.fromEntries(
+    srNames.map((srName) => {
+      const espnName = SR_TO_ESPN[srName] ?? srName;
+      return [srName, espnMap[espnName] ?? null];
+    })
+  );
+}

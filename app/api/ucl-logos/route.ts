@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTeamLogos } from '@/lib/sportsdb';
+import { getUCLTeamLogos } from '@/lib/sportsdb';
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     if (!Array.isArray(names)) {
       return NextResponse.json({ error: 'names must be an array' }, { status: 400 });
     }
-    const logos = await getTeamLogos(names as string[]);
+    const logos = await getUCLTeamLogos(names as string[]);
     return NextResponse.json({ logos });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCached, CACHE_DURATIONS } from '@/lib/cache-helper';
 import { fetchUCLSchedule } from '@/lib/sportsApi';
-import { getTeamLogos } from '@/lib/sportsdb';
+import { getUCLTeamLogos } from '@/lib/sportsdb';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -174,7 +174,7 @@ export async function GET() {
         allTies.flatMap((t) => [t.homeTeam.name, t.awayTeam.name]).filter((n) => n && n !== 'TBD')
       ),
     ];
-    const logos = teamNames.length > 0 ? await getTeamLogos(teamNames) : {};
+    const logos = teamNames.length > 0 ? await getUCLTeamLogos(teamNames) : {};
 
     // Inject logoUrl into every team object
     function withLogo<T extends { name: string }>(team: T): T & { logoUrl: string | null } {
