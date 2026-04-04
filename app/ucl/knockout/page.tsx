@@ -6,21 +6,20 @@ import { SiteFooter } from "@/components/site-footer";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import { UCLKnockoutBracketView } from "@/components/ucl/knockout-bracket";
-import type { UCLKnockoutBracket } from "@/lib/ucl-types";
-import { uclKnockoutBracket } from "@/lib/ucl-data";
+import type { UCLBracketData } from "@/components/ucl/knockout-bracket";
 
 export default function UCLKnockoutPage() {
-  // TODO: Replace with API fetch when provider is integrated.
-  // Pattern: fetch("/api/ucl-bracket") returning { bracket: UCLKnockoutBracket }
-  const [bracket, setBracket] = useState<UCLKnockoutBracket | null>(null);
+  const [bracket, setBracket] = useState<UCLBracketData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setBracket(uclKnockoutBracket);
-      setLoading(false);
-    }, 300);
-    return () => clearTimeout(timer);
+    fetch("/api/ucl-bracket")
+      .then((r) => r.json())
+      .then((data) => {
+        setBracket(data as UCLBracketData);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   return (
@@ -47,9 +46,9 @@ export default function UCLKnockoutPage() {
           {/* Round labels strip */}
           <div className="mb-6 flex flex-wrap gap-3">
             {[
-              { label: "Round of 16", desc: "Apr 8–9 / Apr 15–16" },
-              { label: "Quarter-Finals", desc: "Apr 22–23 / Apr 29–30" },
-              { label: "Semi-Finals", desc: "Apr 29–30 / May 6–7" },
+              { label: "Round of 16", desc: "Mar 10–11 / Mar 17–18" },
+              { label: "Quarter-Finals", desc: "Apr 7–8 / Apr 14–15" },
+              { label: "Semi-Finals", desc: "Apr 28–29 / May 5–6" },
               { label: "Final", desc: "May 30 · Munich" },
             ].map((r) => (
               <div
@@ -62,9 +61,13 @@ export default function UCLKnockoutPage() {
             ))}
           </div>
 
-          {loading || !bracket ? (
+          {loading ? (
             <div className="flex min-h-[400px] items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : !bracket ? (
+            <div className="flex min-h-[400px] items-center justify-center text-muted-foreground text-sm">
+              Failed to load bracket data.
             </div>
           ) : (
             <UCLKnockoutBracketView data={bracket} />
@@ -75,3 +78,4 @@ export default function UCLKnockoutPage() {
     </div>
   );
 }
+

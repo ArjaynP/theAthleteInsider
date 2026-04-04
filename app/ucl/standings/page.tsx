@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import Image from "next/image";
-import { Loader2, TrendingUp } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { UCLTeamStanding } from "@/lib/ucl-types";
-import { uclStandings } from "@/lib/ucl-data";
 
 const FORM_COLOR: Record<string, string> = {
   W: "bg-green-600 text-white",
@@ -26,6 +25,20 @@ function FormPip({ result }: { result: string }) {
       {result}
     </span>
   );
+}
+
+const SECTION_DIVIDERS: Record<number, { label: string; color: string }> = {
+  1:  { label: "Automatic Round of 16", color: "bg-primary" },
+  9:  { label: "Knockout Phase Play-Off Places (Seeded)", color: "bg-amber-500" },
+  17: { label: "Knockout Phase Play-Off Places (Unseeded)", color: "bg-orange-500" },
+  25: { label: "Eliminated", color: "bg-destructive/70" },
+};
+
+function sectionColor(rank: number) {
+  if (rank <= 8) return "border-l-primary";
+  if (rank <= 16) return "border-l-amber-500";
+  if (rank <= 24) return "border-l-orange-500";
+  return "border-l-destructive/50";
 }
 
 function StandingsTable({ teams }: { teams: UCLTeamStanding[] }) {
@@ -48,50 +61,48 @@ function StandingsTable({ teams }: { teams: UCLTeamStanding[] }) {
           </tr>
         </thead>
         <tbody>
-          {teams.map((team, idx) => {
-            const autoQualify = idx < 8;
-            const playoff = idx >= 8 && idx < 16;
-
+          {teams.map((team) => {
             return (
-              <tr
-                key={team.abbreviation}
-                className={cn(
-                  "border-b border-border/50 transition-colors hover:bg-muted/40",
-                  autoQualify && "border-l-2 border-l-primary",
-                  playoff && "border-l-2 border-l-amber"
-                )}
-              >
-                <td className="px-4 py-3 text-center font-bold tabular-nums text-muted-foreground">
-                  {team.rank}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded bg-primary/10 text-[9px] font-black text-primary">
-                      {team.abbreviation}
+              <>
+                <tr
+                  key={team.abbreviation}
+                  className={cn(
+                    "border-b border-border/50 transition-colors hover:bg-muted/40 border-l-2",
+                    sectionColor(team.rank)
+                  )}
+                >
+                  <td className="px-4 py-3 text-center font-bold tabular-nums text-muted-foreground">
+                    {team.rank}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-7 w-7 items-center justify-center rounded bg-primary/10 text-[9px] font-black text-primary">
+                        {team.abbreviation}
+                      </div>
+                      <span className="font-bold text-foreground">{team.team}</span>
                     </div>
-                    <span className="font-bold text-foreground">{team.team}</span>
-                  </div>
-                </td>
-                <td className="px-3 py-3 text-center tabular-nums text-foreground">{team.played}</td>
-                <td className="px-3 py-3 text-center tabular-nums text-foreground">{team.won}</td>
-                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground">{team.drawn}</td>
-                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground">{team.lost}</td>
-                <td className="px-3 py-3 text-center tabular-nums text-foreground">{team.goalsFor}</td>
-                <td className="px-3 py-3 text-center tabular-nums text-muted-foreground">{team.goalsAgainst}</td>
-                <td className={cn("px-3 py-3 text-center tabular-nums font-bold",
-                  team.goalDifference > 0 ? "text-accent" : team.goalDifference < 0 ? "text-destructive" : "text-muted-foreground"
-                )}>
-                  {team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}
-                </td>
-                <td className="px-3 py-3 text-center font-black tabular-nums text-foreground">{team.points}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-center gap-0.5">
-                    {team.form.map((r, i) => (
-                      <FormPip key={i} result={r} />
-                    ))}
-                  </div>
-                </td>
-              </tr>
+                  </td>
+                  <td className="px-3 py-3 text-center tabular-nums text-foreground">{team.played}</td>
+                  <td className="px-3 py-3 text-center tabular-nums text-foreground">{team.won}</td>
+                  <td className="px-3 py-3 text-center tabular-nums text-muted-foreground">{team.drawn}</td>
+                  <td className="px-3 py-3 text-center tabular-nums text-muted-foreground">{team.lost}</td>
+                  <td className="px-3 py-3 text-center tabular-nums text-foreground">{team.goalsFor}</td>
+                  <td className="px-3 py-3 text-center tabular-nums text-muted-foreground">{team.goalsAgainst}</td>
+                  <td className={cn("px-3 py-3 text-center tabular-nums font-bold",
+                    team.goalDifference > 0 ? "text-accent" : team.goalDifference < 0 ? "text-destructive" : "text-muted-foreground"
+                  )}>
+                    {team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}
+                  </td>
+                  <td className="px-3 py-3 text-center font-black tabular-nums text-foreground">{team.points}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-0.5">
+                      {team.form.map((r, i) => (
+                        <FormPip key={i} result={r} />
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              </>
             );
           })}
         </tbody>
@@ -101,17 +112,47 @@ function StandingsTable({ teams }: { teams: UCLTeamStanding[] }) {
 }
 
 export default function UCLStandingsPage() {
-  // TODO: Replace with API fetch when provider is integrated.
-  // Pattern: fetch("/api/ucl-standings") returning { standings: UCLTeamStanding[] }
   const [standings, setStandings] = useState<UCLTeamStanding[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setStandings(uclStandings);
-      setLoading(false);
-    }, 300);
-    return () => clearTimeout(timer);
+    async function fetchStandings() {
+      try {
+        const res = await fetch("/api/ucl-standings", { cache: "no-store" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.details || data?.error || "Failed to fetch standings");
+
+        // Find the "total" standings block with all 36 teams
+        const totalBlock = (data.standings as any[]).find(
+          (s: any) => s.type === "total"
+        );
+        const group = totalBlock?.groups?.[0];
+        const entries: any[] = group?.standings ?? [];
+
+        const mapped: UCLTeamStanding[] = entries.map((e: any) => ({
+          rank: e.rank,
+          team: e.competitor.name,
+          abbreviation: e.competitor.abbreviation,
+          played: e.played,
+          won: e.win,
+          drawn: e.draw,
+          lost: e.loss,
+          goalsFor: e.goals_for,
+          goalsAgainst: e.goals_against,
+          goalDifference: e.goals_diff,
+          points: e.points,
+          form: e.competitor.form ? Array.from(e.competitor.form as string) : [],
+        }));
+
+        setStandings(mapped);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch standings");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStandings();
   }, []);
 
   return (
@@ -142,12 +183,16 @@ export default function UCLStandingsPage() {
               Ranks 1–8: Automatic Round of 16
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-3 w-1 rounded bg-amber" />
-              Ranks 9–16: Knockout Playoff Round
+              <span className="h-3 w-1 rounded bg-amber-500" />
+              Ranks 9–16: Knockout Play-Off (Seeded)
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-1 rounded bg-orange-500" />
+              Ranks 17–24: Knockout Play-Off (Unseeded)
             </span>
             <span className="flex items-center gap-1.5">
               <span className="h-3 w-1 rounded bg-destructive/50" />
-              Ranks 17–36: Eliminated
+              Ranks 25–36: Eliminated
             </span>
           </div>
 
@@ -155,17 +200,14 @@ export default function UCLStandingsPage() {
             <div className="flex min-h-[300px] items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
+          ) : error ? (
+            <div className="flex min-h-[300px] flex-col items-center justify-center rounded-xl border border-border bg-card p-8 text-center">
+              <p className="font-bold text-foreground">Failed to load standings</p>
+              <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+            </div>
           ) : (
             <StandingsTable teams={standings} />
           )}
-
-          <div className="mt-8 rounded-xl border border-border bg-card p-6 text-center text-muted-foreground">
-            <TrendingUp className="mx-auto mb-3 h-7 w-7 text-primary opacity-50" />
-            <p className="font-bold text-foreground">Full 36-Team League Phase Coming Soon</p>
-            <p className="mt-1 text-sm">
-              Live standings powered by UEFA API integration will display all 36 clubs once connected.
-            </p>
-          </div>
         </div>
       </main>
       <SiteFooter />

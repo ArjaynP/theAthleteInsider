@@ -1,5 +1,5 @@
 import { getCached, CACHE_DURATIONS } from './cache-helper';
-import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam } from './sportsApi';
+import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings } from './sportsApi';
 
 export async function getCachedNBAStandings() {
   return getCached(
@@ -119,5 +119,13 @@ export async function getCachedMLBTeamSeasonalStats(teamId: string, year: number
     `MLB:stats:team:${year}:${teamId}`,
     () => fetchMLBSeasonalStatsByTeam(teamId, year),
     CACHE_DURATIONS.STANDINGS // 1 hour
+  );
+}
+
+export async function getCachedUCLStandings() {
+  return getCached(
+    'UCL:standings:2526',
+    fetchUCLStandings,
+    CACHE_DURATIONS.STANDINGS
   );
 }

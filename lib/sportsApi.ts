@@ -1,3 +1,36 @@
+// UCL Season ID for 2025-26
+const UCL_SEASON_ID = 'sr:season:131129';
+
+export async function fetchUCLStandings(): Promise<Record<string, unknown>> {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${UCL_SEASON_ID}/standings.json?api_key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`UCL Standings API error: ${response.status}`);
+  return response.json();
+}
+
+export async function fetchUCLSchedule(): Promise<Record<string, unknown>> {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${UCL_SEASON_ID}/schedules.json?api_key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`UCL Schedule API error: ${response.status}`);
+  return response.json();
+}
+
 export async function fetchNBAStandings() {
   const apiKey = process.env.SPORTSRADAR_API_KEY;
 
