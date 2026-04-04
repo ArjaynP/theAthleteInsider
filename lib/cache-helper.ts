@@ -39,8 +39,8 @@ export async function getCached<T>(
   // Fetch fresh data
   const fresh = await fetchFn();
 
-  // Don't cache empty arrays or nullish values to prevent stale empty cache entries
-  const isEmpty = fresh === null || fresh === undefined ||
+  // Don't cache empty arrays, nullish values, or empty strings to prevent stale empty cache entries
+  const isEmpty = fresh === null || fresh === undefined || fresh === '' ||
     (Array.isArray(fresh) && (fresh as unknown[]).length === 0);
 
   if (!isEmpty) {

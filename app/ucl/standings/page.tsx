@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import Image from "next/image";
@@ -63,9 +63,8 @@ function StandingsTable({ teams, logos }: { teams: UCLTeamStanding[]; logos: Rec
         <tbody>
           {teams.map((team) => {
             return (
-              <>
+              <React.Fragment key={team.abbreviation}>
                 <tr
-                  key={team.abbreviation}
                   className={cn(
                     "border-b border-border/50 transition-colors hover:bg-muted/40 border-l-2",
                     sectionColor(team.rank)
@@ -106,7 +105,7 @@ function StandingsTable({ teams, logos }: { teams: UCLTeamStanding[]; logos: Rec
                     </div>
                   </td>
                 </tr>
-              </>
+              </React.Fragment>
             );
           })}
         </tbody>

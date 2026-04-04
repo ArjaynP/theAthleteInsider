@@ -12,14 +12,14 @@ const SR_TO_SPORTSDB: Record<string, string> = {
   'Chelsea FC': 'Chelsea',
   'Manchester City': 'Manchester City',
   'Newcastle United': 'Newcastle United',
-  'Tottenham Hotspur': 'Tottenham Hotspurs',
+  'Tottenham Hotspur': 'Tottenham Hotspur',
   'Bayern Munich': 'Bayern Munich',
   'Borussia Dortmund': 'Borussia Dortmund',
   'Bayer Leverkusen': 'Bayer Leverkusen',
   'Atalanta BC': 'Atalanta',
   'Inter Milano': 'Inter Milan',
   'Juventus Turin': 'Juventus',
-  'Paris Saint-Germain': 'Paris Saint-Germain',
+  'Paris Saint-Germain': 'Paris SG',
   'AS Monaco': 'AS Monaco',
   'Atletico Madrid': 'Atletico Madrid',
   'Real Madrid': 'Real Madrid',
@@ -48,6 +48,15 @@ const SR_TO_SPORTSDB: Record<string, string> = {
   'FC Internazionale Milano': 'Inter Milan',
   'FC Inter Milano': 'Inter Milan',
   'Club Atletico de Madrid': 'Atletico Madrid',
+  'Olympique Marseille': 'Marseille',
+  'Pafos FC': 'Pafos',
+  'Union Saint-Gilloise': 'Union Saint-Gilloise',
+  'Athletic Bilbao': 'Athletic Bilbao',
+  'SSC Napoli': 'Napoli',
+  'Ajax Amsterdam': 'Ajax',
+  'Eintracht Frankfurt': 'Eintracht Frankfurt',
+  'Slavia Prague': 'Slavia Prague',
+  'Villarreal CF': 'Villarreal',
 
   // ── Short / canonical names (used by UCL stats, standings, scores pages) ───
   // These fall through to direct TheSportsDB search, but explicit mapping
@@ -86,8 +95,16 @@ export async function getTeamLogo(srName: string): Promise<string | null> {
 
 export async function getTeamLogos(srNames: string[]): Promise<Record<string, string | null>> {
   const unique = [...new Set(srNames)];
-  const pairs = await Promise.all(
-    unique.map(async (name) => [name, await getTeamLogo(name)] as const)
-  );
-  return Object.fromEntries(pairs);
+  // Batch requests (5 at a time) with a small delay between batches to avoid
+  // Cloudflare rate limiting on TheSportsDB when many teams are fetched at once.
+  const BATCH_SIZE = 5;
+  const BATCH_DELAY_MS = 250;
+  const result: Record<string, string | null> = {};
+  for (let i = 0; i < unique.length; i += BATCH_SIZE) {
+    if (i > 0) await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
+    const batch = unique.slice(i, i + BATCH_SIZE);
+    const pairs = await Promise.all(batch.map(async (name) => [name, await getTeamLogo(name)] as const));
+    for (const [name, logo] of pairs) result[name] = logo;
+  }
+  return result;
 }
