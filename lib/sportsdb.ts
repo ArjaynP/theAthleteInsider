@@ -3,7 +3,9 @@ import { getCached } from '@/lib/cache-helper';
 const SEVEN_DAYS = 60 * 60 * 24 * 7;
 
 // SportsRadar names → TheSportsDB search terms
+// Also includes short canonical names used by UCL stats/standings/scores pages
 const SR_TO_SPORTSDB: Record<string, string> = {
+  // ── SportsRadar full names ──────────────────────────────────────────────────
   'Liverpool FC': 'Liverpool',
   'FC Barcelona': 'Barcelona',
   'Arsenal FC': 'Arsenal',
@@ -37,6 +39,30 @@ const SR_TO_SPORTSDB: Record<string, string> = {
   'Ferencvarosi Budapest': 'Ferencvaros',
   'Qarabag FK': 'Qarabag',
   'FC Kairat Almaty': 'FC Kairat',
+  // UCL 2025-26 SportsRadar variants
+  'Aston Villa FC': 'Aston Villa',
+  'PSV Eindhoven': 'PSV',
+  'AC Milan': 'AC Milan',
+  'Celtic FC': 'Celtic',
+  'Real Madrid CF': 'Real Madrid',
+  'FC Internazionale Milano': 'Inter Milan',
+  'FC Inter Milano': 'Inter Milan',
+  'Club Atletico de Madrid': 'Atletico Madrid',
+
+  // ── Short / canonical names (used by UCL stats, standings, scores pages) ───
+  // These fall through to direct TheSportsDB search, but explicit mapping
+  // handles cases where the canonical short name differs from TSDB's search key.
+  'Liverpool': 'Liverpool',
+  'Barcelona': 'Barcelona',
+  'Arsenal': 'Arsenal',
+  'Inter Milan': 'Inter Milan',
+  'Aston Villa': 'Aston Villa',
+  'PSV': 'PSV',
+  'Atalanta': 'Atalanta',
+  'Benfica': 'Benfica',
+  'Monaco': 'AS Monaco',
+  'Celtic': 'Celtic',
+  'Juventus': 'Juventus',
 };
 
 async function fetchBadge(searchName: string): Promise<string> {

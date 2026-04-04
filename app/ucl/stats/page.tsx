@@ -98,29 +98,31 @@ export default function UCLStatsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(async () => {
+    // Load mock data
+    const timer = setTimeout(() => {
       setCategories(uclPlayerStats);
       setLoading(false);
-      // Fetch logos for all teams referenced in stat leaders
-      const abbrevs = [
-        ...new Set(uclPlayerStats.flatMap((cat) => cat.leaders.map((l) => l.team))),
-      ];
-      const names = abbrevs.map((a) => UCL_ABBREV_TO_NAME[a] ?? a);
-      try {
-        const res = await fetch("/api/ucl-logos", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ names }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setLogos(data.logos ?? {});
-        }
-      } catch {
-        // logos remain empty; team abbreviations shown as fallback
-      }
     }, 300);
-    return () => clearTimeout(timer);
+
+    // Fetch logos independently — not tied to timer so cleanup doesn't block it
+    const abbrevs = [
+      ...new Set(uclPlayerStats.flatMap((cat) => cat.leaders.map((l) => l.team))),
+    ];
+    const names = abbrevs.map((a) => UCL_ABBREV_TO_NAME[a] ?? a);
+    let cancelled = false;
+    fetch("/api/ucl-logos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ names }),
+    })
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => { if (!cancelled && data) setLogos(data.logos ?? {}); })
+      .catch(() => {/* logos remain empty; abbreviations shown as fallback */});
+
+    return () => {
+      clearTimeout(timer);
+      cancelled = true;
+    };
   }, []);
 
   return (

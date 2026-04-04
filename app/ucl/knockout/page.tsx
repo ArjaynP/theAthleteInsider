@@ -1,25 +1,87 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import { UCLKnockoutBracketView } from "@/components/ucl/knockout-bracket";
-import type { UCLBracketData } from "@/components/ucl/knockout-bracket";
+import type { UCLBracketData, BracketTie, BracketTeam } from "@/components/ucl/knockout-bracket";
+
+/** Inject logos fetched client-side into any team slot that still has logoUrl == null. */
+async function enrichWithLogos(data: UCLBracketData): Promise<UCLBracketData> {
+  const allTies: (BracketTie | null)[] = [
+    ...data.koPO, ...data.r16, ...data.qf, ...data.sf, data.final,
+  ];
+  const missingNames = [
+    ...new Set(
+      allTies
+        .filter(Boolean)
+        .flatMap((t) => [t!.homeTeam, t!.awayTeam])
+        .filter((tm) => !tm.logoUrl && tm.name !== "TBD")
+        .map((tm) => tm.name)
+    ),
+  ];
+
+  if (missingNames.length === 0) return data;
+
+  let extraLogos: Record<string, string | null> = {};
+  try {
+    const res = await fetch("/api/ucl-logos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ names: missingNames }),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      extraLogos = json.logos ?? {};
+    }
+  } catch {
+    return data;
+  }
+
+  const injectLogo = (tm: BracketTeam): BracketTeam => ({
+    ...tm,
+    logoUrl: tm.logoUrl ?? extraLogos[tm.name] ?? null,
+  });
+  const enrichTie = (tie: BracketTie): BracketTie => ({
+    ...tie,
+    homeTeam: injectLogo(tie.homeTeam),
+    awayTeam: injectLogo(tie.awayTeam),
+  });
+
+  return {
+    koPO:  data.koPO.map(enrichTie),
+    r16:   data.r16.map(enrichTie),
+    qf:    data.qf.map(enrichTie),
+    sf:    data.sf.map(enrichTie),
+    final: data.final ? enrichTie(data.final) : null,
+  };
+}
 
 export default function UCLKnockoutPage() {
   const [bracket, setBracket] = useState<UCLBracketData | null>(null);
   const [loading, setLoading] = useState(true);
+  const mounted = useRef(true);
 
   useEffect(() => {
-    fetch("/api/ucl-bracket")
-      .then((r) => r.json())
-      .then((data) => {
-        setBracket(data as UCLBracketData);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    mounted.current = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/ucl-bracket");
+        if (!r.ok) throw new Error("API error");
+        const data: UCLBracketData = await r.json();
+        // Top-up any team logos that the server couldn't resolve
+        const enriched = await enrichWithLogos(data);
+        if (mounted.current) {
+          setBracket(enriched);
+          setLoading(false);
+        }
+      } catch {
+        if (mounted.current) setLoading(false);
+      }
+    })();
+    return () => { mounted.current = false; };
   }, []);
 
   return (
