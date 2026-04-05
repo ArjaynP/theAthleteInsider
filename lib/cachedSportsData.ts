@@ -1,5 +1,5 @@
 import { getCached, CACHE_DURATIONS } from './cache-helper';
-import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings, fetchUCLSeasonLeaders, fetchUCLSeasonCompetitors, fetchUCLCompetitorStats } from './sportsApi';
+import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings, fetchUCLSeasonLeaders, fetchUCLSeasonCompetitors, fetchUCLCompetitorStats, fetchUCLSeasonSummaries, fetchUCLLiveSummaries } from './sportsApi';
 
 export async function getCachedNBAStandings() {
   return getCached(
@@ -152,4 +152,47 @@ export async function getCachedUCLCompetitorStats(competitorId: string) {
     () => fetchUCLCompetitorStats(competitorId),
     CACHE_DURATIONS.PLAYER_STATS // 30 minutes
   );
+}
+
+/**
+ * All UCL season summaries, paginated automatically (100 per request).
+ * TTL: 300 s (5 min) — balances freshness with Sportradar rate limits.
+ */
+export async function getCachedUCLSeasonSummaries(): Promise<Record<string, unknown>[]> {
+  return getCached(
+    'UCL:summaries:season:131129',
+    async () => {
+      const all: Record<string, unknown>[] = [];
+      const pageSize = 100;
+      let start = 0;
+
+      while (true) {
+        const page = await fetchUCLSeasonSummaries(start) as Record<string, unknown>;
+        const batch = (page.summaries as Record<string, unknown>[]) ?? [];
+        all.push(...batch);
+        // Stop when this page returned fewer items than a full page
+        if (batch.length < pageSize) break;
+        start += pageSize;
+      }
+
+      return all;
+    },
+    300 // 5 minutes
+  ) as Promise<Record<string, unknown>[]>;
+}
+
+/**
+ * Currently-live soccer matches across all competitions.
+ * TTL: 1 s — must stay near-real-time.
+ * The caller (route) filters to UCL competition ID.
+ */
+export async function getCachedUCLLiveSummaries(): Promise<Record<string, unknown>[]> {
+  return getCached(
+    'UCL:summaries:live',
+    async () => {
+      const data = await fetchUCLLiveSummaries() as Record<string, unknown>;
+      return (data.summaries as Record<string, unknown>[]) ?? [];
+    },
+    1 // 1 second
+  ) as Promise<Record<string, unknown>[]>;
 }

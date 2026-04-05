@@ -77,6 +77,45 @@ export async function fetchUCLCompetitorStats(competitorId: string): Promise<Rec
   return response.json();
 }
 
+/**
+ * Season summaries for UCL — paginated (100 per page).
+ * Pass `start` to fetch further pages (0-indexed offset).
+ * TTL: 300 s (5 min) — set by the caller via getCached.
+ */
+export async function fetchUCLSeasonSummaries(start = 0): Promise<Record<string, unknown>> {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${UCL_SEASON_ID}/summaries.json?start=${start}&api_key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`UCL Season Summaries API error: ${response.status}`);
+  return response.json();
+}
+
+/**
+ * Live summaries across all competitions — filter by UCL competitor IDs in the route.
+ * TTL: 1 s — the only truly real-time endpoint.
+ */
+export async function fetchUCLLiveSummaries(): Promise<Record<string, unknown>> {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/schedules/live/summaries.json?api_key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`UCL Live Summaries API error: ${response.status}`);
+  return response.json();
+}
+
 export async function fetchNBAStandings() {
   const apiKey = process.env.SPORTSRADAR_API_KEY;
 
