@@ -60,7 +60,7 @@ function StatCard({ category, logos }: { category: UCLStatCategory; logos: Recor
         <table className="w-full text-sm">
           <tbody>
             {others.map((stat) => (
-              <tr key={stat.rank} className="group border-b border-border/40 last:border-0 hover:bg-muted/50">
+              <tr key={stat.player} className="group border-b border-border/40 last:border-0 hover:bg-muted/50">
                 <td className="w-8 p-3 text-center text-xs font-bold text-muted-foreground">{stat.rank}</td>
                 <td className="p-3">
                   <div className="font-bold text-foreground">{stat.player}</div>

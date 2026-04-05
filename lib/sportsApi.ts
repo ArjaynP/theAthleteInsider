@@ -31,6 +31,21 @@ export async function fetchUCLSchedule(): Promise<Record<string, unknown>> {
   return response.json();
 }
 
+export async function fetchUCLSeasonLeaders(): Promise<Record<string, unknown>> {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${UCL_SEASON_ID}/leaders.json?api_key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`UCL Season Leaders API error: ${response.status}`);
+  return response.json();
+}
+
 export async function fetchUCLSeasonCompetitors(): Promise<Record<string, unknown>> {
   const apiKey = process.env.SPORTSRADAR_API_KEY;
   if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');

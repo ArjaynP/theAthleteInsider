@@ -1,5 +1,5 @@
 import { getCached, CACHE_DURATIONS } from './cache-helper';
-import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings, fetchUCLSeasonCompetitors, fetchUCLCompetitorStats } from './sportsApi';
+import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings, fetchUCLSeasonLeaders, fetchUCLSeasonCompetitors, fetchUCLCompetitorStats } from './sportsApi';
 
 export async function getCachedNBAStandings() {
   return getCached(
@@ -127,6 +127,14 @@ export async function getCachedUCLStandings() {
     'UCL:standings:2526',
     fetchUCLStandings,
     CACHE_DURATIONS.STANDINGS
+  );
+}
+
+export async function getCachedUCLSeasonLeaders() {
+  return getCached(
+    'UCL:leaders:131129',
+    fetchUCLSeasonLeaders,
+    CACHE_DURATIONS.PLAYER_STATS // 30 minutes
   );
 }
 
