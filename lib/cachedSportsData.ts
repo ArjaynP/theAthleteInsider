@@ -1,5 +1,5 @@
 import { getCached, CACHE_DURATIONS } from './cache-helper';
-import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings } from './sportsApi';
+import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings, fetchUCLSeasonCompetitors, fetchUCLCompetitorStats } from './sportsApi';
 
 export async function getCachedNBAStandings() {
   return getCached(
@@ -127,5 +127,21 @@ export async function getCachedUCLStandings() {
     'UCL:standings:2526',
     fetchUCLStandings,
     CACHE_DURATIONS.STANDINGS
+  );
+}
+
+export async function getCachedUCLSeasonCompetitors() {
+  return getCached(
+    'UCL:season:competitors:131129',
+    fetchUCLSeasonCompetitors,
+    CACHE_DURATIONS.STANDINGS // 1 hour — competitor list rarely changes
+  );
+}
+
+export async function getCachedUCLCompetitorStats(competitorId: string) {
+  return getCached(
+    `UCL:stats:competitor:${competitorId}`,
+    () => fetchUCLCompetitorStats(competitorId),
+    CACHE_DURATIONS.PLAYER_STATS // 30 minutes
   );
 }

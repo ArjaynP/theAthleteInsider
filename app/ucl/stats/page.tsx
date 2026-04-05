@@ -5,9 +5,8 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import Image from "next/image";
 import { Loader2, TrendingUp } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { UCLStatCategory } from "@/lib/ucl-types";
-import { uclPlayerStats, UCL_ABBREV_TO_NAME } from "@/lib/ucl-data";
+import { UCL_ABBREV_TO_NAME } from "@/lib/ucl-data";
 
 // ── Stat card (same pattern as NBA / MLB stats pages) ─────────────────────────
 
@@ -91,38 +90,48 @@ function StatCard({ category, logos }: { category: UCLStatCategory; logos: Recor
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function UCLStatsPage() {
-  // TODO: Replace with API fetch when provider is integrated.
-  // Pattern: fetch("/api/ucl-leaders") returning { categories: UCLStatCategory[] }
   const [categories, setCategories] = useState<UCLStatCategory[]>([]);
   const [logos, setLogos] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load mock data
-    const timer = setTimeout(() => {
-      setCategories(uclPlayerStats);
-      setLoading(false);
-    }, 300);
-
-    // Fetch logos independently — not tied to timer so cleanup doesn't block it
-    const abbrevs = [
-      ...new Set(uclPlayerStats.flatMap((cat) => cat.leaders.map((l) => l.team))),
-    ];
-    const names = abbrevs.map((a) => UCL_ABBREV_TO_NAME[a] ?? a);
     let cancelled = false;
-    fetch("/api/ucl-logos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ names }),
-    })
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => { if (!cancelled && data) setLogos(data.logos ?? {}); })
-      .catch(() => {/* logos remain empty; abbreviations shown as fallback */});
 
-    return () => {
-      clearTimeout(timer);
-      cancelled = true;
-    };
+    // Fetch live player stats from Sportradar via the API route
+    fetch("/api/ucl-player-stats")
+      .then((res) => {
+        if (!res.ok) return res.json().then((d) => Promise.reject(d.error ?? "API error"));
+        return res.json();
+      })
+      .then((data: { categories: UCLStatCategory[] }) => {
+        if (cancelled) return;
+        setCategories(data.categories);
+        setLoading(false);
+
+        // Resolve team logos for all teams appearing in any category
+        const abbrevs = [
+          ...new Set(data.categories.flatMap((cat) => cat.leaders.map((l) => l.team))),
+        ];
+        const names = abbrevs.map((a) => UCL_ABBREV_TO_NAME[a] ?? a);
+        fetch("/api/ucl-logos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ names }),
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((logoData) => {
+            if (!cancelled && logoData) setLogos(logoData.logos ?? {});
+          })
+          .catch(() => {/* logos remain empty; abbreviations shown as fallback */});
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(typeof err === "string" ? err : "Failed to load stats");
+        setLoading(false);
+      });
+
+    return () => { cancelled = true; };
   }, []);
 
   return (
@@ -150,6 +159,11 @@ export default function UCLStatsPage() {
             <div className="flex min-h-[300px] items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
+          ) : error ? (
+            <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 text-center">
+              <p className="text-sm font-medium text-destructive">{error}</p>
+              <p className="text-xs text-muted-foreground">Check that your SPORTSRADAR_API_KEY is set and has soccer access.</p>
+            </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((cat) => (
@@ -160,10 +174,10 @@ export default function UCLStatsPage() {
 
           <div className="mt-12 rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
             <TrendingUp className="mx-auto mb-4 h-8 w-8 text-primary opacity-50" />
-            <h3 className="mb-2 text-lg font-bold text-foreground">More Stats Coming Soon</h3>
+            <h3 className="mb-2 text-lg font-bold text-foreground">Live UCL Stats</h3>
             <p className="text-sm">
-              Expected goals (xG), progressive passes, defensive actions, and per-90 metrics will be
-              available once the UEFA / football data API is connected.
+              Statistics are sourced live from Sportradar and refresh every 30 minutes.
+              Data covers all UCL group and knockout stage matches for the 2025–26 season.
             </p>
           </div>
         </div>
