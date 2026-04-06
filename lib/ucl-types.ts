@@ -58,6 +58,8 @@ export interface UCLMatch {
   kickoffDisplay?: string;
   /** Match week / round label, e.g. "MD6" or "Round of 16 – Leg 1" */
   round?: string;
+  /** Leg number for two-legged knockout ties (1 or 2); undefined for league phase */
+  leg?: number;
   /** Live match clock, e.g. "67'" */
   clock?: string;
   venue?: string;

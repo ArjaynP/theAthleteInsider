@@ -10,23 +10,49 @@ const UCL_COMPETITION_ID = 'sr:competition:7';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Convert an ISO kickoff string to a YYYY-MM-DD date in ET timezone */
-function toETDateString(iso: string): string {
-  try {
-    const parts = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'America/New_York',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }).formatToParts(new Date(iso));
-    const y = parts.find((p) => p.type === 'year')?.value;
-    const m = parts.find((p) => p.type === 'month')?.value;
-    const d = parts.find((p) => p.type === 'day')?.value;
-    return `${y}-${m}-${d}`;
-  } catch {
-    return '';
-  }
-}
+// Rounds that use two-legged ties; round.number = leg (1 or 2)
+const KNOCKOUT_ROUNDS = new Set(['KO Playoffs', 'Round of 16', 'Quarterfinals', 'Semi-finals']);
+
+// stage.name (case-insensitive) → canonical label
+const ROUND_NAME_MAP: Record<string, string> = {
+  'round of 16':                     'Round of 16',
+  'last 16':                         'Round of 16',
+  'round of sixteen':                'Round of 16',
+  'knockout round play-offs':        'KO Playoffs',
+  'knockout round play offs':        'KO Playoffs',
+  'knockout round playoffs':         'KO Playoffs',
+  'knockout playoffs':               'KO Playoffs',
+  'knockout play-offs':              'KO Playoffs',
+  'knockout play offs':              'KO Playoffs',
+  'ko play-offs':                    'KO Playoffs',
+  'ko playoffs':                     'KO Playoffs',
+  'quarter-finals':                  'Quarterfinals',
+  'quarter finals':                  'Quarterfinals',
+  'quarterfinals':                   'Quarterfinals',
+  'quarter final':                   'Quarterfinals',
+  'semi-finals':                     'Semi-finals',
+  'semi finals':                     'Semi-finals',
+  'semifinals':                      'Semi-finals',
+  'semi final':                      'Semi-finals',
+  'final':                           'Final',
+};
+
+// stage.phase (Sportradar's standardised snake_case field) → canonical label
+const STAGE_PHASE_MAP: Record<string, string> = {
+  'knockout_round_play_offs': 'KO Playoffs',
+  'knockout_round_playoffs':  'KO Playoffs',
+  'ko_playoffs':              'KO Playoffs',
+  'ko_play_offs':             'KO Playoffs',
+  'playoffs':                 'KO Playoffs',
+  'last_16':                  'Round of 16',
+  'round_of_16':              'Round of 16',
+  'last_sixteen':             'Round of 16',
+  'quarterfinals':            'Quarterfinals',
+  'quarter_finals':           'Quarterfinals',
+  'semifinals':               'Semi-finals',
+  'semi_finals':              'Semi-finals',
+  'final':                    'Final',
+};
 
 function getRoundLabel(ctx: Record<string, unknown> | undefined): string {
   if (!ctx) return 'UCL';
@@ -34,24 +60,48 @@ function getRoundLabel(ctx: Record<string, unknown> | undefined): string {
   const stage = ctx.stage as Record<string, unknown> | undefined;
   const round = ctx.round as Record<string, unknown> | undefined;
 
-  const stageType = String(stage?.type ?? '').toLowerCase();
-  const stageName = String(stage?.name ?? '');
-  const roundName = String(round?.name ?? '');
+  const stageType  = String(stage?.type  ?? '').toLowerCase().trim();
+  const stagePhase = String(stage?.phase ?? '').toLowerCase().trim();
+  const stageName  = String(stage?.name  ?? '').trim();
+  const roundName  = String(round?.name  ?? '').trim();
   const roundNumber = round?.number as number | undefined;
 
-  // Named round (knockout phases often carry a round.name)
-  if (roundName) return roundName;
-
-  // League phase matchdays
-  if (stageType === 'league_phase' || stageType.includes('league')) {
+  // ── League phase: identified by type or phase ────────────────────────────
+  const isLeague =
+    stageType === 'league' || stageType === 'group' ||
+    stagePhase === 'league' || stagePhase === 'regular_season' ||
+    stagePhase === 'regular season' || stagePhase.includes('league');
+  if (isLeague) {
     return roundNumber != null ? `Matchday ${roundNumber}` : (stageName || 'League Phase');
   }
 
-  // KO playoff round (the 16-team play-in before R16)
-  if (stageType.includes('playoff')) return 'KO Playoffs';
+  // ── stage.phase — most reliable for knockout stages ────────────────────
+  if (stagePhase) {
+    const direct = STAGE_PHASE_MAP[stagePhase];
+    if (direct) return direct;
+    const normalized = stagePhase.replace(/[\s-]/g, '_');
+    const norm = STAGE_PHASE_MAP[normalized];
+    if (norm) return norm;
+  }
 
-  // Fall back to stage name if present, then generic round number
-  if (stageName) return stageName;
+  // ── round.name ────────────────────────────────────────────────────────
+  if (roundName) {
+    const mapped = ROUND_NAME_MAP[roundName.toLowerCase()];
+    if (mapped) return mapped;
+  }
+
+  // ── stage.name ───────────────────────────────────────────────────────
+  if (stageName) {
+    const mapped = ROUND_NAME_MAP[stageName.toLowerCase()];
+    if (mapped) return mapped;
+    const phaseKey = stageName.toLowerCase().replace(/[\s-]/g, '_');
+    const mappedPhase = STAGE_PHASE_MAP[phaseKey];
+    if (mappedPhase) return mappedPhase;
+    return stageName;
+  }
+
+  // ── Fallbacks ────────────────────────────────────────────────────────
+  if (stagePhase.includes('playoff') || stageType.includes('playoff')) return 'KO Playoffs';
   return roundNumber != null ? `Round ${roundNumber}` : 'UCL';
 }
 
@@ -112,9 +162,14 @@ function normalizeSummary(summary: Record<string, unknown>): UCLMatch | null {
   const venueObj = event.venue as Record<string, unknown> | undefined;
   const kickoff = String(event.scheduled ?? '');
 
+  const roundLabel = getRoundLabel(ctx);
+  const roundObj   = ctx?.round as Record<string, unknown> | undefined;
+  const leg        = KNOCKOUT_ROUNDS.has(roundLabel)
+    ? (roundObj?.number as number | undefined)
+    : undefined;
+
   return {
     id: String(event.id ?? ''),
-    // Return full team name (used directly for display and logo lookup)
     homeTeam: String(homeComp.name ?? homeComp.abbreviation ?? ''),
     awayTeam: String(awayComp.name ?? awayComp.abbreviation ?? ''),
     homeScore: (statusObj.home_score as number) ?? 0,
@@ -122,7 +177,8 @@ function normalizeSummary(summary: Record<string, unknown>): UCLMatch | null {
     status: matchState,
     kickoff: kickoff || undefined,
     kickoffDisplay: kickoff ? formatKickoffDisplay(kickoff) : undefined,
-    round: getRoundLabel(ctx),
+    round: roundLabel,
+    leg,
     clock: clockDisplay,
     venue: venueObj?.name ? String(venueObj.name) : undefined,
   };
@@ -149,7 +205,7 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const dateParam = searchParams.get('date'); // YYYY-MM-DD in ET; null = all dates
+  const roundParam = searchParams.get('round'); // e.g. "Matchday 1", "Quarterfinals"
 
   try {
     const [seasonSummaries, rawLive] = await Promise.all([
@@ -171,10 +227,10 @@ export async function GET(request: Request) {
     for (const summary of seasonSummaries) {
       const ev = summary.sport_event as Record<string, unknown> | undefined;
       const id = String(ev?.id ?? '');
-      const scheduled = String((ev?.scheduled as string | undefined) ?? '');
+      const ctx = ev?.sport_event_context as Record<string, unknown> | undefined;
 
-      // Filter by date when requested
-      if (dateParam && scheduled && toETDateString(scheduled) !== dateParam) continue;
+      // Filter by round when requested
+      if (roundParam && getRoundLabel(ctx) !== roundParam) continue;
 
       // Overlay live data when available (real-time scores + clock)
       const effective = liveMap.has(id) ? liveMap.get(id)! : summary;
@@ -182,16 +238,14 @@ export async function GET(request: Request) {
       if (match) matches.push(match);
     }
 
-    // Sort: LIVE → UPCOMING (soonest first) → FINAL (most recent first)
+    // Sort: leg → status → kickoff time
     matches.sort((a, b) => {
-      const diff = statusOrder(a.status) - statusOrder(b.status);
-      if (diff !== 0) return diff;
-      if (a.status === 'UPCOMING') {
-        return (a.kickoff ?? '') < (b.kickoff ?? '') ? -1 : 1;
-      }
-      if (a.status === 'FINAL') {
-        return (a.kickoff ?? '') > (b.kickoff ?? '') ? -1 : 1;
-      }
+      const legDiff = (a.leg ?? 0) - (b.leg ?? 0);
+      if (legDiff !== 0) return legDiff;
+      const statusDiff = statusOrder(a.status) - statusOrder(b.status);
+      if (statusDiff !== 0) return statusDiff;
+      if (a.status === 'UPCOMING') return (a.kickoff ?? '') < (b.kickoff ?? '') ? -1 : 1;
+      if (a.status === 'FINAL')    return (a.kickoff ?? '') > (b.kickoff ?? '') ? -1 : 1;
       return 0;
     });
 
