@@ -13,8 +13,15 @@ const UCL_COMPETITION_ID = 'sr:competition:7';
 // Rounds that use two-legged ties; round.number = leg (1 or 2)
 const KNOCKOUT_ROUNDS = new Set(['KO Playoffs', 'Round of 16', 'Quarterfinals', 'Semi-finals']);
 
-// stage.name (case-insensitive) → canonical label
+// round.name / stage.name (case-insensitive, including Sportradar snake_case) → canonical label
 const ROUND_NAME_MAP: Record<string, string> = {
+  // Sportradar snake_case round.name values (primary source for cup stages)
+  'playoff_round':                   'KO Playoffs',
+  'round_of_16':                     'Round of 16',
+  'quarterfinal':                    'Quarterfinals',
+  'semifinal':                       'Semi-finals',
+  'final':                           'Final',
+  // Human-readable variants
   'round of 16':                     'Round of 16',
   'last 16':                         'Round of 16',
   'round of sixteen':                'Round of 16',
@@ -34,16 +41,14 @@ const ROUND_NAME_MAP: Record<string, string> = {
   'semi finals':                     'Semi-finals',
   'semifinals':                      'Semi-finals',
   'semi final':                      'Semi-finals',
-  'final':                           'Final',
 };
 
-// stage.phase (Sportradar's standardised snake_case field) → canonical label
+// stage.phase → canonical label (only specific phase values, not 'playoffs' which is generic)
 const STAGE_PHASE_MAP: Record<string, string> = {
   'knockout_round_play_offs': 'KO Playoffs',
   'knockout_round_playoffs':  'KO Playoffs',
   'ko_playoffs':              'KO Playoffs',
   'ko_play_offs':             'KO Playoffs',
-  'playoffs':                 'KO Playoffs',
   'last_16':                  'Round of 16',
   'round_of_16':              'Round of 16',
   'last_sixteen':             'Round of 16',
@@ -51,7 +56,6 @@ const STAGE_PHASE_MAP: Record<string, string> = {
   'quarter_finals':           'Quarterfinals',
   'semifinals':               'Semi-finals',
   'semi_finals':              'Semi-finals',
-  'final':                    'Final',
 };
 
 function getRoundLabel(ctx: Record<string, unknown> | undefined): string {
@@ -75,19 +79,19 @@ function getRoundLabel(ctx: Record<string, unknown> | undefined): string {
     return roundNumber != null ? `Matchday ${roundNumber}` : (stageName || 'League Phase');
   }
 
-  // ── stage.phase — most reliable for knockout stages ────────────────────
+  // ── round.name (Sportradar snake_case) — most specific for cup stages ─
+  if (roundName) {
+    const mapped = ROUND_NAME_MAP[roundName.toLowerCase()];
+    if (mapped) return mapped;
+  }
+
+  // ── stage.phase — fallback for specific known phase values ────────────
   if (stagePhase) {
     const direct = STAGE_PHASE_MAP[stagePhase];
     if (direct) return direct;
     const normalized = stagePhase.replace(/[\s-]/g, '_');
     const norm = STAGE_PHASE_MAP[normalized];
     if (norm) return norm;
-  }
-
-  // ── round.name ────────────────────────────────────────────────────────
-  if (roundName) {
-    const mapped = ROUND_NAME_MAP[roundName.toLowerCase()];
-    if (mapped) return mapped;
   }
 
   // ── stage.name ───────────────────────────────────────────────────────
