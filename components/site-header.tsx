@@ -52,6 +52,17 @@ const navItems = [
       { label: "Player Stats", href: "/ucl/stats" },
     ],
   },
+  {
+    label: "MLS",
+    href: "/mls",
+    icon: Trophy,
+    children: [
+      { label: "News & Analysis", href: "/mls" },
+      { label: "Scores", href: "/mls/scores" },
+      { label: "Table", href: "/mls/standings" },
+      { label: "Player Stats", href: "/mls/stats" },
+    ],
+  },
   { label: "Scores", href: "/scores", icon: BarChart3 },
   { label: "Community", href: "/community", icon: Users },
   { label: "Betting", href: "/betting", icon: TrendingUp },
