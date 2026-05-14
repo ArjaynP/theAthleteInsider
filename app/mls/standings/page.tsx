@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Loader2 } from "lucide-react";
@@ -66,7 +66,7 @@ function StandingsTable({ teams }: { teams: MLSTeamStanding[] }) {
               (team.rank === 10 && prevRank !== null && prevRank < 10);
 
             return (
-              <>
+              <Fragment key={team.abbreviation}>
                 {showDivider && (
                   <tr key={`div-${team.rank}`}>
                     <td colSpan={11} className="px-4 py-1">
@@ -81,7 +81,6 @@ function StandingsTable({ teams }: { teams: MLSTeamStanding[] }) {
                   </tr>
                 )}
                 <tr
-                  key={team.abbreviation}
                   className={cn(
                     "border-b border-border/50 border-l-2 transition-colors hover:bg-muted/30",
                     rowAccentClass(team.rank)
@@ -112,7 +111,7 @@ function StandingsTable({ teams }: { teams: MLSTeamStanding[] }) {
                     </div>
                   </td>
                 </tr>
-              </>
+              </Fragment>
             );
           })}
         </tbody>
