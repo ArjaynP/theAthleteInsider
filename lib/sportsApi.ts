@@ -1,5 +1,6 @@
 // UCL Season ID for 2025-26
 const UCL_SEASON_ID = 'sr:season:131129';
+const MLS_SEASON_ID = 'sr:season:130281';
 
 export async function fetchUCLStandings(): Promise<Record<string, unknown>> {
   const apiKey = process.env.SPORTSRADAR_API_KEY;
@@ -113,6 +114,21 @@ export async function fetchUCLLiveSummaries(): Promise<Record<string, unknown>> 
   });
 
   if (!response.ok) throw new Error(`UCL Live Summaries API error: ${response.status}`);
+  return response.json();
+}
+
+export async function fetchMLSFormStandings(): Promise<Record<string, unknown>> {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${MLS_SEASON_ID}/form_standings.json?api_key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`MLS Form Standings API error: ${response.status}`);
   return response.json();
 }
 

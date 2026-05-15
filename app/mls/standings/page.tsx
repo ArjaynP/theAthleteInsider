@@ -126,18 +126,28 @@ export default function MLSStandingsPage() {
   const [eastern, setEastern] = useState<MLSTeamStanding[]>([]);
   const [western, setWestern] = useState<MLSTeamStanding[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"eastern" | "western">("eastern");
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/mls-standings");
-        if (!res.ok) return;
+        const res = await fetch("/api/mls-standings", { cache: "no-store" });
         const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to load live MLS standings");
+        }
+
+        const east = data.eastern ?? [];
+        const west = data.western ?? [];
+        if (east.length === 0 && west.length === 0) {
+          throw new Error("Live MLS standings returned no conference data");
+        }
+
         setEastern(data.eastern ?? []);
         setWestern(data.western ?? []);
-      } catch {
-        // leave empty
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load live MLS standings");
       } finally {
         setLoading(false);
       }
@@ -207,7 +217,14 @@ export default function MLSStandingsPage() {
             </div>
           )}
 
-          {!loading && (
+          {!loading && error && (
+            <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-center">
+              <p className="text-sm font-bold text-destructive">Unable to load live MLS standings</p>
+              <p className="mt-1 text-xs text-muted-foreground">{error}</p>
+            </div>
+          )}
+
+          {!loading && !error && (
             <StandingsTable teams={activeTab === "eastern" ? eastern : western} />
           )}
 

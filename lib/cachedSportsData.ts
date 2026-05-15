@@ -1,5 +1,5 @@
 import { getCached, CACHE_DURATIONS } from './cache-helper';
-import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings, fetchUCLSeasonLeaders, fetchUCLSeasonCompetitors, fetchUCLCompetitorStats, fetchUCLSeasonSummaries, fetchUCLLiveSummaries } from './sportsApi';
+import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings, fetchUCLSeasonLeaders, fetchUCLSeasonCompetitors, fetchUCLCompetitorStats, fetchUCLSeasonSummaries, fetchUCLLiveSummaries, fetchMLSFormStandings } from './sportsApi';
 
 export async function getCachedNBAStandings() {
   return getCached(
@@ -195,4 +195,12 @@ export async function getCachedUCLLiveSummaries(): Promise<Record<string, unknow
     },
     1 // 1 second
   ) as Promise<Record<string, unknown>[]>;
+}
+
+export async function getCachedMLSFormStandings() {
+  return getCached(
+    'MLS:standings:form:130281',
+    fetchMLSFormStandings,
+    CACHE_DURATIONS.STANDINGS
+  );
 }
