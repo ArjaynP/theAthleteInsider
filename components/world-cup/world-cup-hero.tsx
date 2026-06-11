@@ -1,15 +1,29 @@
-import { Globe } from "lucide-react";
+import Image from "next/image";
 
 export function WorldCupHero() {
   return (
     <div className="mb-8 flex flex-col gap-6 rounded-3xl border border-border bg-gradient-to-br from-card via-background to-card p-6 shadow-sm md:flex-row md:items-center md:justify-between">
       <div className="flex items-center gap-4">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-          <Globe className="h-8 w-8 text-primary" />
+          <Image
+            src="/world-cup-logo-2026.png"
+            alt="2026 FIFA World Cup"
+            width={56}
+            height={56}
+            className="h-12 w-12 object-contain"
+            priority
+          />
         </div>
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-[10px] font-black uppercase tracking-[0.25em] text-primary">
-            <Globe className="h-3.5 w-3.5" />
+            <Image
+              src="/world-cup-logo-2026.png"
+              alt=""
+              width={14}
+              height={14}
+              className="h-3.5 w-3.5 object-contain"
+              aria-hidden="true"
+            />
             2026 FIFA World Cup
           </div>
           <h1 className="text-4xl font-black uppercase tracking-tight text-foreground">

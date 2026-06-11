@@ -1,6 +1,7 @@
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import Link from "next/link";
+import Image from "next/image";
 import { TrendingUp, Star } from "lucide-react";
 import { MLS_NEWS } from "@/lib/mls-data";
 
@@ -36,12 +37,15 @@ export default function MLSPage() {
 
           {/* Header */}
           <div className="mb-8 flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-primary/10">
-              {/* MLS shield placeholder */}
-              <svg viewBox="0 0 56 56" className="h-10 w-10" fill="none" aria-hidden>
-                <polygon points="28,4 52,16 52,40 28,52 4,40 4,16" fill="currentColor" className="text-primary/20" stroke="currentColor" strokeWidth="2" className="text-primary" />
-                <text x="28" y="33" textAnchor="middle" fontSize="13" fontWeight="900" fill="currentColor" className="text-primary font-black">MLS</text>
-              </svg>
+            <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl">
+              <Image
+                src="/mls-logo.svg"
+                alt="MLS"
+                width={56}
+                height={56}
+                className="h-12 w-12 object-contain"
+                priority
+              />
             </div>
             <div className="h-10 w-1.5 rounded-full bg-primary" />
             <div>
