@@ -1,4 +1,28 @@
-export const WORLD_CUP_GROUPS = [
+export type WorldCupGroup = {
+  name: string;
+  teams: string[];
+};
+
+export type WorldCupNewsItem = {
+  title: string;
+  tag: string;
+  summary: string;
+};
+
+export type WorldCupScoreItem = {
+  matchup: string;
+  status: "Upcoming" | "Live" | "Final";
+  time: string;
+};
+
+export type WorldCupStatRow = {
+  player: string;
+  team: string;
+  stat: string;
+  value: string;
+};
+
+export const WORLD_CUP_GROUPS: WorldCupGroup[] = [
   {
     name: "Group A",
     teams: ["United States", "Mexico", "Japan", "Morocco"],
@@ -15,9 +39,9 @@ export const WORLD_CUP_GROUPS = [
     name: "Group D",
     teams: ["England", "Spain", "Uruguay", "Ghana"],
   },
-] as const;
+];
 
-export const WORLD_CUP_NEWS = [
+export const WORLD_CUP_NEWS: WorldCupNewsItem[] = [
   {
     title: "2026 World Cup build-up starts with expanded format planning",
     tag: "Analysis",
@@ -40,31 +64,36 @@ export const WORLD_CUP_NEWS = [
     title: "Draw watch: how early group-stage pairings could shape the bracket",
     tag: "Breakdown",
     summary:
-      "Because the API is not connected yet, this panel previews the kind of editorial analysis that will land here.",
+      "Because the API is not connected yet, this panel previews the type of editorial analysis that will land here.",
   },
-] as const;
+];
 
-export const WORLD_CUP_SCORE_PLACEHOLDERS = [
+export const WORLD_CUP_SCORES: WorldCupScoreItem[] = [
   {
     matchup: "United States vs Mexico",
     status: "Upcoming",
-    time: "Group Stage · TBD",
+    time: "Group Stage - TBD",
   },
   {
     matchup: "Argentina vs Canada",
     status: "Upcoming",
-    time: "Group Stage · TBD",
+    time: "Group Stage - TBD",
   },
   {
     matchup: "Brazil vs France",
     status: "Upcoming",
-    time: "Group Stage · TBD",
+    time: "Group Stage - TBD",
   },
-] as const;
+  {
+    matchup: "England vs Spain",
+    status: "Upcoming",
+    time: "Group Stage - TBD",
+  },
+];
 
-export const WORLD_CUP_PLAYER_STATS = [
+export const WORLD_CUP_PLAYER_STATS: WorldCupStatRow[] = [
   { player: "TBD Forward", team: "Group Stage", stat: "Goals", value: "-" },
   { player: "TBD Midfielder", team: "Group Stage", stat: "Assists", value: "-" },
   { player: "TBD Goalkeeper", team: "Group Stage", stat: "Clean Sheets", value: "-" },
   { player: "TBD Defender", team: "Group Stage", stat: "Clearances", value: "-" },
-] as const;
+];

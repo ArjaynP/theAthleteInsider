@@ -58,8 +58,8 @@ const navItems = [
     href: "/world-cup",
     icon: Globe,
     children: [
-      { label: "Group Stage", href: "/world-cup/group-stage" },
       { label: "News & Analysis", href: "/world-cup" },
+      { label: "Group Stage", href: "/world-cup/group-stage" },
       { label: "Scores", href: "/world-cup/scores" },
       { label: "Player Stats", href: "/world-cup/stats" },
     ],
