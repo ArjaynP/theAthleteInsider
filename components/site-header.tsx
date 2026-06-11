@@ -12,7 +12,6 @@ import {
   Users,
   TrendingUp,
   BookOpen,
-  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/brand-logo";
@@ -51,17 +50,6 @@ const navItems = [
       { label: "Standings", href: "/ucl/standings" },
       { label: "Knockout Phase", href: "/ucl/knockout" },
       { label: "Player Stats", href: "/ucl/stats" },
-    ],
-  },
-  {
-    label: "World Cup",
-    href: "/world-cup",
-    icon: Globe,
-    children: [
-      { label: "News & Analysis", href: "/world-cup" },
-      { label: "Group Stage", href: "/world-cup/group-stage" },
-      { label: "Scores", href: "/world-cup/scores" },
-      { label: "Player Stats", href: "/world-cup/stats" },
     ],
   },
   {
