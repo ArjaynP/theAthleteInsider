@@ -33,9 +33,9 @@ function dateFromString(s: string): Date {
   return new Date(y, m - 1, d);
 }
 
-// NBA regular-season bounds for 2025-26
+// NBA 2025-26 season bounds (regular season + playoffs/Finals)
 const SEASON_START = new Date(2025, 9, 22); // Oct 22 2025
-const SEASON_END   = new Date(2026, 3, 13);  // Apr 13 2026
+const SEASON_END   = new Date(2026, 5, 30);  // Jun 30 2026
 
 function buildDateRange(): Date[] {
   const days: Date[] = [];

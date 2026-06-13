@@ -133,19 +133,13 @@ export async function fetchMLSFormStandings(): Promise<Record<string, unknown>> 
 }
 
 export async function fetchNBAStandings() {
-  const apiKey = process.env.SPORTSRADAR_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('Missing SPORTSRADAR_API_KEY in environment.');
-  }
-
-  const url = `https://api.sportradar.com/nba/trial/v8/en/seasons/2025/REG/standings.json?api_key=${apiKey}`;
+  // ESPN public API — no key required; returns conferences → divisions → teams
+  const url = 'https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?season=2026';
 
   const response = await fetch(url, {
     method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-    },
+    headers: { Accept: 'application/json' },
+    next: { revalidate: 3600 },
   });
 
   if (!response.ok) {
@@ -153,8 +147,71 @@ export async function fetchNBAStandings() {
   }
 
   const data = await response.json();
-  // Return full raw response — route.ts does the SportsRadar-specific mapping
-  return data;
+
+  // Transform ESPN conference→division→team tree into the Sportradar shape that
+  // route.ts already knows how to parse: { conferences[{ alias, divisions[{ name, teams[] }] }] }
+  type EspnStat = { name?: string; type?: string; value?: number; displayValue?: string; summary?: string };
+
+  const getStat = (stats: EspnStat[], key: string) =>
+    stats.find(s => (s.type ?? s.name ?? '').toLowerCase() === key.toLowerCase());
+  const getVal  = (stats: EspnStat[], key: string, fb = 0) => getStat(stats, key)?.value ?? fb;
+  const getDisp = (stats: EspnStat[], key: string, fb = '') => getStat(stats, key)?.displayValue ?? fb;
+  const getSumm = (stats: EspnStat[], key: string, fb = '-') => getStat(stats, key)?.summary ?? fb;
+
+  const parseRec = (summary: string) => {
+    const [w, l] = summary.split('-').map(Number);
+    return { wins: isNaN(w) ? 0 : w, losses: isNaN(l) ? 0 : l };
+  };
+
+  const conferences: unknown[] = [];
+
+  for (const conf of data.children ?? []) {
+    const confName: string = (conf.abbreviation ?? conf.name ?? '').toUpperCase();
+    const confAlias = confName.includes('EAST') || confName === 'EAST' ? 'EAST' : 'WEST';
+    const divisions: unknown[] = [];
+
+    for (const div of conf.children ?? []) {
+      const teams: unknown[] = [];
+
+      for (const entry of div.standings?.entries ?? []) {
+        const stats: EspnStat[] = entry.stats ?? [];
+        const wins   = Math.round(getVal(stats, 'wins'));
+        const losses = Math.round(getVal(stats, 'losses'));
+        const winPct = getVal(stats, 'winpercent');
+        const gbRaw  = getVal(stats, 'gamesbehind');
+        const seed   = Math.round(getVal(stats, 'playoffseed', 99));
+
+        const streakStr  = getDisp(stats, 'streak');
+        const streakKind = streakStr.startsWith('W') ? 'win' : 'loss';
+        const streakLen  = parseInt(streakStr.slice(1), 10) || 0;
+
+        teams.push({
+          market: entry.team?.location ?? '',
+          name:   entry.team?.name ?? '',
+          alias:  entry.team?.abbreviation ?? '',
+          wins,
+          losses,
+          win_pct: winPct,
+          games_behind: { conference: gbRaw },
+          streak: streakLen > 0 ? { kind: streakKind, length: streakLen } : null,
+          calc_rank: { conf_rank: seed },
+          records: [
+            { record_type: 'home',         ...parseRec(getSumm(stats, 'home')) },
+            { record_type: 'road',         ...parseRec(getSumm(stats, 'road')) },
+            { record_type: 'last_10',      ...parseRec(getSumm(stats, 'lastten')) },
+            { record_type: 'conference',   ...parseRec(getSumm(stats, 'vsconf')) },
+            { record_type: 'division',     ...parseRec(getSumm(stats, 'vsdivision')) },
+          ],
+        });
+      }
+
+      divisions.push({ name: div.name ?? '', teams });
+    }
+
+    conferences.push({ alias: confAlias, divisions });
+  }
+
+  return { conferences };
 }
 
 export type NBARankingsConference = {
@@ -179,27 +236,9 @@ export type NBARankingsConference = {
 };
 
 export async function fetchNBARankings(): Promise<NBARankingsConference[]> {
-  const apiKey = process.env.SPORTSRADAR_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('Missing SPORTSRADAR_API_KEY in environment.');
-  }
-
-  const url = `https://api.sportradar.com/nba/trial/v8/en/seasons/2025/REG/rankings.json?api_key=${apiKey}`;
-
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`NBA Rankings API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return (data.conferences ?? []) as NBARankingsConference[];
+  // Sportradar rankings endpoint is not available on the trial tier (returns 403).
+  // Clinch statuses are computed mathematically in route.ts from the standings data.
+  return [];
 }
 
 export type NBATeamListItem = {
