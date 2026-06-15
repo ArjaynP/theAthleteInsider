@@ -132,6 +132,17 @@ export async function fetchMLSFormStandings(): Promise<Record<string, unknown>> 
   return response.json();
 }
 
+// Static fallback: maps team abbreviation → division name
+// Used when ESPN's API doesn't return the division-level hierarchy.
+const NBA_DIVISION_BY_ABBR: Record<string, string> = {
+  BOS: 'Atlantic', BKN: 'Atlantic', NYK: 'Atlantic', PHI: 'Atlantic', TOR: 'Atlantic',
+  CHI: 'Central',  CLE: 'Central',  DET: 'Central',  IND: 'Central',  MIL: 'Central',
+  ATL: 'Southeast',CHA: 'Southeast',MIA: 'Southeast',ORL: 'Southeast',WAS: 'Southeast',
+  DAL: 'Southwest',HOU: 'Southwest',MEM: 'Southwest',NOP: 'Southwest',SAS: 'Southwest',
+  DEN: 'Northwest',MIN: 'Northwest',OKC: 'Northwest',POR: 'Northwest',UTA: 'Northwest',
+  GSW: 'Pacific',  LAC: 'Pacific',  LAL: 'Pacific',  PHX: 'Pacific',  SAC: 'Pacific',
+};
+
 export async function fetchNBAStandings() {
   // ESPN public API — no key required; returns conferences → divisions → teams
   const url = 'https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?season=2026';
@@ -148,8 +159,12 @@ export async function fetchNBAStandings() {
 
   const data = await response.json();
 
-  // Transform ESPN conference→division→team tree into the Sportradar shape that
-  // route.ts already knows how to parse: { conferences[{ alias, divisions[{ name, teams[] }] }] }
+  // Transform ESPN conference→division→team tree into the internal shape:
+  // { conferences[{ alias, divisions[{ name, teams[] }] }] }
+  // ESPN v2 can return either:
+  //   (a) conf.children[] = divisions, each with div.standings.entries[]
+  //   (b) conf.standings.entries[] flat (no division children) — off-season/playoff response
+  // Both cases are handled below; division is derived from NBA_DIVISION_BY_ABBR when missing.
   type EspnStat = { name?: string; type?: string; value?: number; displayValue?: string; summary?: string };
 
   const getStat = (stats: EspnStat[], key: string) =>
@@ -163,6 +178,36 @@ export async function fetchNBAStandings() {
     return { wins: isNaN(w) ? 0 : w, losses: isNaN(l) ? 0 : l };
   };
 
+  function buildTeamEntry(entry: any): unknown {
+    const stats: EspnStat[] = entry.stats ?? [];
+    const wins     = Math.round(getVal(stats, 'wins'));
+    const losses   = Math.round(getVal(stats, 'losses'));
+    const winPct   = getVal(stats, 'winpercent');
+    const gbRaw    = getVal(stats, 'gamesbehind');
+    const seed     = Math.round(getVal(stats, 'playoffseed', 99));
+    const streakStr  = getDisp(stats, 'streak');
+    const streakKind = streakStr.startsWith('W') ? 'win' : 'loss';
+    const streakLen  = parseInt(streakStr.slice(1), 10) || 0;
+    return {
+      market: entry.team?.location ?? '',
+      name:   entry.team?.name ?? '',
+      alias:  entry.team?.abbreviation ?? '',
+      wins,
+      losses,
+      win_pct: winPct,
+      games_behind: { conference: gbRaw },
+      streak: streakLen > 0 ? { kind: streakKind, length: streakLen } : null,
+      calc_rank: { conf_rank: seed },
+      records: [
+        { record_type: 'home',       ...parseRec(getSumm(stats, 'home')) },
+        { record_type: 'road',       ...parseRec(getSumm(stats, 'road')) },
+        { record_type: 'last_10',    ...parseRec(getSumm(stats, 'lastten')) },
+        { record_type: 'conference', ...parseRec(getSumm(stats, 'vsconf')) },
+        { record_type: 'division',   ...parseRec(getSumm(stats, 'vsdivision')) },
+      ],
+    };
+  }
+
   const conferences: unknown[] = [];
 
   for (const conf of data.children ?? []) {
@@ -170,42 +215,34 @@ export async function fetchNBAStandings() {
     const confAlias = confName.includes('EAST') || confName === 'EAST' ? 'EAST' : 'WEST';
     const divisions: unknown[] = [];
 
-    for (const div of conf.children ?? []) {
-      const teams: unknown[] = [];
+    const divChildren: any[] = conf.children ?? [];
 
-      for (const entry of div.standings?.entries ?? []) {
-        const stats: EspnStat[] = entry.stats ?? [];
-        const wins   = Math.round(getVal(stats, 'wins'));
-        const losses = Math.round(getVal(stats, 'losses'));
-        const winPct = getVal(stats, 'winpercent');
-        const gbRaw  = getVal(stats, 'gamesbehind');
-        const seed   = Math.round(getVal(stats, 'playoffseed', 99));
-
-        const streakStr  = getDisp(stats, 'streak');
-        const streakKind = streakStr.startsWith('W') ? 'win' : 'loss';
-        const streakLen  = parseInt(streakStr.slice(1), 10) || 0;
-
-        teams.push({
-          market: entry.team?.location ?? '',
-          name:   entry.team?.name ?? '',
-          alias:  entry.team?.abbreviation ?? '',
-          wins,
-          losses,
-          win_pct: winPct,
-          games_behind: { conference: gbRaw },
-          streak: streakLen > 0 ? { kind: streakKind, length: streakLen } : null,
-          calc_rank: { conf_rank: seed },
-          records: [
-            { record_type: 'home',         ...parseRec(getSumm(stats, 'home')) },
-            { record_type: 'road',         ...parseRec(getSumm(stats, 'road')) },
-            { record_type: 'last_10',      ...parseRec(getSumm(stats, 'lastten')) },
-            { record_type: 'conference',   ...parseRec(getSumm(stats, 'vsconf')) },
-            { record_type: 'division',     ...parseRec(getSumm(stats, 'vsdivision')) },
-          ],
-        });
+    if (divChildren.length > 0) {
+      // Case (a): ESPN returned division hierarchy
+      for (const div of divChildren) {
+        const teams: unknown[] = [];
+        for (const entry of div.standings?.entries ?? []) {
+          teams.push(buildTeamEntry(entry));
+        }
+        if (teams.length > 0) {
+          divisions.push({ name: div.name ?? '', teams });
+        }
       }
+    }
 
-      divisions.push({ name: div.name ?? '', teams });
+    // Case (b): no division children — group flat entries by division using lookup table
+    if (divisions.length === 0) {
+      const flatEntries: any[] = conf.standings?.entries ?? [];
+      const divMap = new Map<string, unknown[]>();
+      for (const entry of flatEntries) {
+        const abbr: string = (entry.team?.abbreviation ?? '').toUpperCase();
+        const divName = NBA_DIVISION_BY_ABBR[abbr] ?? 'Unknown';
+        if (!divMap.has(divName)) divMap.set(divName, []);
+        divMap.get(divName)!.push(buildTeamEntry(entry));
+      }
+      for (const [divName, teams] of divMap) {
+        divisions.push({ name: divName, teams });
+      }
     }
 
     conferences.push({ alias: confAlias, divisions });

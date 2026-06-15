@@ -614,6 +614,14 @@ export default function NBAStandingsPage() {
         }
 
         const mapped = (data.teams as TeamStanding[])
+          .map((team) => ({
+            ...team,
+            // Fallback: derive division from known abbreviation map if API didn't provide it
+            division:
+              team.division && team.division !== "-"
+                ? team.division
+                : (DIVISION_BY_TEAM[team.abbreviation] ?? "-"),
+          }))
           .sort((a, b) => {
             const aPct = Number.parseFloat(a.pct || "0");
             const bPct = Number.parseFloat(b.pct || "0");

@@ -48,13 +48,20 @@ function createClient(): RedisCacheClient {
   // Fall back to ioredis (local Redis)
   const redisUrl = process.env.REDIS_URL;
   const client = redisUrl
-    ? new Redis(redisUrl)
+    ? new Redis(redisUrl, {
+        connectTimeout: 2000,
+        maxRetriesPerRequest: 0,
+        enableOfflineQueue: false,
+      })
     : new Redis({
         host: process.env.REDIS_HOST || '127.0.0.1',
         port: Number(process.env.REDIS_PORT) || 6379,
         password: process.env.REDIS_PASSWORD,
         tls: process.env.REDIS_TLS === 'true' ? {} : undefined,
         lazyConnect: true,
+        connectTimeout: 2000,
+        maxRetriesPerRequest: 0,
+        enableOfflineQueue: false,
       });
 
   client.on('error', (err) => {
