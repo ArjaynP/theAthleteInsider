@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import {
   getCachedMLSSeasonSummaries,
-  getCachedUCLLiveSummaries,
 } from '@/lib/cachedSportsData';
 import type { MLSMatch } from '@/lib/mls-types';
 
@@ -114,6 +113,39 @@ function statusOrder(status: MLSMatch['status']): number {
   return status === 'LIVE' ? 0 : status === 'UPCOMING' ? 1 : 2;
 }
 
+function getEasternDateString(now = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(now);
+
+  const year = parts.find((p) => p.type === 'year')?.value;
+  const month = parts.find((p) => p.type === 'month')?.value;
+  const day = parts.find((p) => p.type === 'day')?.value;
+
+  return `${year}-${month}-${day}`;
+}
+
+function getEasternDateFromIso(iso: string): string | null {
+  const dt = new Date(iso);
+  if (Number.isNaN(dt.getTime())) return null;
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(dt);
+
+  const year = parts.find((p) => p.type === 'year')?.value;
+  const month = parts.find((p) => p.type === 'month')?.value;
+  const day = parts.find((p) => p.type === 'day')?.value;
+
+  return `${year}-${month}-${day}`;
+}
+
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function GET(request: Request) {
@@ -123,21 +155,21 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const matchweekParam = searchParams.get('matchweek');
+  const dateParam = searchParams.get('date');
+  const requestedDate = dateParam ?? getEasternDateString();
   const requestedMatchweek = matchweekParam ? parseInt(matchweekParam, 10) : null;
 
   try {
-    const [seasonSummaries, rawLive] = await Promise.all([
-      getCachedMLSSeasonSummaries(),
-      getCachedUCLLiveSummaries().catch((): Record<string, unknown>[] => []),
-    ]);
+    const seasonSummaries = await getCachedMLSSeasonSummaries();
 
     if (seasonSummaries.length === 0) {
       return NextResponse.json({
         matches: [],
         matchweek: requestedMatchweek,
+        date: requestedDate,
         source: 'sportradar',
-        error: 'No MLS summaries returned from SportsRadar.',
-      }, { status: 502 });
+        warning: 'No MLS summaries returned from SportsRadar.',
+      });
     }
 
     let effectiveMatchweek = requestedMatchweek;
@@ -179,16 +211,6 @@ export async function GET(request: Request) {
       effectiveMatchweek = liveWeek ?? nextUpcomingWeek ?? latestPastWeek ?? null;
     }
 
-    // Build a map of live MLS summaries keyed by sport_event.id
-    const liveMap = new Map<string, Record<string, unknown>>();
-    for (const s of rawLive) {
-      if (isMLSEvent(s)) {
-        const ev = s.sport_event as Record<string, unknown> | undefined;
-        const id = String(ev?.id ?? '');
-        if (id) liveMap.set(id, s);
-      }
-    }
-
     const matches: MLSMatch[] = [];
     for (const summary of seasonSummaries) {
       // Season summaries endpoint is already season-scoped. Keep broad acceptance
@@ -208,10 +230,16 @@ export async function GET(request: Request) {
       const ev  = summary.sport_event as Record<string, unknown> | undefined;
       const id  = String(ev?.id ?? '');
 
-      // Overlay live data when available
-      const effective = liveMap.has(id) ? liveMap.get(id)! : summary;
-      const match = normalizeSummary(effective);
-      if (match) matches.push(match);
+      const match = normalizeSummary(summary);
+      if (!match) continue;
+
+      if (requestedDate) {
+        if (!match.kickoff) continue;
+        const kickoffDate = getEasternDateFromIso(match.kickoff);
+        if (kickoffDate !== requestedDate) continue;
+      }
+
+      matches.push(match);
     }
 
     // Sort: status (LIVE first) → kickoff ascending
@@ -224,9 +252,15 @@ export async function GET(request: Request) {
       return ka < kb ? -1 : 1;
     });
 
-    return NextResponse.json({ matches, matchweek: effectiveMatchweek, source: 'sportradar' });
+    return NextResponse.json({ matches, matchweek: effectiveMatchweek, date: requestedDate, source: 'sportradar' });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ matches: [], matchweek: requestedMatchweek, source: 'sportradar', error: message }, { status: 502 });
+    return NextResponse.json({
+      matches: [],
+      matchweek: requestedMatchweek,
+      date: requestedDate,
+      source: 'sportradar',
+      warning: message,
+    });
   }
 }
