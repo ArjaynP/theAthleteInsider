@@ -132,6 +132,55 @@ export async function fetchMLSFormStandings(): Promise<Record<string, unknown>> 
   return response.json();
 }
 
+export async function fetchMLSStandings(): Promise<Record<string, unknown>> {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${MLS_SEASON_ID}/standings.json?api_key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`MLS Standings API error: ${response.status}`);
+  return response.json();
+}
+
+/**
+ * Season summaries for MLS — paginated (100 per page).
+ * Pass `start` to fetch further pages (0-indexed offset).
+ */
+export async function fetchMLSSeasonSummaries(start = 0): Promise<Record<string, unknown>> {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${MLS_SEASON_ID}/summaries.json?start=${start}&api_key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`MLS Season Summaries API error: ${response.status}`);
+  return response.json();
+}
+
+export async function fetchMLSSeasonLeaders(): Promise<Record<string, unknown>> {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${MLS_SEASON_ID}/leaders.json?api_key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`MLS Season Leaders API error: ${response.status}`);
+  return response.json();
+}
+
 // Static fallback: maps team abbreviation → division name
 // Used when ESPN's API doesn't return the division-level hierarchy.
 const NBA_DIVISION_BY_ABBR: Record<string, string> = {

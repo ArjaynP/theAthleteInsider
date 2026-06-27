@@ -1,17 +1,23 @@
 import { NextResponse } from 'next/server';
-import { getCachedMLSFormStandings } from '@/lib/cachedSportsData';
+import { getCachedMLSFormStandings, getCachedMLSStandings } from '@/lib/cachedSportsData';
+import { mlsEasternStandings, mlsWesternStandings } from '@/lib/mls-data';
 import type { MLSTeamStanding } from '@/lib/mls-types';
 
 export async function GET() {
   try {
-    const raw = await getCachedMLSFormStandings() as Record<string, unknown>;
+    const raw = await getCachedMLSFormStandings().catch(async () => {
+      return await getCachedMLSStandings();
+    }) as Record<string, unknown>;
+
     const standings = (raw as { standings?: unknown[] }).standings ?? [];
 
     const totalBlock = standings.find((s) => (s as { type?: string })?.type === 'total') as
       | { groups?: unknown[] }
       | undefined;
 
-    const groups = totalBlock?.groups ?? [];
+    // Depending on endpoint variant, conference groups can be nested in
+    // standings[].groups or at standings[] directly.
+    const groups = totalBlock?.groups ?? standings;
 
     const easternGroup = groups.find((g) => {
       const name = String((g as { group_name?: string; name?: string }).group_name ?? (g as { name?: string }).name ?? '').toLowerCase();
@@ -78,10 +84,12 @@ export async function GET() {
     if (eastern.length === 0 && western.length === 0) {
       return NextResponse.json(
         {
+          eastern: mlsEasternStandings,
+          western: mlsWesternStandings,
+          source: 'mock-fallback',
           error: 'MLS live standings are currently unavailable from SportsRadar.',
-          source: 'sportradar',
         },
-        { status: 502 }
+        { status: 200 }
       );
     }
 
@@ -94,10 +102,12 @@ export async function GET() {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       {
+        eastern: mlsEasternStandings,
+        western: mlsWesternStandings,
         error: message,
-        source: 'sportradar',
+        source: 'mock-fallback',
       },
-      { status: 502 }
+      { status: 200 }
     );
   }
 }

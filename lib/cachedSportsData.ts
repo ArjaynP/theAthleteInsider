@@ -1,5 +1,5 @@
 import { getCached, CACHE_DURATIONS } from './cache-helper';
-import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings, fetchUCLSeasonLeaders, fetchUCLSeasonCompetitors, fetchUCLCompetitorStats, fetchUCLSeasonSummaries, fetchUCLLiveSummaries, fetchMLSFormStandings } from './sportsApi';
+import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings, fetchUCLSeasonLeaders, fetchUCLSeasonCompetitors, fetchUCLCompetitorStats, fetchUCLSeasonSummaries, fetchUCLLiveSummaries, fetchMLSFormStandings, fetchMLSStandings, fetchMLSSeasonSummaries, fetchMLSSeasonLeaders } from './sportsApi';
 
 export async function getCachedNBAStandings() {
   return getCached(
@@ -202,5 +202,47 @@ export async function getCachedMLSFormStandings() {
     'MLS:standings:form:130281',
     fetchMLSFormStandings,
     CACHE_DURATIONS.STANDINGS
+  );
+}
+
+export async function getCachedMLSStandings() {
+  return getCached(
+    'MLS:standings:130281',
+    fetchMLSStandings,
+    CACHE_DURATIONS.STANDINGS
+  );
+}
+
+/**
+ * All MLS season summaries, paginated automatically (100 per request).
+ * TTL: 300 s (5 min) — balances freshness with Sportradar rate limits.
+ */
+export async function getCachedMLSSeasonSummaries(): Promise<Record<string, unknown>[]> {
+  return getCached(
+    'MLS:summaries:season:130281',
+    async () => {
+      const all: Record<string, unknown>[] = [];
+      const pageSize = 100;
+      let start = 0;
+
+      while (true) {
+        const page = await fetchMLSSeasonSummaries(start) as Record<string, unknown>;
+        const batch = (page.summaries as Record<string, unknown>[]) ?? [];
+        all.push(...batch);
+        if (batch.length < pageSize) break;
+        start += pageSize;
+      }
+
+      return all;
+    },
+    300 // 5 minutes
+  ) as Promise<Record<string, unknown>[]>;
+}
+
+export async function getCachedMLSSeasonLeaders() {
+  return getCached(
+    'MLS:leaders:130281',
+    fetchMLSSeasonLeaders,
+    CACHE_DURATIONS.PLAYER_STATS // 30 minutes
   );
 }

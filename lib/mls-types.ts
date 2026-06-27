@@ -25,6 +25,7 @@ export interface MLSMatch {
   homeScore: number;
   awayScore: number;
   status: 'UPCOMING' | 'LIVE' | 'FINAL';
+  kickoff?: string; // ISO date-time for sorting/metadata
   clock?: string; // e.g. "67'"
   kickoffDisplay?: string; // e.g. "7:30 PM ET"
   matchweek?: number;
