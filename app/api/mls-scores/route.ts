@@ -3,7 +3,6 @@ import {
   getCachedMLSSeasonSummaries,
   getCachedUCLLiveSummaries,
 } from '@/lib/cachedSportsData';
-import { mlsMatches, MLS_CURRENT_MATCHWEEK } from '@/lib/mls-data';
 import type { MLSMatch } from '@/lib/mls-types';
 
 // Sportradar MLS competition ID
@@ -124,22 +123,60 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const matchweekParam = searchParams.get('matchweek');
-  const matchweek = matchweekParam ? parseInt(matchweekParam, 10) : null;
+  const requestedMatchweek = matchweekParam ? parseInt(matchweekParam, 10) : null;
 
   try {
     const [seasonSummaries, rawLive] = await Promise.all([
-      getCachedMLSSeasonSummaries().catch((): Record<string, unknown>[] => []),
+      getCachedMLSSeasonSummaries(),
       getCachedUCLLiveSummaries().catch((): Record<string, unknown>[] => []),
     ]);
 
     if (seasonSummaries.length === 0) {
-      const fallbackWeek = matchweek ?? MLS_CURRENT_MATCHWEEK;
-      const fallback = mlsMatches[fallbackWeek] ?? [];
       return NextResponse.json({
-        matches: fallback,
-        matchweek: fallbackWeek,
-        source: 'mock-fallback',
-      });
+        matches: [],
+        matchweek: requestedMatchweek,
+        source: 'sportradar',
+        error: 'No MLS summaries returned from SportsRadar.',
+      }, { status: 502 });
+    }
+
+    let effectiveMatchweek = requestedMatchweek;
+    if (effectiveMatchweek === null) {
+      const now = Date.now();
+      let liveWeek: number | undefined;
+      let nextUpcomingWeek: number | undefined;
+      let latestPastWeek: number | undefined;
+      let nextUpcomingTs = Number.POSITIVE_INFINITY;
+      let latestPastTs = Number.NEGATIVE_INFINITY;
+
+      for (const summary of seasonSummaries) {
+        const week = getMatchweekNumber(summary);
+        if (week === undefined) continue;
+
+        const statusObj = summary.sport_event_status as Record<string, unknown> | undefined;
+        const srStatus = String(statusObj?.status ?? '').toLowerCase();
+        const event = summary.sport_event as Record<string, unknown> | undefined;
+        const scheduled = String(event?.scheduled ?? '');
+        const ts = scheduled ? new Date(scheduled).getTime() : NaN;
+
+        if (srStatus === 'live' || srStatus === 'inprogress') {
+          liveWeek = week;
+          break;
+        }
+
+        if (Number.isFinite(ts)) {
+          if (ts >= now && ts < nextUpcomingTs) {
+            nextUpcomingTs = ts;
+            nextUpcomingWeek = week;
+          }
+          if (ts < now && ts > latestPastTs) {
+            latestPastTs = ts;
+            latestPastWeek = week;
+          }
+        }
+      }
+
+      effectiveMatchweek = liveWeek ?? nextUpcomingWeek ?? latestPastWeek ?? null;
     }
 
     // Build a map of live MLS summaries keyed by sport_event.id
@@ -163,9 +200,9 @@ export async function GET(request: Request) {
       if (compId && compId !== MLS_COMPETITION_ID) continue;
 
       // Filter by matchweek when requested
-      if (matchweek !== null) {
+      if (effectiveMatchweek !== null) {
         const summaryWeek = getMatchweekNumber(summary);
-        if (summaryWeek !== undefined && summaryWeek !== matchweek) continue;
+        if (summaryWeek !== undefined && summaryWeek !== effectiveMatchweek) continue;
       }
 
       const ev  = summary.sport_event as Record<string, unknown> | undefined;
@@ -187,19 +224,9 @@ export async function GET(request: Request) {
       return ka < kb ? -1 : 1;
     });
 
-    return NextResponse.json({ matches, matchweek, source: 'sportradar' });
+    return NextResponse.json({ matches, matchweek: effectiveMatchweek, source: 'sportradar' });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    const fallbackWeek = matchweek ?? MLS_CURRENT_MATCHWEEK;
-    const fallback = mlsMatches[fallbackWeek] ?? [];
-    return NextResponse.json(
-      {
-        matches: fallback,
-        matchweek: fallbackWeek,
-        source: 'mock-fallback',
-        error: message,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ matches: [], matchweek: requestedMatchweek, source: 'sportradar', error: message }, { status: 502 });
   }
 }

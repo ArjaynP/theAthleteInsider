@@ -5,8 +5,9 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MLS_TOTAL_MATCHWEEKS, MLS_CURRENT_MATCHWEEK } from "@/lib/mls-data";
 import type { MLSMatch } from "@/lib/mls-types";
+
+const MLS_TOTAL_MATCHWEEKS = 34;
 
 // ── status badge ──────────────────────────────────────────────────────────────
 
@@ -111,7 +112,7 @@ function MatchCard({ match }: { match: MLSMatch }) {
 // ── page ──────────────────────────────────────────────────────────────────────
 
 export default function MLSScoresPage() {
-  const [selectedMW, setSelectedMW]   = useState(MLS_CURRENT_MATCHWEEK);
+  const [selectedMW, setSelectedMW]   = useState<number | null>(null);
   const [matches, setMatches]         = useState<MLSMatch[]>([]);
   const [loading, setLoading]         = useState(true);
 
@@ -127,26 +128,38 @@ export default function MLSScoresPage() {
     }
   }, []);
 
-  const fetchMatches = useCallback(async (mw: number) => {
+  const fetchMatches = useCallback(async (mw: number | null) => {
     setLoading(true);
     setMatches([]);
     try {
-      const res = await fetch(`/api/mls-scores?matchweek=${mw}`, { cache: "no-store" });
+      const query = mw ? `?matchweek=${mw}` : "";
+      const res = await fetch(`/api/mls-scores${query}`, { cache: "no-store" });
       if (!res.ok) return;
       const data = await res.json();
       setMatches(data.matches ?? []);
+
+      // First load: lock onto API-selected current matchweek
+      if (selectedMW === null && typeof data.matchweek === "number") {
+        setSelectedMW(data.matchweek);
+      }
     } catch {
       // leave empty
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedMW]);
 
-  useEffect(() => { fetchMatches(selectedMW); }, [selectedMW, fetchMatches]);
+  useEffect(() => {
+    if (selectedMW === null) {
+      fetchMatches(null);
+      return;
+    }
+    fetchMatches(selectedMW);
+  }, [selectedMW, fetchMatches]);
 
   // Auto-refresh every 60 s while live matches exist
   useEffect(() => {
-    if (!matches.some((m) => m.status === "LIVE")) return;
+    if (selectedMW === null || !matches.some((m) => m.status === "LIVE")) return;
     const id = setInterval(() => fetchMatches(selectedMW), 60_000);
     return () => clearInterval(id);
   }, [matches, selectedMW, fetchMatches]);
@@ -217,7 +230,7 @@ export default function MLSScoresPage() {
           {!loading && matches.length === 0 && (
             <div className="rounded-xl border border-border bg-card p-12 text-center text-muted-foreground">
               <p className="text-lg font-bold">No fixtures</p>
-              <p className="mt-1 text-sm">No MLS matches found for Matchweek {selectedMW}</p>
+              <p className="mt-1 text-sm">No MLS matches found{selectedMW ? ` for Matchweek ${selectedMW}` : ""}</p>
             </div>
           )}
 

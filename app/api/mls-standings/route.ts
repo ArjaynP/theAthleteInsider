@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getCachedMLSFormStandings, getCachedMLSStandings } from '@/lib/cachedSportsData';
-import { mlsEasternStandings, mlsWesternStandings } from '@/lib/mls-data';
 import type { MLSTeamStanding } from '@/lib/mls-types';
 
 export async function GET() {
@@ -84,12 +83,10 @@ export async function GET() {
     if (eastern.length === 0 && western.length === 0) {
       return NextResponse.json(
         {
-          eastern: mlsEasternStandings,
-          western: mlsWesternStandings,
-          source: 'mock-fallback',
           error: 'MLS live standings are currently unavailable from SportsRadar.',
+          source: 'sportradar',
         },
-        { status: 200 }
+        { status: 502 }
       );
     }
 
@@ -102,12 +99,10 @@ export async function GET() {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       {
-        eastern: mlsEasternStandings,
-        western: mlsWesternStandings,
         error: message,
-        source: 'mock-fallback',
+        source: 'sportradar',
       },
-      { status: 200 }
+      { status: 502 }
     );
   }
 }
