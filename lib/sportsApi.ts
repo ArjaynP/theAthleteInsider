@@ -1,6 +1,58 @@
 // UCL Season ID for 2025-26
 const UCL_SEASON_ID = 'sr:season:131129';
-const MLS_SEASON_ID = 'sr:season:130281';
+const MLS_COMPETITION_ID = 'sr:competition:242';
+
+let cachedMLSSeasonId: string | null = null;
+let cachedMLSSeasonIdAt = 0;
+const MLS_SEASON_CACHE_MS = 6 * 60 * 60 * 1000;
+
+async function resolveCurrentMLSSeasonId(): Promise<string> {
+  const now = Date.now();
+  if (cachedMLSSeasonId && now - cachedMLSSeasonIdAt < MLS_SEASON_CACHE_MS) {
+    return cachedMLSSeasonId;
+  }
+
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/competitions/${MLS_COMPETITION_ID}/seasons.json?api_key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error(`MLS Seasons API error: ${response.status}`);
+  }
+
+  const data = await response.json() as {
+    seasons?: Array<{ id?: string; start_date?: string; end_date?: string }>;
+  };
+
+  const seasons = (data.seasons ?? [])
+    .map((season) => ({
+      id: season.id ?? '',
+      start: season.start_date ? new Date(season.start_date).getTime() : Number.NaN,
+      end: season.end_date ? new Date(season.end_date).getTime() : Number.NaN,
+    }))
+    .filter((season) => season.id.length > 0);
+
+  if (seasons.length === 0) {
+    throw new Error('MLS Seasons API returned no seasons');
+  }
+
+  const active = seasons.find((season) => Number.isFinite(season.start) && Number.isFinite(season.end) && season.start <= now && now <= season.end);
+  const latest = [...seasons].sort((a, b) => {
+    const aStart = Number.isFinite(a.start) ? a.start : Number.NEGATIVE_INFINITY;
+    const bStart = Number.isFinite(b.start) ? b.start : Number.NEGATIVE_INFINITY;
+    return bStart - aStart;
+  })[0];
+
+  cachedMLSSeasonId = (active ?? latest).id;
+  cachedMLSSeasonIdAt = now;
+  return cachedMLSSeasonId;
+}
 
 export async function fetchUCLStandings(): Promise<Record<string, unknown>> {
   const apiKey = process.env.SPORTSRADAR_API_KEY;
@@ -120,8 +172,9 @@ export async function fetchUCLLiveSummaries(): Promise<Record<string, unknown>> 
 export async function fetchMLSFormStandings(): Promise<Record<string, unknown>> {
   const apiKey = process.env.SPORTSRADAR_API_KEY;
   if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+  const seasonId = await resolveCurrentMLSSeasonId();
 
-  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${MLS_SEASON_ID}/form_standings.json?api_key=${apiKey}`;
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${seasonId}/form_standings.json?api_key=${apiKey}`;
   const response = await fetch(url, {
     method: 'GET',
     headers: { Accept: 'application/json' },
@@ -135,8 +188,9 @@ export async function fetchMLSFormStandings(): Promise<Record<string, unknown>> 
 export async function fetchMLSStandings(): Promise<Record<string, unknown>> {
   const apiKey = process.env.SPORTSRADAR_API_KEY;
   if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+  const seasonId = await resolveCurrentMLSSeasonId();
 
-  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${MLS_SEASON_ID}/standings.json?api_key=${apiKey}`;
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${seasonId}/standings.json?api_key=${apiKey}`;
   const response = await fetch(url, {
     method: 'GET',
     headers: { Accept: 'application/json' },
@@ -154,8 +208,9 @@ export async function fetchMLSStandings(): Promise<Record<string, unknown>> {
 export async function fetchMLSSeasonSummaries(start = 0): Promise<Record<string, unknown>> {
   const apiKey = process.env.SPORTSRADAR_API_KEY;
   if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+  const seasonId = await resolveCurrentMLSSeasonId();
 
-  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${MLS_SEASON_ID}/summaries.json?start=${start}&api_key=${apiKey}`;
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${seasonId}/summaries.json?start=${start}&api_key=${apiKey}`;
   const response = await fetch(url, {
     method: 'GET',
     headers: { Accept: 'application/json' },
@@ -169,8 +224,9 @@ export async function fetchMLSSeasonSummaries(start = 0): Promise<Record<string,
 export async function fetchMLSSeasonLeaders(): Promise<Record<string, unknown>> {
   const apiKey = process.env.SPORTSRADAR_API_KEY;
   if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+  const seasonId = await resolveCurrentMLSSeasonId();
 
-  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${MLS_SEASON_ID}/leaders.json?api_key=${apiKey}`;
+  const url = `https://api.sportradar.com/soccer/trial/v4/en/seasons/${seasonId}/leaders.json?api_key=${apiKey}`;
   const response = await fetch(url, {
     method: 'GET',
     headers: { Accept: 'application/json' },

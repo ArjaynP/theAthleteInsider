@@ -199,7 +199,7 @@ export async function getCachedUCLLiveSummaries(): Promise<Record<string, unknow
 
 export async function getCachedMLSFormStandings() {
   return getCached(
-    'MLS:standings:form:130281',
+    'MLS:standings:form:current',
     fetchMLSFormStandings,
     CACHE_DURATIONS.STANDINGS
   );
@@ -207,7 +207,7 @@ export async function getCachedMLSFormStandings() {
 
 export async function getCachedMLSStandings() {
   return getCached(
-    'MLS:standings:130281',
+    'MLS:standings:current',
     fetchMLSStandings,
     CACHE_DURATIONS.STANDINGS
   );
@@ -219,7 +219,7 @@ export async function getCachedMLSStandings() {
  */
 export async function getCachedMLSSeasonSummaries(): Promise<Record<string, unknown>[]> {
   return getCached(
-    'MLS:summaries:season:130281',
+    'MLS:summaries:season:current',
     async () => {
       const all: Record<string, unknown>[] = [];
       const pageSize = 100;
@@ -241,7 +241,7 @@ export async function getCachedMLSSeasonSummaries(): Promise<Record<string, unkn
 
 export async function getCachedMLSSeasonLeaders() {
   return getCached(
-    'MLS:leaders:130281',
+    'MLS:leaders:current',
     fetchMLSSeasonLeaders,
     CACHE_DURATIONS.PLAYER_STATS // 30 minutes
   );
