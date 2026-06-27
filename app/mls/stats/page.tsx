@@ -5,14 +5,23 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Loader2, TrendingUp } from "lucide-react";
 import type { MLSStatCategory } from "@/lib/mls-types";
+import { fetchMLSLogoMap, getMLSLogo } from "@/lib/mls-logos";
 
 // ── Stat card ──────────────────────────────────────────────────────────────────
 
-function StatCard({ category }: { category: MLSStatCategory }) {
+function StatCard({
+  category,
+  teamLogos,
+}: {
+  category: MLSStatCategory;
+  teamLogos: Record<string, string>;
+}) {
   const topPlayer = category.leaders[0];
   const others    = category.leaders.slice(1);
 
   if (!topPlayer) return null;
+
+  const topLogo = getMLSLogo(teamLogos, topPlayer.team);
 
   return (
     <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm transition-all hover:shadow-md">
@@ -41,8 +50,17 @@ function StatCard({ category }: { category: MLSStatCategory }) {
           </div>
           <p className="font-bold text-foreground">{topPlayer.player}</p>
           <div className="mt-0.5 flex items-center gap-1.5">
-            <div className="flex h-4 w-4 items-center justify-center rounded bg-primary/10">
-              <span className="text-[8px] font-black text-primary">{topPlayer.team}</span>
+            <div className="flex h-4 w-4 items-center justify-center overflow-hidden rounded bg-primary/10">
+              {topLogo ? (
+                <img
+                  src={topLogo}
+                  alt={`${topPlayer.team} logo`}
+                  className="h-3.5 w-3.5 object-contain"
+                  loading="lazy"
+                />
+              ) : (
+                <span className="text-[8px] font-black text-primary">{topPlayer.team}</span>
+              )}
             </div>
             <span className="text-xs text-muted-foreground">{topPlayer.team}</span>
           </div>
@@ -51,23 +69,41 @@ function StatCard({ category }: { category: MLSStatCategory }) {
 
       {/* Other leaders */}
       <div className="flex flex-col border-t border-border">
-        {others.map((player) => (
-          <div
-            key={player.rank}
-            className="flex items-center justify-between border-b border-border/50 px-4 py-2.5 last:border-0 hover:bg-muted/30"
-          >
-            <div className="flex items-center gap-3">
-              <span className="w-4 text-center text-xs font-black text-muted-foreground">
-                {player.rank}
-              </span>
-              <div>
-                <p className="text-sm font-bold text-foreground">{player.player}</p>
-                <p className="text-[10px] text-muted-foreground">{player.team}</p>
+        {others.map((player) => {
+          const logo = getMLSLogo(teamLogos, player.team);
+
+          return (
+            <div
+              key={player.rank}
+              className="flex items-center justify-between border-b border-border/50 px-4 py-2.5 last:border-0 hover:bg-muted/30"
+            >
+              <div className="flex items-center gap-3">
+                <span className="w-4 text-center text-xs font-black text-muted-foreground">
+                  {player.rank}
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-foreground">{player.player}</p>
+                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                    <div className="flex h-3.5 w-3.5 items-center justify-center overflow-hidden rounded bg-primary/10">
+                      {logo ? (
+                        <img
+                          src={logo}
+                          alt={`${player.team} logo`}
+                          className="h-3 w-3 object-contain"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span className="text-[7px] font-black text-primary">{player.team}</span>
+                      )}
+                    </div>
+                    <span>{player.team}</span>
+                  </div>
+                </div>
               </div>
+              <span className="text-sm font-black text-foreground">{player.value}</span>
             </div>
-            <span className="text-sm font-black text-foreground">{player.value}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -77,6 +113,7 @@ function StatCard({ category }: { category: MLSStatCategory }) {
 
 export default function MLSStatsPage() {
   const [categories, setCategories] = useState<MLSStatCategory[]>([]);
+  const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
   const [loading, setLoading]       = useState(true);
 
   useEffect(() => {
@@ -85,7 +122,14 @@ export default function MLSStatsPage() {
         const res = await fetch("/api/mls-player-stats");
         if (!res.ok) return;
         const data = await res.json();
-        setCategories(data.categories ?? []);
+        const nextCategories = data.categories ?? [];
+        setCategories(nextCategories);
+
+        const logoKeys = nextCategories.flatMap((category: MLSStatCategory) =>
+          category.leaders.map((leader) => leader.team)
+        );
+        const logos = await fetchMLSLogoMap(logoKeys);
+        setTeamLogos(logos);
       } catch {
         // leave empty
       } finally {
@@ -132,7 +176,7 @@ export default function MLSStatsPage() {
           {!loading && categories.length > 0 && (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((cat) => (
-                <StatCard key={cat.id} category={cat} />
+                <StatCard key={cat.id} category={cat} teamLogos={teamLogos} />
               ))}
             </div>
           )}

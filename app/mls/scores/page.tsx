@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { CalendarDays, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MLSMatch } from "@/lib/mls-types";
+import { fetchMLSLogoMap, getMLSLogo } from "@/lib/mls-logos";
 
 function toDateString(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -74,10 +75,18 @@ function StatusBadge({ status }: { status: MLSMatch["status"] }) {
 
 // ── match card ────────────────────────────────────────────────────────────────
 
-function MatchCard({ match }: { match: MLSMatch }) {
+function MatchCard({
+  match,
+  teamLogos,
+}: {
+  match: MLSMatch;
+  teamLogos: Record<string, string>;
+}) {
   const isUpcoming = match.status === "UPCOMING";
   const isFinal    = match.status === "FINAL";
   const isLive     = match.status === "LIVE";
+  const homeLogo = getMLSLogo(teamLogos, match.homeTeam);
+  const awayLogo = getMLSLogo(teamLogos, match.awayTeam);
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md">
@@ -93,10 +102,19 @@ function MatchCard({ match }: { match: MLSMatch }) {
       <div className="flex items-center gap-3">
         {/* Home */}
         <div className="flex flex-1 flex-col items-center gap-1">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <span className="text-xs font-black text-primary">
-              {match.homeTeam.slice(0, 3).toUpperCase()}
-            </span>
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
+            {homeLogo ? (
+              <img
+                src={homeLogo}
+                alt={`${match.homeTeam} logo`}
+                className="h-8 w-8 object-contain"
+                loading="lazy"
+              />
+            ) : (
+              <span className="text-xs font-black text-primary">
+                {match.homeTeam.slice(0, 3).toUpperCase()}
+              </span>
+            )}
           </div>
           <span className="max-w-[90px] text-center text-xs font-bold leading-tight text-foreground">
             {match.homeTeam}
@@ -129,10 +147,19 @@ function MatchCard({ match }: { match: MLSMatch }) {
 
         {/* Away */}
         <div className="flex flex-1 flex-col items-center gap-1">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <span className="text-xs font-black text-primary">
-              {match.awayTeam.slice(0, 3).toUpperCase()}
-            </span>
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
+            {awayLogo ? (
+              <img
+                src={awayLogo}
+                alt={`${match.awayTeam} logo`}
+                className="h-8 w-8 object-contain"
+                loading="lazy"
+              />
+            ) : (
+              <span className="text-xs font-black text-primary">
+                {match.awayTeam.slice(0, 3).toUpperCase()}
+              </span>
+            )}
           </div>
           <span className="max-w-[90px] text-center text-xs font-bold leading-tight text-foreground">
             {match.awayTeam}
@@ -153,6 +180,7 @@ export default function MLSScoresPage() {
   const today = getEasternDateString();
   const [selectedDate, setSelectedDate] = useState<string>(today);
   const [matches, setMatches] = useState<MLSMatch[]>([]);
+  const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   const dateRange = useRef<Date[]>(buildDateRange()).current;
@@ -187,6 +215,16 @@ export default function MLSScoresPage() {
   useEffect(() => {
     fetchMatches(selectedDate);
   }, [selectedDate, fetchMatches]);
+
+  useEffect(() => {
+    async function loadLogos() {
+      const logoKeys = matches.flatMap((match) => [match.homeTeam, match.awayTeam]);
+      const logos = await fetchMLSLogoMap(logoKeys);
+      setTeamLogos(logos);
+    }
+
+    loadLogos();
+  }, [matches]);
 
   // Auto-refresh every 60 s while live matches exist
   useEffect(() => {
@@ -340,7 +378,7 @@ export default function MLSScoresPage() {
                 <h2 className="text-xl font-black uppercase tracking-tight text-foreground">Live Now</h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {liveMatches.map((m) => <MatchCard key={m.id} match={m} />)}
+                {liveMatches.map((m) => <MatchCard key={m.id} match={m} teamLogos={teamLogos} />)}
               </div>
             </section>
           )}
@@ -353,7 +391,7 @@ export default function MLSScoresPage() {
                 <h2 className="text-xl font-black uppercase tracking-tight text-foreground">Upcoming</h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {upcomingMatches.map((m) => <MatchCard key={m.id} match={m} />)}
+                {upcomingMatches.map((m) => <MatchCard key={m.id} match={m} teamLogos={teamLogos} />)}
               </div>
             </section>
           )}
@@ -366,7 +404,7 @@ export default function MLSScoresPage() {
                 <h2 className="text-xl font-black uppercase tracking-tight text-foreground">Final</h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {finalMatches.map((m) => <MatchCard key={m.id} match={m} />)}
+                {finalMatches.map((m) => <MatchCard key={m.id} match={m} teamLogos={teamLogos} />)}
               </div>
             </section>
           )}

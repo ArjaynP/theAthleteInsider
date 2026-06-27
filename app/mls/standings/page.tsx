@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MLSTeamStanding } from "@/lib/mls-types";
+import { fetchMLSLogoMap, getMLSLogo } from "@/lib/mls-logos";
 
 // ── Qualification colour coding (top 9 per conference → MLS Cup Playoffs) ────
 
@@ -39,7 +40,13 @@ function FormPip({ result }: { result: string }) {
 
 // ── Standings table ───────────────────────────────────────────────────────────
 
-function StandingsTable({ teams }: { teams: MLSTeamStanding[] }) {
+function StandingsTable({
+  teams,
+  teamLogos,
+}: {
+  teams: MLSTeamStanding[];
+  teamLogos: Record<string, string>;
+}) {
   return (
     <div className="overflow-x-auto rounded-xl border border-border bg-card">
       <table className="w-full text-sm">
@@ -61,6 +68,7 @@ function StandingsTable({ teams }: { teams: MLSTeamStanding[] }) {
         <tbody>
           {teams.map((team, idx) => {
             const prevRank = idx > 0 ? teams[idx - 1].rank : null;
+            const logo = getMLSLogo(teamLogos, team.team, team.abbreviation);
             const showDivider =
               (team.rank === 8 && prevRank !== null && prevRank < 8) ||
               (team.rank === 10 && prevRank !== null && prevRank < 10);
@@ -89,8 +97,17 @@ function StandingsTable({ teams }: { teams: MLSTeamStanding[] }) {
                   <td className="px-4 py-3 font-black text-muted-foreground">{team.rank}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-primary/10">
-                        <span className="text-[9px] font-black text-primary">{team.abbreviation}</span>
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded bg-primary/10">
+                        {logo ? (
+                          <img
+                            src={logo}
+                            alt={`${team.team} logo`}
+                            className="h-6 w-6 object-contain"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span className="text-[9px] font-black text-primary">{team.abbreviation}</span>
+                        )}
                       </div>
                       <span className="font-bold text-foreground">{team.team}</span>
                     </div>
@@ -125,6 +142,7 @@ function StandingsTable({ teams }: { teams: MLSTeamStanding[] }) {
 export default function MLSStandingsPage() {
   const [eastern, setEastern] = useState<MLSTeamStanding[]>([]);
   const [western, setWestern] = useState<MLSTeamStanding[]>([]);
+  const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"eastern" | "western">("eastern");
@@ -146,6 +164,11 @@ export default function MLSStandingsPage() {
 
         setEastern(data.eastern ?? []);
         setWestern(data.western ?? []);
+
+        const clubs = [...(data.eastern ?? []), ...(data.western ?? [])] as MLSTeamStanding[];
+        const logoKeys = clubs.flatMap((club) => [club.team, club.abbreviation]);
+        const logos = await fetchMLSLogoMap(logoKeys);
+        setTeamLogos(logos);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load live MLS standings");
       } finally {
@@ -225,7 +248,10 @@ export default function MLSStandingsPage() {
           )}
 
           {!loading && !error && (
-            <StandingsTable teams={activeTab === "eastern" ? eastern : western} />
+            <StandingsTable
+              teams={activeTab === "eastern" ? eastern : western}
+              teamLogos={teamLogos}
+            />
           )}
 
         </div>

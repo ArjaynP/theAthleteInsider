@@ -198,3 +198,110 @@ export async function getUCLTeamLogos(srNames: string[]): Promise<Record<string,
     })
   );
 }
+
+// ── ESPN MLS Team Logos ─────────────────────────────────────────────────────
+
+const ESPN_MLS_URL = 'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/teams';
+
+type ESPNMLSTeam = {
+  displayName?: string;
+  abbreviation?: string;
+  logos?: Array<{ href?: string }>;
+};
+
+type MLSLogoDirectory = {
+  byName: Record<string, string>;
+  byAbbr: Record<string, string>;
+};
+
+const MLS_ALIAS_TO_ABBR: Record<string, string> = {
+  'dc united': 'DC',
+  'd.c. united': 'DC',
+  'lafc': 'LAFC',
+  'los angeles fc': 'LAFC',
+  'new york city': 'NYC',
+  'new york city fc': 'NYC',
+  'new york red bulls': 'RBNY',
+  'inter miami': 'MIA',
+  'inter miami cf': 'MIA',
+  'chicago fire': 'CHI',
+  'chicago fire fc': 'CHI',
+  'sporting kansas city': 'SKC',
+  'san jose earthquakes': 'SJ',
+  'real salt lake': 'RSL',
+  'vancouver whitecaps': 'VAN',
+  'vancouver whitecaps fc': 'VAN',
+  'toronto fc': 'TOR',
+  'atlanta united': 'ATL',
+  'atlanta united fc': 'ATL',
+  'nashville sc': 'NSH',
+  'austin fc': 'ATX',
+  'st. louis city sc': 'STL',
+  'st louis city sc': 'STL',
+  'san diego fc': 'SD',
+};
+
+function normalizeClubName(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\b(fc|sc|cf|club)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+async function fetchESPNMLSLogoDirectory(): Promise<MLSLogoDirectory> {
+  const res = await fetch(ESPN_MLS_URL, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`ESPN MLS API error: ${res.status}`);
+
+  const data = await res.json();
+  const teams: Array<{ team?: ESPNMLSTeam }> = data?.sports?.[0]?.leagues?.[0]?.teams ?? [];
+
+  const byName: Record<string, string> = {};
+  const byAbbr: Record<string, string> = {};
+
+  for (const wrapped of teams) {
+    const team = wrapped.team;
+    const name = String(team?.displayName ?? '').trim();
+    const abbr = String(team?.abbreviation ?? '').trim().toUpperCase();
+    const logo = String(team?.logos?.[0]?.href ?? '').trim();
+    if (!name || !abbr || !logo) continue;
+
+    byName[normalizeClubName(name)] = logo;
+    byAbbr[abbr] = logo;
+  }
+
+  return { byName, byAbbr };
+}
+
+export async function getMLSTeamLogos(keys: string[]): Promise<Record<string, string | null>> {
+  const directory = await getCached('espn:mls:logos:v1', fetchESPNMLSLogoDirectory, SEVEN_DAYS);
+  const unique = [...new Set(keys.map((k) => String(k).trim()).filter(Boolean))];
+
+  return Object.fromEntries(
+    unique.map((original) => {
+      const abbrKey = original.toUpperCase();
+      const aliasAbbr = MLS_ALIAS_TO_ABBR[original.toLowerCase()];
+      const normalized = normalizeClubName(original);
+
+      const directAbbr = directory.byAbbr[abbrKey];
+      if (directAbbr) return [original, directAbbr];
+
+      if (aliasAbbr && directory.byAbbr[aliasAbbr]) {
+        return [original, directory.byAbbr[aliasAbbr]];
+      }
+
+      const directName = directory.byName[normalized];
+      if (directName) return [original, directName];
+
+      // Last resort: loose matching by token containment.
+      const match = Object.entries(directory.byName).find(([name]) => {
+        return normalized.length > 3 && (name.includes(normalized) || normalized.includes(name));
+      });
+
+      return [original, match?.[1] ?? null];
+    })
+  );
+}
