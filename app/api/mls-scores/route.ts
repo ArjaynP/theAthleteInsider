@@ -67,7 +67,7 @@ function normalizeSummary(summary: Record<string, unknown>): MLSMatch | null {
   const matchweek = roundObj?.number as number | undefined;
 
   const venueObj = event.venue as Record<string, unknown> | undefined;
-  const kickoff  = String(event.scheduled ?? '');
+  const kickoff  = String(event.scheduled ?? event.start_time ?? '');
 
   return {
     id:             String(event.id ?? ''),
@@ -156,7 +156,7 @@ export async function GET(request: Request) {
         const statusObj = summary.sport_event_status as Record<string, unknown> | undefined;
         const srStatus = String(statusObj?.status ?? '').toLowerCase();
         const event = summary.sport_event as Record<string, unknown> | undefined;
-        const scheduled = String(event?.scheduled ?? '');
+        const scheduled = String(event?.scheduled ?? event?.start_time ?? '');
         const ts = scheduled ? new Date(scheduled).getTime() : NaN;
 
         if (srStatus === 'live' || srStatus === 'inprogress') {

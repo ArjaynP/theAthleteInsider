@@ -222,14 +222,43 @@ export async function getCachedMLSSeasonSummaries(): Promise<Record<string, unkn
     'MLS:summaries:season:current',
     async () => {
       const all: Record<string, unknown>[] = [];
+      const seenEventIds = new Set<string>();
       const pageSize = 100;
+      const maxPages = 8;
       let start = 0;
+      let pagesFetched = 0;
 
       while (true) {
         const page = await fetchMLSSeasonSummaries(start) as Record<string, unknown>;
         const batch = (page.summaries as Record<string, unknown>[]) ?? [];
-        all.push(...batch);
+
+        if (batch.length === 0) break;
+
+        let newItems = 0;
+        for (const summary of batch) {
+          const event = summary.sport_event as Record<string, unknown> | undefined;
+          const eventId = String(event?.id ?? '');
+
+          if (!eventId) {
+            all.push(summary);
+            newItems += 1;
+            continue;
+          }
+
+          if (!seenEventIds.has(eventId)) {
+            seenEventIds.add(eventId);
+            all.push(summary);
+            newItems += 1;
+          }
+        }
+
+        pagesFetched += 1;
+
+        // Some Soccer trial feeds ignore pagination offset and repeat the same page.
+        if (newItems === 0) break;
         if (batch.length < pageSize) break;
+        if (pagesFetched >= maxPages) break;
+
         start += pageSize;
       }
 
