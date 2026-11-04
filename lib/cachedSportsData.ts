@@ -52,7 +52,7 @@ export async function getCachedNBATeamsList() {
 
 export async function getCachedNBALeagueLeaders() {
   return getCached(
-    'NBA:leaders:players:2025',
+    'NBA:leaders:players:2027',
     fetchNBALeagueLeaders,
     CACHE_DURATIONS.PLAYER_STATS
   );
