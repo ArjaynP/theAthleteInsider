@@ -250,7 +250,7 @@ const NBA_DIVISION_BY_ABBR: Record<string, string> = {
 
 export async function fetchNBAStandings() {
   // ESPN public API — no key required; returns conferences → divisions → teams
-  const url = 'https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?season=2027';
+  const url = 'https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?season=2026';
 
   const response = await fetch(url, {
     method: 'GET',
@@ -591,7 +591,7 @@ export async function fetchNBALeagueLeaders() {
     throw new Error('Missing SPORTSRADAR_API_KEY in environment.');
   }
 
-  const url = `https://api.sportradar.com/nba/trial/v8/en/seasons/2027/REG/leaders.json?api_key=${apiKey}`;
+  const url = `https://api.sportradar.com/nba/trial/v8/en/seasons/2026/REG/leaders.json?api_key=${apiKey}`;
 
   // Use cache: 'no-store' to skip Next.js data cache — response is ~3.76MB which
   // exceeds the 2MB limit. Redis (getCached) handles caching instead.
