@@ -1,5 +1,5 @@
 import { getCached, CACHE_DURATIONS } from './cache-helper';
-import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings, fetchUCLSeasonLeaders, fetchUCLSeasonCompetitors, fetchUCLCompetitorStats, fetchUCLSeasonSummaries, fetchUCLLiveSummaries, fetchMLSFormStandings, fetchMLSStandings, fetchMLSSeasonSummaries, fetchMLSSeasonLeaders } from './sportsApi';
+import { fetchNBAStandings, fetchNBATeamsList, fetchNFLStandings, fetchMLBStandings, fetchMLBSpringTrainingStandings, fetchNBARankings, fetchNBACupStandings, fetchNBALeagueLeaders, fetchNBAPlayerHeadshots, fetchMLBSportsRadarStandings, fetchMLBSportsRadarRankings, fetchMLBTeamsList, fetchMLBDailyBoxscore, fetchMLBGameBoxscore, fetchMLBDailySchedule, fetchMLBSeasonalStatsByTeam, fetchUCLStandings, fetchUCLSeasonLeaders, fetchUCLSeasonCompetitors, fetchUCLCompetitorStats, fetchUCLSeasonSummaries, fetchUCLLiveSummaries, fetchMLSFormStandings, fetchMLSStandings, fetchMLSSeasonSummaries, fetchMLSSeasonLeaders } from './sportsApi';
 
 export async function getCachedNBAStandings() {
   return getCached(
@@ -13,6 +13,14 @@ export async function getCachedNBARankings() {
   return getCached(
     'NBA:rankings:current',
     fetchNBARankings,
+    CACHE_DURATIONS.STANDINGS
+  );
+}
+
+export async function getCachedNBACupStandings() {
+  return getCached(
+    'NBA:cup:standings:2026',
+    fetchNBACupStandings,
     CACHE_DURATIONS.STANDINGS
   );
 }

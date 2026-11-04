@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getCachedNBAStandings, getCachedNBARankings, getCachedNFLStandings, getCachedMLBStandings, getCachedMLBSpringTrainingStandings, getCachedMLBSportsRadarStandings, getCachedMLBSportsRadarRankings } from '@/lib/cachedSportsData';
+import { getCachedNBAStandings, getCachedNBARankings, getCachedNBACupStandings, getCachedNFLStandings, getCachedMLBStandings, getCachedMLBSpringTrainingStandings, getCachedMLBSportsRadarStandings, getCachedMLBSportsRadarRankings } from '@/lib/cachedSportsData';
+import type { NBACupGroupTeam, NBACupWildcardTeam } from '@/lib/sportsApi';
 
 // ─── Clinch computation ────────────────────────────────────────────────────
 // Priority: division (5) > conference (4) > playoff_berth (3) > play_in (2) > eliminated (1)
@@ -287,6 +288,65 @@ export async function GET(request: Request) {
         }
 
         return NextResponse.json({ teams, clinched: finalClinched });
+      }
+      case 'NBA_CUP': {
+        const raw = await getCachedNBACupStandings() as any;
+        const groups: NBACupGroupTeam[] = [];
+
+        for (const conf of raw.conferences ?? []) {
+          const conference: 'East' | 'West' =
+            String(conf.alias ?? conf.name ?? '').toUpperCase().includes('EAST') ? 'East' : 'West';
+
+          for (const div of conf.divisions ?? []) {
+            for (const t of div.teams ?? []) {
+              const displayName = `${t.market} ${t.name}`;
+              const abbreviation = NBA_TEAM_ABBR[displayName] ?? t.market?.slice(0, 3).toUpperCase() ?? '?';
+              const rank = Math.round(t.calc_rank?.div_rank ?? 99);
+
+              groups.push({
+                rank,
+                confRank: Math.round(t.calc_rank?.conf_rank ?? 99),
+                team: displayName,
+                abbreviation,
+                wins: t.wins ?? 0,
+                losses: t.losses ?? 0,
+                pct: t.win_pct != null ? t.win_pct.toFixed(3) : '.000',
+                pointDiff: t.point_diff ?? 0,
+                group: div.name ?? '-',
+                conference,
+                qualified: rank === 1,
+                wildcard: false,
+              });
+            }
+          }
+        }
+
+        // Wildcard: each conference's three group winners occupy conf_rank 1-3,
+        // so the best remaining (non-group-winner) team by conf_rank earns the
+        // conference's wildcard berth into the knockout quarterfinals.
+        const wildcards: NBACupWildcardTeam[] = [];
+        for (const conference of ['East', 'West'] as const) {
+          const candidate = groups
+            .filter((g) => g.conference === conference && !g.qualified)
+            .sort((a, b) => a.confRank - b.confRank)[0];
+
+          if (candidate) {
+            candidate.wildcard = true;
+            wildcards.push({
+              team: candidate.team,
+              abbreviation: candidate.abbreviation,
+              wins: candidate.wins,
+              losses: candidate.losses,
+              pct: candidate.pct,
+              pointDiff: candidate.pointDiff,
+              conference: candidate.conference,
+            });
+          }
+        }
+
+        groups.sort((a, b) => a.group.localeCompare(b.group) || a.rank - b.rank);
+
+        return NextResponse.json({ groups, wildcards });
       }
       case 'NFL': {
         const teams = await getCachedNFLStandings();

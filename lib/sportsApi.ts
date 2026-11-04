@@ -383,6 +383,55 @@ export async function fetchNBARankings(): Promise<NBARankingsConference[]> {
   return [];
 }
 
+export interface NBACupGroupTeam {
+  rank: number;
+  confRank: number;
+  team: string;
+  abbreviation: string;
+  wins: number;
+  losses: number;
+  pct: string;
+  pointDiff: number;
+  group: string;
+  conference: 'East' | 'West';
+  qualified: boolean;
+  wildcard: boolean;
+}
+
+export interface NBACupWildcardTeam {
+  team: string;
+  abbreviation: string;
+  wins: number;
+  losses: number;
+  pct: string;
+  pointDiff: number;
+  conference: 'East' | 'West';
+}
+
+export async function fetchNBACupStandings(): Promise<Record<string, unknown>> {
+  const apiKey = process.env.SPORTSRADAR_API_KEY;
+  if (!apiKey) throw new Error('Missing SPORTSRADAR_API_KEY');
+
+  // Emirates NBA Cup group-stage standings use Sportradar's "IST"
+  // (In-Season Tournament) season type, which returns conferences →
+  // 3 groups each (6 total) → teams, including group rank (div_rank) and
+  // conference-wide rank (conf_rank) used to determine the wildcard berth.
+  // Sportradar files the current Cup under the year the season begins
+  // (e.g. the 2026-27 season's Cup is year 2026).
+  const host = getSportsRadarHost();
+  const accessLevel = getSportsRadarAccessLevel();
+  const url = `${host}/nba/${accessLevel}/v8/en/seasons/2026/IST/standings.json?api_key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error(`NBA Cup Standings API error: ${response.status}`);
+  return response.json();
+}
+
 export type NBATeamListItem = {
   id?: string | number;
   name?: string;

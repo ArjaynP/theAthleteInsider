@@ -4,13 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import {
-  nbaCupGroups,
-  nbaCupWildcards,
   nbaCupBracket,
   type TeamStanding,
   type LeagueStanding,
   type NBACupBracketRound,
 } from "@/lib/mock-data";
+import type { NBACupGroupTeam, NBACupWildcardTeam } from "@/lib/sportsApi";
 import { cn } from "@/lib/utils";
 import { ArrowUpDown, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { TeamBadge } from "@/components/team-badge";
@@ -182,12 +181,6 @@ function ClinchedBadge({ status }: { status: string }) {
       {config.label}
     </span>
   );
-}
-
-const teamAbbreviationMap = new Map(nbaCupGroups.map((t) => [t.team, t.abbreviation]));
-
-function getAbbreviation(name: string) {
-  return teamAbbreviationMap.get(name) ?? name.slice(0, 3).toUpperCase();
 }
 
 function StandingsTable({
@@ -452,6 +445,58 @@ function TeamLogo({ abbreviation, teamLogos, size = "sm" }: { abbreviation: stri
 }
 
 function NBACupStandings({ teamLogos }: { teamLogos: Record<string, string> }) {
+  const [groups, setGroups] = useState<NBACupGroupTeam[]>([]);
+  const [wildcards, setWildcards] = useState<NBACupWildcardTeam[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchCupStandings() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch("/api/standings?league=NBA_CUP", { cache: "no-store" });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.details || data?.error || "Failed to fetch Emirates NBA Cup standings");
+        }
+        if (!Array.isArray(data?.groups)) {
+          throw new Error("Unexpected Emirates NBA Cup standings format from API");
+        }
+
+        setGroups(data.groups as NBACupGroupTeam[]);
+        setWildcards(Array.isArray(data?.wildcards) ? (data.wildcards as NBACupWildcardTeam[]) : []);
+      } catch (err) {
+        console.error("Error fetching Emirates NBA Cup standings:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch Emirates NBA Cup standings");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCupStandings();
+  }, []);
+
+  // Full team name → abbreviation, derived from the live group-stage data
+  // (used to resolve logos for the still-mock knockout bracket matchups below).
+  const teamAbbreviationMap = useMemo(
+    () => new Map(groups.map((t) => [t.team, t.abbreviation])),
+    [groups]
+  );
+  const getAbbreviation = (name: string) => teamAbbreviationMap.get(name) ?? name.slice(0, 3).toUpperCase();
+
+  const groupedByName = useMemo(() => {
+    const map = new Map<string, NBACupGroupTeam[]>();
+    for (const team of groups) {
+      if (!map.has(team.group)) map.set(team.group, []);
+      map.get(team.group)!.push(team);
+    }
+    for (const teams of map.values()) teams.sort((a, b) => a.rank - b.rank);
+    return [...map.entries()].sort(([a], [b]) => a.localeCompare(b));
+  }, [groups]);
+
   const eastQuarterfinals = nbaCupBracket.find((r) => r.round === "Quarterfinals" && r.conference === "East");
   const westQuarterfinals = nbaCupBracket.find((r) => r.round === "Quarterfinals" && r.conference === "West");
   const final = nbaCupBracket.find((r) => r.round === "Final");
@@ -484,6 +529,22 @@ function NBACupStandings({ teamLogos }: { teamLogos: Record<string, string> }) {
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
+        Loading Emirates NBA Cup standings...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-8 text-center text-destructive">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -523,18 +584,66 @@ function NBACupStandings({ teamLogos }: { teamLogos: Record<string, string> }) {
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="border-b border-border px-5 py-4">
-          <h3 className="text-lg font-black uppercase tracking-tight text-foreground">Group Stage</h3>
+          <h3 className="text-lg font-black uppercase tracking-tight text-foreground">Group Stage Standings</h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Group winners (<span className="font-bold text-green-500">Q</span>) and each conference&apos;s best
+            runner-up (<span className="font-bold text-blue-500">WC</span>) advance to the knockout quarterfinals.
+          </p>
         </div>
-        <div className="p-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {nbaCupGroups.map((team) => (
-            <div key={`${team.group}-${team.abbreviation}`} className="rounded border border-border p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <TeamLogo abbreviation={team.abbreviation} teamLogos={teamLogos} size="sm" />
-                  <span className="font-semibold">{team.team}</span>
-                </div>
-                <span className="text-xs text-muted-foreground">{team.group}</span>
+        <div className="grid gap-6 p-4 md:grid-cols-2 lg:grid-cols-3">
+          {groupedByName.map(([groupName, teams]) => (
+            <div key={groupName} className="overflow-hidden rounded-lg border border-border">
+              <div className="bg-secondary/40 px-3 py-2 text-xs font-black uppercase tracking-widest text-foreground">
+                {groupName}
               </div>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border text-muted-foreground">
+                    <th className="px-3 py-2 text-left font-bold">Team</th>
+                    <th className="px-2 py-2 text-center font-bold">W-L</th>
+                    <th className="px-2 py-2 text-center font-bold">Pct</th>
+                    <th className="px-2 py-2 text-center font-bold">Diff</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {teams.map((team) => (
+                    <tr key={team.abbreviation} className="border-b border-border last:border-0">
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <TeamLogo abbreviation={team.abbreviation} teamLogos={teamLogos} size="sm" />
+                          <span className="font-semibold">{team.team}</span>
+                          {team.qualified && (
+                            <span
+                              title="Group winner — advances to the knockout quarterfinals"
+                              className="rounded bg-green-500/20 px-1 text-[9px] font-black text-green-500"
+                            >
+                              Q
+                            </span>
+                          )}
+                          {team.wildcard && (
+                            <span
+                              title="Wildcard — advances to the knockout quarterfinals"
+                              className="rounded bg-blue-500/20 px-1 text-[9px] font-black text-blue-500"
+                            >
+                              WC
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-2 py-2 text-center">{team.wins}-{team.losses}</td>
+                      <td className="px-2 py-2 text-center">{team.pct}</td>
+                      <td
+                        className={cn(
+                          "px-2 py-2 text-center",
+                          team.pointDiff > 0 ? "text-green-500" : team.pointDiff < 0 ? "text-destructive" : ""
+                        )}
+                      >
+                        {team.pointDiff > 0 ? `+${team.pointDiff}` : team.pointDiff}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ))}
         </div>
@@ -545,7 +654,7 @@ function NBACupStandings({ teamLogos }: { teamLogos: Record<string, string> }) {
           <h3 className="text-lg font-black uppercase tracking-tight text-foreground">Wildcards</h3>
         </div>
         <div className="p-4 grid gap-4 md:grid-cols-2">
-          {nbaCupWildcards.map((team) => (
+          {wildcards.map((team) => (
             <div key={team.abbreviation} className="rounded border border-border p-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TeamLogo abbreviation={team.abbreviation} teamLogos={teamLogos} size="sm" />
@@ -554,6 +663,9 @@ function NBACupStandings({ teamLogos }: { teamLogos: Record<string, string> }) {
               <span className="text-xs text-muted-foreground">{team.conference} • {team.wins}-{team.losses}</span>
             </div>
           ))}
+          {wildcards.length === 0 && (
+            <p className="text-sm text-muted-foreground">Wildcard standings will appear once group play begins.</p>
+          )}
         </div>
       </div>
     </div>
