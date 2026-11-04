@@ -1,6 +1,6 @@
 // UCL Season ID for 2025-26
-const UCL_SEASON_ID = 'sr:season:131129';
-const MLS_COMPETITION_ID = 'sr:competition:242';
+const UCL_SEASON_ID = 'sr:season:140786';
+const MLS_COMPETITION_ID = 'sr:competition:7';
 
 let cachedMLSSeasonId: string | null = null;
 let cachedMLSSeasonIdAt = 0;
